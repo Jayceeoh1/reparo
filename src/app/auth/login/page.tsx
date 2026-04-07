@@ -36,14 +36,16 @@ export default function LoginPage() {
 
     toast.success('Bine ai revenit!')
 
-    // Folosim window.location pentru redirect garantat
     setTimeout(() => {
-      if (profile?.role === 'service') {
+      const role = (profile as any)?.role
+      if (role === 'service') {
         window.location.href = '/dashboard/service'
       } else {
         window.location.href = '/home'
       }
     }, 800)
+
+    setLoading(false)
   }
 
   return (

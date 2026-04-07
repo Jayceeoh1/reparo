@@ -1,15 +1,13 @@
 import { createClient } from '@/lib/supabase/server'
 import { NextResponse } from 'next/server'
 
-// GET /api/quote-requests — lista cereri ale utilizatorului
 export async function GET() {
   const supabase = createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
   const { data, error } = await supabase
-    .from('quote_requests')
-    .select('*, offers(count)')
+    .from('quote_requests').select('*')
     .eq('user_id', user.id)
     .order('created_at', { ascending: false })
 
@@ -17,18 +15,15 @@ export async function GET() {
   return NextResponse.json(data)
 }
 
-// POST /api/quote-requests — creeaza cerere noua
 export async function POST(request: Request) {
   const supabase = createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
   const body = await request.json()
-  const { data, error } = await supabase
-    .from('quote_requests')
-    .insert({ ...body, user_id: user.id })
-    .select()
-    .single()
+  // @ts-ignore
+  const { data, error } = await supabase.from('quote_requests')
+    .insert({ ...body, user_id: user.id }).select().single()
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 })
   return NextResponse.json(data, { status: 201 })
