@@ -18,7 +18,16 @@ const CATEGORIES = [
 
 const FILTERS = ['Toate', 'Deschis acum', '± 5 km', '± 10 km', '± 25 km', 'Recenzii 4+', 'Diesel', 'Benzină', 'Hybrid / Electric', 'Service autorizat', 'Garanție lucrări']
 
-const NAV_TABS = ['Acasă', 'Service-uri', 'Anunțuri piese', 'ITP & RCA', 'Vopsitorie', 'Electrice & Diagnoză', 'Anvelope', 'Tractări']
+const NAV_TABS = [
+  { label: 'Acasă', href: '/home' },
+  { label: 'Service-uri', href: '/search' },
+  { label: 'Anunțuri piese', href: '/listing' },
+  { label: 'ITP & RCA', href: '/itp-rca' },
+  { label: 'Vopsitorie', href: '/search?category=vopsitorie' },
+  { label: 'Electrice & Diagnoză', href: '/search?category=electrica' },
+  { label: 'Anvelope', href: '/search?category=anvelope' },
+  { label: 'Tractări', href: '/search?category=tractari' },
+]
 
 const URGENCY_LABELS: Record<string, string> = { 'u-green': 'Flexibil', 'u-amber': 'Săptămâna asta', 'u-red': 'Urgent' }
 
@@ -114,7 +123,9 @@ export default function HomeClient() {
           <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexShrink: 0 }}>
             {user ? (
               <>
-                <a href="/dashboard/service" style={{ padding: '8px 14px', borderRadius: 9, fontSize: 13, fontWeight: 500, background: '#4A90D9', color: '#fff', textDecoration: 'none', border: 'none', cursor: 'pointer' }}>Dashboard</a>
+                <a href="/account" style={{ padding: '8px 14px', borderRadius: 9, fontSize: 13, fontWeight: 500, background: 'rgba(255,255,255,0.1)', color: '#fff', textDecoration: 'none', cursor: 'pointer' }}>Contul meu</a>
+                <a href="/oferte" style={{ padding: '8px 14px', borderRadius: 9, fontSize: 13, fontWeight: 500, background: 'rgba(255,255,255,0.1)', color: '#fff', textDecoration: 'none', cursor: 'pointer' }}>Ofertele mele</a>
+                <a href="/dashboard/service" style={{ padding: '8px 14px', borderRadius: 9, fontSize: 13, fontWeight: 500, background: '#4A90D9', color: '#fff', textDecoration: 'none', cursor: 'pointer' }}>Dashboard</a>
                 <button onClick={async () => { await supabase.auth.signOut(); window.location.reload() }}
                   style={{ padding: '8px 14px', borderRadius: 9, fontSize: 13, fontWeight: 500, background: 'transparent', color: '#fff', border: '1px solid rgba(255,255,255,0.35)', cursor: 'pointer' }}>
                   Ieși
@@ -143,10 +154,10 @@ export default function HomeClient() {
         {/* Nav tabs */}
         <div style={{ display: 'flex', padding: '0 24px', maxWidth: 1280, margin: '0 auto', overflowX: 'auto' }}>
           {NAV_TABS.map(t => (
-            <button key={t} onClick={() => setActiveTab(t)}
-              style={{ padding: '9px 16px', fontSize: 13, color: activeTab === t ? '#fff' : 'rgba(255,255,255,0.65)', background: 'none', border: 'none', borderBottom: activeTab === t ? '2px solid #4A90D9' : '2px solid transparent', cursor: 'pointer', whiteSpace: 'nowrap', fontWeight: activeTab === t ? 600 : 400, fontFamily: 'inherit' }}>
-              {t}
-            </button>
+            <a key={t.label} href={t.href}
+              style={{ padding: '9px 16px', fontSize: 13, color: t.href === '/home' ? '#fff' : 'rgba(255,255,255,0.65)', background: 'none', border: 'none', borderBottom: t.href === '/home' ? '2px solid #4A90D9' : '2px solid transparent', cursor: 'pointer', whiteSpace: 'nowrap', fontWeight: t.href === '/home' ? 600 : 400, fontFamily: 'inherit', textDecoration: 'none', display: 'inline-block' }}>
+              {t.label}
+            </a>
           ))}
         </div>
       </div>
