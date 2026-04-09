@@ -48,7 +48,13 @@ export default function ServiceProfilePage({ params }: { params: { id: string } 
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Topbar */}
-
+      <div className="bg-[#1a2332] px-6 h-14 flex items-center gap-4 sticky top-0 z-50">
+        <a href="/home" className="flex items-center gap-2 text-white font-black text-lg no-underline flex-shrink-0">
+          <span className="w-7 h-7 bg-[#4A90D9] rounded-lg flex items-center justify-center font-black text-sm">R</span>
+          <span className="hidden sm:block">Reparo</span>
+        </a>
+        <a href="/search" className="text-white/50 hover:text-white text-sm no-underline">← Înapoi la căutare</a>
+      </div>
 
       {/* Cover */}
       <div className="bg-[#1a2332] h-48 relative">

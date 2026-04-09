@@ -52,20 +52,15 @@ function SearchContent() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Topbar */}
-      <div className="bg-[#1a2332] px-6 h-14 flex items-center gap-4 sticky top-0 z-50">
-        <a href="/home" className="flex items-center gap-2 text-white font-black text-lg no-underline flex-shrink-0">
-          <span className="w-7 h-7 bg-[#4A90D9] rounded-lg flex items-center justify-center font-black text-sm">R</span>
-          <span className="hidden sm:block">Reparo</span>
-        </a>
-        <form onSubmit={handleSearch} className="flex flex-1 max-w-2xl">
-          <input value={query} onChange={e => setQuery(e.target.value)} placeholder="Caută service, piesă, lucrare..."
-            className="flex-1 px-4 py-2 text-sm rounded-l-xl border-none outline-none"/>
-          <button type="submit" className="px-5 bg-[#4A90D9] text-white rounded-r-xl border-none cursor-pointer font-semibold text-sm">
-            Caută
-          </button>
-        </form>
-        <a href="/home" className="text-white/50 hover:text-white text-sm transition-colors hidden md:block no-underline">Acasă</a>
+      {/* Search subheader */}
+      <div className="bg-white border-b border-gray-100 px-4 py-3">
+        <div className="max-w-6xl mx-auto">
+          <form onSubmit={handleSearch} className="flex max-w-2xl">
+            <input value={query} onChange={e => setQuery(e.target.value)} placeholder="Caută service, lucrare, specialist auto..."
+              className="flex-1 px-4 py-2.5 text-sm rounded-l-xl border border-gray-200 outline-none focus:border-[#4A90D9] bg-gray-50"/>
+            <button type="submit" className="px-5 bg-[#4A90D9] text-white rounded-r-xl border-none cursor-pointer font-semibold text-sm">Caută</button>
+          </form>
+        </div>
       </div>
 
       <div className="max-w-6xl mx-auto px-4 py-6 flex gap-5">

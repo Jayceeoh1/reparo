@@ -128,22 +128,7 @@ export default function AccountPage() {
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Topbar */}
-      <div className="bg-[#1a2332] px-4 md:px-8 h-14 flex items-center justify-between sticky top-0 z-50">
-        <a href="/home" className="flex items-center gap-2 text-white font-black text-lg no-underline">
-          <span className="w-7 h-7 bg-[#4A90D9] rounded-lg flex items-center justify-center font-black text-sm">R</span>
-          <span className="hidden sm:block">Reparo</span>
-        </a>
-        <div className="flex items-center gap-3">
-          <div className="w-8 h-8 bg-[#4A90D9] rounded-full flex items-center justify-center text-white text-sm font-bold">
-            {profile?.full_name?.charAt(0)?.toUpperCase() || 'U'}
-          </div>
-          <span className="text-white/70 text-sm hidden md:block">{profile?.full_name}</span>
-          <button onClick={async () => { await supabase.auth.signOut(); window.location.href = '/home' }}
-            className="text-white/40 hover:text-white text-sm transition-colors border-none bg-transparent cursor-pointer">
-            Ieși
-          </button>
-        </div>
-      </div>
+
 
       <div className="max-w-6xl mx-auto px-4 py-6">
         {/* Header profil */}

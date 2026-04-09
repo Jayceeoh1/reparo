@@ -45,7 +45,7 @@ function ListingsContent() {
 
   async function loadListings() {
     setLoading(true)
-    let q = supabase.from('listings').select('*').eq('status', 'activ')
+    let q = supabase.from('listings').select('*, listing_media(url, is_cover)').eq('status', 'activ')
     if (activeCategory !== 'toate') q = q.eq('category', activeCategory)
     if (sortBy === 'pret_asc') q = q.order('price', { ascending: true })
     else if (sortBy === 'pret_desc') q = q.order('price', { ascending: false })
@@ -57,23 +57,48 @@ function ListingsContent() {
     setLoading(false)
   }
 
+  const [uploadedFiles, setUploadedFiles] = useState([])
+  const [uploadingFiles, setUploadingFiles] = useState(false)
+
+  async function handleFileUpload(files) {
+    if (!user || !files.length) return
+    setUploadingFiles(true)
+    const urls = []
+    for (const file of Array.from(files)) {
+      const ext = file.name.split('.').pop()
+      const path = `${user.id}/${Date.now()}.${ext}`
+      const { error } = await supabase.storage.from('listing-media').upload(path, file)
+      if (!error) {
+        const { data: { publicUrl } } = supabase.storage.from('listing-media').getPublicUrl(path)
+        urls.push(publicUrl)
+      }
+    }
+    setUploadedFiles(prev => [...prev, ...urls])
+    setUploadingFiles(false)
+  }
+
   async function addListing() {
     if (!user) { window.location.href = '/auth/login'; return }
     setSaving(true)
     const { data } = await supabase.from('listings').insert({
-      user_id: user.id,
-      title: listingForm.title,
-      description: listingForm.description,
+      user_id: user.id, title: listingForm.title, description: listingForm.description,
       price: listingForm.price ? parseFloat(listingForm.price) : null,
-      category: listingForm.category,
-      condition: listingForm.condition,
-      city: listingForm.city,
-      status: 'activ',
-      compatible_brands: listingForm.compatible_brands ? listingForm.compatible_brands.split(',').map(s => s.trim()) : null,
+      category: listingForm.category, condition: listingForm.condition, city: listingForm.city,
+      status: 'activ', compatible_brands: listingForm.compatible_brands ? listingForm.compatible_brands.split(',').map(s => s.trim()) : null,
     }).select().single()
+
+    // Salveaza pozele
+    if (data && uploadedFiles.length > 0) {
+      await supabase.from('listing_media').insert(
+        uploadedFiles.map((url, i) => ({ listing_id: data.id, url, is_cover: i === 0, sort_order: i }))
+      )
+      data.listing_media = uploadedFiles.map((url, i) => ({ url, is_cover: i === 0 }))
+    }
+
     if (data) setListings(prev => [data, ...prev])
     setShowAddListing(false)
     setSaving(false)
+    setUploadedFiles([])
     setListingForm({ title: '', description: '', price: '', category: 'piese', condition: 'folosit', compatible_brands: '', city: '', phone_contact: '' })
   }
 
@@ -81,20 +106,22 @@ function ListingsContent() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <div className="bg-[#1a2332] px-6 h-14 flex items-center gap-4 sticky top-0 z-50">
-        <a href="/home" className="flex items-center gap-2 text-white font-black text-lg no-underline flex-shrink-0">
-          <span className="w-7 h-7 bg-[#4A90D9] rounded-lg flex items-center justify-center font-black text-sm">R</span>
-          <span className="hidden sm:block">Reparo</span>
-        </a>
-        <form onSubmit={handleSearch} className="flex flex-1 max-w-xl">
-          <input value={query} onChange={e => setQuery(e.target.value)} placeholder="Caută piese, anvelope, accesorii..."
-            className="flex-1 px-4 py-2 text-sm rounded-l-xl border-none outline-none"/>
-          <button type="submit" className="px-5 bg-[#4A90D9] text-white rounded-r-xl border-none cursor-pointer font-semibold text-sm">Caută</button>
-        </form>
-        <button onClick={() => user ? setShowAddListing(true) : window.location.href = '/auth/login'}
-          className="px-4 py-2 bg-[#FF6B35] text-white font-bold rounded-xl text-sm border-none cursor-pointer flex-shrink-0">
-          + Adaugă anunț
-        </button>
+      {/* Subheader specific paginii - fara topbar duplicat */}
+      <div className="bg-white border-b border-gray-100 px-4 py-3">
+        <div className="max-w-6xl mx-auto flex items-center gap-3">
+          <form onSubmit={handleSearch} className="flex flex-1 max-w-xl">
+            <input value={query} onChange={e => setQuery(e.target.value)}
+              placeholder="Caută piese, anvelope, accesorii..."
+              className="flex-1 px-4 py-2.5 text-sm rounded-l-xl border border-gray-200 outline-none focus:border-[#4A90D9] bg-gray-50"/>
+            <button type="submit" className="px-5 bg-[#4A90D9] text-white rounded-r-xl border-none cursor-pointer font-semibold text-sm">
+              Caută
+            </button>
+          </form>
+          <button onClick={() => user ? setShowAddListing(true) : window.location.href = '/auth/login'}
+            className="px-5 py-2.5 bg-[#FF6B35] text-white font-bold rounded-xl text-sm border-none cursor-pointer flex-shrink-0 hover:bg-[#e55a26] transition-colors">
+            + Adaugă anunț
+          </button>
+        </div>
       </div>
 
       <div className="max-w-6xl mx-auto px-4 py-6">
@@ -142,8 +169,12 @@ function ListingsContent() {
               return (
                 <div key={l.id} onClick={() => setSelectedListing(l)}
                   className="bg-white rounded-2xl border border-gray-100 overflow-hidden cursor-pointer hover:border-[#4A90D9] transition-all">
-                  <div className="h-36 bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center text-4xl relative">
-                    {CATEGORIES.find(c => c.key === l.category)?.icon || '📦'}
+                  <div className="h-36 bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center text-4xl relative overflow-hidden">
+                    {l.listing_media?.[0]?.url ? (
+                      <img src={l.listing_media[0].url} alt={l.title} className="w-full h-full object-cover"/>
+                    ) : (
+                      CATEGORIES.find(c => c.key === l.category)?.icon || '📦'
+                    )}
                     {l.is_promoted && (
                       <span className="absolute top-2 left-2 bg-[#FF6B35] text-white text-xs font-bold px-2 py-0.5 rounded-lg">TOP</span>
                     )}
@@ -280,6 +311,29 @@ function ListingsContent() {
                 <textarea value={listingForm.description} onChange={e => setListingForm(p => ({ ...p, description: e.target.value }))}
                   rows={3} placeholder="Descrie piesa în detaliu..."
                   className="w-full px-4 py-3 rounded-xl border border-gray-200 text-sm focus:outline-none focus:border-[#4A90D9] bg-gray-50 resize-none"/>
+              </div>
+              <div>
+                <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1.5">Fotografii produs</label>
+                <div className="border-2 border-dashed border-gray-200 rounded-xl p-4 text-center cursor-pointer hover:border-[#4A90D9] transition-colors"
+                  onClick={() => document.getElementById('listing-photos').click()}>
+                  <div className="text-2xl mb-1">📷</div>
+                  <div className="text-sm text-gray-500">{uploadingFiles ? 'Se încarcă...' : 'Click pentru a adăuga poze'}</div>
+                  <div className="text-xs text-gray-400">JPG, PNG · max 5MB per poză</div>
+                  <input id="listing-photos" type="file" multiple accept="image/*" className="hidden"
+                    onChange={e => handleFileUpload(e.target.files)}/>
+                </div>
+                {uploadedFiles.length > 0 && (
+                  <div className="flex gap-2 flex-wrap mt-2">
+                    {uploadedFiles.map((url, i) => (
+                      <div key={i} className="relative">
+                        <img src={url} alt="" className="w-16 h-16 object-cover rounded-xl border border-gray-200"/>
+                        {i === 0 && <span className="absolute -top-1 -left-1 bg-[#4A90D9] text-white text-xs px-1 rounded">Cover</span>}
+                        <button onClick={() => setUploadedFiles(prev => prev.filter((_, j) => j !== i))}
+                          className="absolute -top-1 -right-1 w-4 h-4 bg-red-500 text-white rounded-full text-xs flex items-center justify-center border-none cursor-pointer">✕</button>
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
               <button onClick={addListing} disabled={saving || !listingForm.title}
                 className="w-full py-3 bg-[#FF6B35] text-white font-bold rounded-xl text-sm hover:bg-[#e55a26] transition-colors disabled:opacity-50">
