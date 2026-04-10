@@ -6,12 +6,12 @@ import { createClient } from '@/lib/supabase/client'
 type Service = { id: string; name: string; city: string | null; rating_avg: number; rating_count: number; description: string | null; is_verified: boolean; has_itp: boolean; is_authorized_rar: boolean }
 
 const CATEGORIES = [
-  { label: 'Schimb ulei', icon: '🛢️', color: '#E6F0FB', key: 'schimb_ulei' },
+  { label: 'Schimb ulei', icon: '🛢️', color: '#eaf3ff', key: 'schimb_ulei' },
   { label: 'Geometrie', icon: '⚙️', color: '#FEF3E2', key: 'geometrie' },
   { label: 'Frâne', icon: '🔴', color: '#FEEEEB', key: 'frane' },
   { label: 'Diagnoză', icon: '💻', color: '#EAF3DE', key: 'diagnoza' },
   { label: 'Vopsitorie', icon: '🎨', color: '#F5EEFB', key: 'vopsitorie' },
-  { label: 'ITP & RAR', icon: '🛡️', color: '#E6F0FB', key: 'itp' },
+  { label: 'ITP & RAR', icon: '🛡️', color: '#eaf3ff', key: 'itp' },
   { label: 'Climatizare', icon: '❄️', color: '#FEF3E2', key: 'climatizare' },
   { label: 'Suspensie', icon: '🔩', color: '#FEEEEB', key: 'suspensie' },
   { label: 'Motor', icon: '⚡', color: '#EAF3DE', key: 'motor' },
@@ -75,58 +75,44 @@ export default function HomeClient() {
 
   return (
     <>
-      <style>{`
-        @media (max-width: 640px) {
-          body { padding-bottom: 60px; }
-          .desktop-only { display: none !important; }
-          .cat-grid { grid-template-columns: repeat(4, 1fr) !important; gap: 8px !important; }
-          .cat-item { padding: 10px 4px 8px !important; }
-          .cat-icon { width: 36px !important; height: 36px !important; font-size: 18px !important; }
-          .cat-label { font-size: 10px !important; }
-          .filter-scroll { flex-wrap: nowrap !important; overflow-x: auto !important; padding-bottom: 4px; scrollbar-width: none; }
-          .filter-scroll::-webkit-scrollbar { display: none; }
-          .svc-grid { grid-template-columns: repeat(1, 1fr) !important; }
-          .listings-grid { grid-template-columns: repeat(2, 1fr) !important; gap: 10px !important; }
-          .listing-card-img { height: 110px !important; }
-          .features-grid { grid-template-columns: repeat(2, 1fr) !important; }
-          .service-card { flex-direction: column !important; }
-          .promo-row { flex-direction: column !important; gap: 12px !important; }
-          .footer-grid { grid-template-columns: 1fr 1fr !important; gap: 20px !important; }
-          .hero-stats { gap: 16px !important; flex-wrap: wrap; }
-          .hero-stat strong { font-size: 13px !important; }
-          .cta-section { padding: 20px !important; }
-          .cta-btns { flex-direction: column !important; }
-          .cta-btn { width: 100% !important; text-align: center; }
-        }
-        @media (max-width: 400px) {
-          .cat-grid { grid-template-columns: repeat(3, 1fr) !important; }
-        }
-      `}</style>
 
-      <div style={{ fontFamily: '-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif', background: '#f5f5f5', minHeight: '100vh', paddingBottom: 'env(safe-area-inset-bottom, 0px)' }}>
+      <div style={{fontFamily:"'DM Sans',sans-serif",background:'var(--bg)',minHeight:'100vh',paddingBottom:'env(safe-area-inset-bottom,0px)'}}>
 
-        {/* ══ HERO ══ */}
-        <div style={{ background: '#1a2332', padding: '28px 20px 24px' }}>
-          <div style={{ maxWidth: 1200, margin: '0 auto' }}>
-            <h1 style={{ fontSize: 'clamp(20px, 4vw, 30px)', fontWeight: 800, color: '#fff', marginBottom: 6, letterSpacing: -0.5, lineHeight: 1.2 }}>
-              Găsește cel mai bun service auto din zona ta
-            </h1>
-            <p style={{ fontSize: 'clamp(13px, 2vw, 15px)', color: 'rgba(255,255,255,0.55)', marginBottom: 20, lineHeight: 1.6 }}>
-              Cere oferte gratuite, compară prețuri și rezervă programarea online.
-            </p>
-            <button onClick={() => { setModalOpen(true); setModalStep(0); setSubmitDone(false) }}
-              style={{ display: 'inline-flex', alignItems: 'center', gap: 8, padding: '14px 28px', background: '#FF6B35', color: '#fff', border: 'none', borderRadius: 14, fontSize: 'clamp(15px, 3vw, 17px)', fontWeight: 800, cursor: 'pointer', fontFamily: 'inherit', width: '100%', maxWidth: 360, justifyContent: 'center' }}>
-              ⭐ Cere ofertă gratuită
-            </button>
-            <p style={{ marginTop: 10, fontSize: 12, color: 'rgba(255,255,255,0.4)' }}>
-              Gratuit · Fără cont · Răspuns în 24h
-            </p>
-            <div className="hero-stats" style={{ display: 'flex', gap: 24, marginTop: 18 }}>
-              {[['2.400+', 'Service-uri'], ['48.000+', 'Oferte trimise'], ['4.8/5', 'Rating mediu'], ['Gratuit', 'Cerere ofertă']].map(([v, l]) => (
-                <div key={l} style={{ color: 'rgba(255,255,255,0.55)', fontSize: 11 }}>
-                  <strong className="hero-stat" style={{ color: '#fff', fontSize: 14, fontWeight: 700, display: 'block', marginBottom: 1 }}>{v}</strong>{l}
-                </div>
-              ))}
+        {/* ══ HERO — SpecialBlue style ══ */}
+        <div style={{background:'linear-gradient(135deg,#eaf3ff 0%,#f8fbff 60%,#fff8ed 100%)',padding:'56px 24px 48px',borderBottom:'1px solid var(--border)'}}>
+          <div style={{maxWidth:1100,margin:'0 auto',display:'grid',gridTemplateColumns:'1fr auto',gap:40,alignItems:'center'}}>
+            <div>
+              <div className="fu1" style={{display:'inline-flex',alignItems:'center',gap:6,background:'rgba(26,86,219,0.08)',border:'1px solid rgba(26,86,219,0.15)',color:'var(--blue)',fontSize:11,fontWeight:700,letterSpacing:1.5,textTransform:'uppercase',padding:'5px 12px',borderRadius:50,marginBottom:20,fontFamily:"'Sora',sans-serif"}}>
+                ✦ Platformă servicii auto România
+              </div>
+              <h1 className="fu2" style={{fontFamily:"'Sora',sans-serif",fontWeight:800,fontSize:'clamp(28px,4vw,50px)',lineHeight:1.1,color:'var(--navy)',marginBottom:16,letterSpacing:-1}}>
+                Găsește cel mai bun<br/><span style={{color:'var(--blue-light)'}}>service auto</span> din zona ta
+              </h1>
+              <p className="fu3" style={{fontSize:'clamp(14px,2vw,16px)',color:'var(--muted)',lineHeight:1.7,maxWidth:480,marginBottom:28}}>
+                Cere oferte gratuite, compară prețuri și rezervă programarea online — totul într-un singur loc.
+              </p>
+              <div className="fu4" style={{display:'flex',gap:12,flexWrap:'wrap',alignItems:'center',marginBottom:32}}>
+                <button onClick={()=>{setModalOpen(true);setModalStep(0);setSubmitDone(false)}}
+                  style={{display:'inline-flex',alignItems:'center',gap:8,padding:'13px 28px',background:'var(--blue)',color:'#fff',border:'none',borderRadius:50,fontSize:15,fontWeight:700,cursor:'pointer',fontFamily:"'Sora',sans-serif",boxShadow:'0 8px 24px rgba(26,86,219,0.25)',transition:'background .2s,transform .15s'}}
+                  onMouseEnter={e=>{e.currentTarget.style.background='#1741b0';e.currentTarget.style.transform='translateY(-2px)'}}
+                  onMouseLeave={e=>{e.currentTarget.style.background='var(--blue)';e.currentTarget.style.transform='none'}}>
+                  ✦ Cere ofertă gratuită
+                </button>
+                <a href="/search" style={{display:'inline-flex',alignItems:'center',gap:6,padding:'13px 24px',color:'var(--navy)',border:'1.5px solid var(--border)',borderRadius:50,fontSize:14,fontWeight:600,textDecoration:'none',fontFamily:"'Sora',sans-serif",background:'#fff',transition:'border-color .2s'}}
+                  onMouseEnter={e=>e.currentTarget.style.borderColor='var(--blue)'}
+                  onMouseLeave={e=>e.currentTarget.style.borderColor='var(--border)'}>
+                  Caută service-uri →
+                </a>
+              </div>
+              {/* Stats card */}
+              <div className="stats-card" style={{display:'inline-flex',gap:32,background:'#fff',borderRadius:16,padding:'20px 28px',boxShadow:'0 4px 24px rgba(26,86,219,0.08)',border:'1px solid var(--border)'}}>
+                {[['2.400+','Service-uri partenere'],['48.000+','Oferte trimise'],['4.8 / 5','Rating mediu'],['Gratuit','Cerere ofertă']].map(([v,l])=>(
+                  <div key={l} className="hero-stats" style={{textAlign:'center'}}>
+                    <div style={{fontFamily:"'Sora',sans-serif",fontWeight:800,fontSize:22,color:'var(--blue-light)'}}>{v}</div>
+                    <div style={{fontSize:11,color:'var(--muted)',marginTop:3}}>{l}</div>
+                  </div>
+                ))}
+              </div>
             </div>
           </div>
         </div>
@@ -137,14 +123,14 @@ export default function HomeClient() {
           {/* Categorii */}
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
             <h2 style={{ fontSize: 16, fontWeight: 700, color: '#1a1a1a' }}>Categorii servicii</h2>
-            <a href="/search" style={{ fontSize: 13, color: '#4A90D9', textDecoration: 'none', fontWeight: 500 }}>Vezi toate →</a>
+            <a href="/search" style={{ fontSize: 13, color: 'var(--blue)', textDecoration: 'none', fontWeight: 500 }}>Vezi toate →</a>
           </div>
           <div className="cat-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(6, 1fr)', gap: 10, marginBottom: 20 }}>
             {CATEGORIES.map(c => (
               <button key={c.key} onClick={() => window.location.href = `/search?category=${c.key}`}
                 className="cat-item"
                 style={{ background: '#fff', borderRadius: 12, border: '0.5px solid #e8e8e8', padding: '12px 6px 10px', textAlign: 'center', cursor: 'pointer', fontFamily: 'inherit' }}
-                onMouseEnter={e => e.currentTarget.style.borderColor = '#4A90D9'}
+                onMouseEnter={e => e.currentTarget.style.borderColor = 'var(--blue)'}
                 onMouseLeave={e => e.currentTarget.style.borderColor = '#e8e8e8'}>
                 <div className="cat-icon" style={{ width: 40, height: 40, borderRadius: '50%', background: c.color, margin: '0 auto 7px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 20 }}>{c.icon}</div>
                 <div className="cat-label" style={{ fontSize: 11, color: '#444', fontWeight: 500, lineHeight: 1.3 }}>{c.label}</div>
@@ -157,7 +143,7 @@ export default function HomeClient() {
             <span style={{ fontSize: 13, color: '#666', fontWeight: 500, flexShrink: 0 }} className="desktop-only">Filtrează:</span>
             {FILTERS.map(f => (
               <button key={f} onClick={() => setActiveFilter(f)}
-                style={{ padding: '7px 12px', borderRadius: 20, fontSize: 12, border: activeFilter === f ? '0.5px solid #4A90D9' : '0.5px solid #ddd', color: activeFilter === f ? '#1a5fa8' : '#444', background: activeFilter === f ? '#E6F0FB' : '#fff', fontWeight: activeFilter === f ? 600 : 400, cursor: 'pointer', fontFamily: 'inherit', whiteSpace: 'nowrap', flexShrink: 0 }}>
+                style={{ padding: '7px 12px', borderRadius: 20, fontSize: 12, border: activeFilter === f ? '1.5px solid var(--blue)' : '1.5px solid var(--border)', color: activeFilter === f ? 'var(--blue)' : 'var(--muted)', background: activeFilter === f ? '#eaf3ff' : '#fff', fontWeight: activeFilter === f ? 700 : 500, fontFamily: "'DM Sans', sans-serif", cursor: 'pointer', fontFamily: 'inherit', whiteSpace: 'nowrap', flexShrink: 0 }}>
                 {f}
               </button>
             ))}
@@ -166,24 +152,24 @@ export default function HomeClient() {
           {/* Service-uri */}
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
             <h2 style={{ fontSize: 16, fontWeight: 700, color: '#1a1a1a' }}>Service-uri recomandate</h2>
-            <a href="/search" style={{ fontSize: 13, color: '#4A90D9', textDecoration: 'none', fontWeight: 500 }}>Vezi toate →</a>
+            <a href="/search" style={{ fontSize: 13, color: 'var(--blue)', textDecoration: 'none', fontWeight: 500 }}>Vezi toate →</a>
           </div>
 
           {services.length === 0 ? (
-            <div style={{ background: '#fff', borderRadius: 14, border: '0.5px solid #e8e8e8', padding: '32px 20px', textAlign: 'center', marginBottom: 20 }}>
+            <div style={{ background: '#fff', borderRadius: 16, border: '1px solid var(--border)', boxShadow: '0 4px 24px rgba(26,86,219,0.06)', padding: '32px 20px', textAlign: 'center', marginBottom: 20 }}>
               <div style={{ fontSize: 36, marginBottom: 8 }}>🔧</div>
               <div style={{ fontSize: 14, fontWeight: 600, color: '#666', marginBottom: 6 }}>Niciun service înregistrat momentan</div>
-              <a href="/auth/register" style={{ fontSize: 13, color: '#4A90D9', textDecoration: 'none', fontWeight: 600 }}>Înregistrează-ți service-ul gratuit →</a>
+              <a href="/auth/register" style={{ fontSize: 13, color: 'var(--blue)', textDecoration: 'none', fontWeight: 600 }}>Înregistrează-ți service-ul gratuit →</a>
             </div>
           ) : (
             <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginBottom: 20 }}>
               {services.map(s => (
                 <button key={s.id} onClick={() => window.location.href = `/service/${s.id}`}
                   className="service-card"
-                  style={{ background: '#fff', borderRadius: 14, border: '0.5px solid #e8e8e8', padding: 16, cursor: 'pointer', display: 'flex', gap: 12, alignItems: 'flex-start', textAlign: 'left', fontFamily: 'inherit', width: '100%' }}
-                  onMouseEnter={e => e.currentTarget.style.borderColor = '#4A90D9'}
+                  style={{ background: '#fff', borderRadius: 16, border: '1px solid var(--border)', boxShadow: '0 4px 24px rgba(26,86,219,0.06)', padding: 16, cursor: 'pointer', display: 'flex', gap: 12, alignItems: 'flex-start', textAlign: 'left', fontFamily: 'inherit', width: '100%' }}
+                  onMouseEnter={e => e.currentTarget.style.borderColor = 'var(--blue)'}
                   onMouseLeave={e => e.currentTarget.style.borderColor = '#e8e8e8'}>
-                  <div style={{ width: 48, height: 48, background: '#E6F0FB', borderRadius: 12, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 22, flexShrink: 0 }}>🔧</div>
+                  <div style={{ width: 48, height: 48, background: '#eaf3ff', borderRadius: 12, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 22, flexShrink: 0 }}>🔧</div>
                   <div style={{ flex: 1, minWidth: 0 }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 3, flexWrap: 'wrap' }}>
                       <span style={{ fontSize: 15, fontWeight: 700, color: '#1a1a1a' }}>{s.name}</span>
@@ -195,11 +181,11 @@ export default function HomeClient() {
                     </div>
                     <div style={{ fontSize: 12, color: '#666', lineHeight: 1.4, marginBottom: 6 }}>{s.description || 'Service auto profesional'}</div>
                     <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4 }}>
-                      {s.is_verified && <span style={{ background: '#E6F0FB', color: '#1a5fa8', fontSize: 10, padding: '2px 7px', borderRadius: 5, fontWeight: 600 }}>Verificat</span>}
-                      {s.has_itp && <span style={{ background: '#E6F0FB', color: '#1a5fa8', fontSize: 10, padding: '2px 7px', borderRadius: 5, fontWeight: 600 }}>ITP pe loc</span>}
-                      {s.is_authorized_rar && <span style={{ background: '#E6F0FB', color: '#1a5fa8', fontSize: 10, padding: '2px 7px', borderRadius: 5, fontWeight: 600 }}>Autorizat RAR</span>}
+                      {s.is_verified && <span style={{ background: '#eaf3ff', color: 'var(--blue)', fontSize: 10, padding: '2px 7px', borderRadius: 5, fontWeight: 600 }}>Verificat</span>}
+                      {s.has_itp && <span style={{ background: '#eaf3ff', color: 'var(--blue)', fontSize: 10, padding: '2px 7px', borderRadius: 5, fontWeight: 600 }}>ITP pe loc</span>}
+                      {s.is_authorized_rar && <span style={{ background: '#eaf3ff', color: 'var(--blue)', fontSize: 10, padding: '2px 7px', borderRadius: 5, fontWeight: 600 }}>Autorizat RAR</span>}
                     </div>
-                    <div style={{ fontSize: 11, color: '#4A90D9', fontWeight: 500, marginTop: 6 }}>📍 {s.city}</div>
+                    <div style={{ fontSize: 11, color: 'var(--blue)', fontWeight: 500, marginTop: 6 }}>📍 {s.city}</div>
                   </div>
                 </button>
               ))}
@@ -207,15 +193,15 @@ export default function HomeClient() {
           )}
 
           {/* Promo ITP/RCA */}
-          <div className="promo-row" style={{ background: '#fff', borderRadius: 14, border: '0.5px solid #e8e8e8', padding: '16px', marginBottom: 20, display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 14 }}>
+          <div className="promo-row" style={{ background: '#fff', borderRadius: 16, border: '1px solid var(--border)', boxShadow: '0 4px 24px rgba(26,86,219,0.06)', padding: '16px', marginBottom: 20, display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 14 }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-              <div style={{ width: 44, height: 44, background: '#E6F0FB', borderRadius: 12, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 20, flexShrink: 0 }}>🛡️</div>
+              <div style={{ width: 44, height: 44, background: '#eaf3ff', borderRadius: 12, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 20, flexShrink: 0 }}>🛡️</div>
               <div>
                 <div style={{ fontSize: 14, fontWeight: 700, color: '#1a1a1a', marginBottom: 3 }}>Ai RCA sau ITP care expiră curând?</div>
                 <div style={{ fontSize: 12, color: '#666' }}>Reparo îți trimite reminder și găsește oferte din zona ta.</div>
               </div>
             </div>
-            <a href="/itp-rca" style={{ padding: '10px 16px', background: '#4A90D9', color: '#fff', border: 'none', borderRadius: 10, fontSize: 13, fontWeight: 700, cursor: 'pointer', textDecoration: 'none', whiteSpace: 'nowrap', flexShrink: 0 }}>
+            <a href="/itp-rca" style={{ padding: '10px 16px', background: 'var(--blue)', color: '#fff', border: 'none', borderRadius: 10, fontSize: 13, fontWeight: 700, cursor: 'pointer', textDecoration: 'none', whiteSpace: 'nowrap', flexShrink: 0 }}>
               Verifică →
             </a>
           </div>
@@ -223,17 +209,17 @@ export default function HomeClient() {
           {/* Anunturi */}
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
             <h2 style={{ fontSize: 16, fontWeight: 700, color: '#1a1a1a' }}>Anunțuri — Piese & Accesorii</h2>
-            <a href="/listing" style={{ fontSize: 13, color: '#4A90D9', textDecoration: 'none', fontWeight: 500 }}>Vezi toate →</a>
+            <a href="/listing" style={{ fontSize: 13, color: 'var(--blue)', textDecoration: 'none', fontWeight: 500 }}>Vezi toate →</a>
           </div>
           {loadingListings ? (
             <div className="listings-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: 12, marginBottom: 20 }}>
               {[1,2,3,4].map(i => <div key={i} style={{ background: '#fff', borderRadius: 12, height: 180, border: '0.5px solid #e8e8e8', opacity: 0.4 }}/>)}
             </div>
           ) : listings.length === 0 ? (
-            <div style={{ background: '#fff', borderRadius: 14, border: '0.5px solid #e8e8e8', padding: '32px 20px', textAlign: 'center', marginBottom: 20 }}>
+            <div style={{ background: '#fff', borderRadius: 16, border: '1px solid var(--border)', boxShadow: '0 4px 24px rgba(26,86,219,0.06)', padding: '32px 20px', textAlign: 'center', marginBottom: 20 }}>
               <div style={{ fontSize: 36, marginBottom: 8 }}>📦</div>
               <div style={{ fontSize: 14, fontWeight: 600, color: '#666', marginBottom: 6 }}>Niciun anunț publicat încă</div>
-              <a href="/listing" style={{ fontSize: 13, color: '#4A90D9', textDecoration: 'none', fontWeight: 600 }}>Adaugă primul anunț →</a>
+              <a href="/listing" style={{ fontSize: 13, color: 'var(--blue)', textDecoration: 'none', fontWeight: 600 }}>Adaugă primul anunț →</a>
             </div>
           ) : (
             <div className="listings-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: 12, marginBottom: 20 }}>
@@ -243,13 +229,13 @@ export default function HomeClient() {
                 return (
                   <div key={l.id} onClick={() => window.location.href = '/listing'}
                     style={{ background: '#fff', borderRadius: 12, border: '0.5px solid #e8e8e8', overflow: 'hidden', cursor: 'pointer' }}
-                    onMouseEnter={e => e.currentTarget.style.borderColor = '#4A90D9'}
+                    onMouseEnter={e => e.currentTarget.style.borderColor = 'var(--blue)'}
                     onMouseLeave={e => e.currentTarget.style.borderColor = '#e8e8e8'}>
                     <div className="listing-card-img" style={{ height: 130, background: '#f0f0f0', position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' }}>
                       {coverImg ? (
                         <img src={coverImg} alt={l.title} style={{ width: '100%', height: '100%', objectFit: 'cover' }}/>
                       ) : <span style={{ fontSize: 32 }}>📦</span>}
-                      {l.is_promoted && <span style={{ position: 'absolute', top: 6, left: 6, background: '#FF6B35', color: '#fff', fontSize: 9, fontWeight: 700, padding: '2px 6px', borderRadius: 5 }}>TOP</span>}
+                      {l.is_promoted && <span style={{ position: 'absolute', top: 6, left: 6, background: 'var(--yellow)', color: '#fff', fontSize: 9, fontWeight: 700, padding: '2px 6px', borderRadius: 5 }}>TOP</span>}
                       {l.condition === 'nou' && <span style={{ position: 'absolute', top: 6, right: 6, background: '#639922', color: '#fff', fontSize: 9, fontWeight: 700, padding: '2px 6px', borderRadius: 5 }}>NOU</span>}
                       <button onClick={e => { e.stopPropagation(); toggleFav(l.id) }}
                         style={{ position: 'absolute', bottom: 6, right: 6, width: 26, height: 26, background: 'rgba(255,255,255,0.92)', borderRadius: '50%', border: 'none', cursor: 'pointer', fontSize: 12, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
@@ -290,21 +276,21 @@ export default function HomeClient() {
           </div>
 
           {/* CTA Service */}
-          <div className="cta-section" style={{ background: '#1a2332', borderRadius: 16, padding: '28px 24px', marginBottom: 24 }}>
+          <div className="cta-section" style={{ background: 'var(--navy)', borderRadius: 16, padding: '28px 24px', marginBottom: 24 }}>
             <h2 style={{ fontSize: 18, fontWeight: 800, color: '#fff', marginBottom: 6 }}>Ești proprietar de service auto?</h2>
             <p style={{ fontSize: 13, color: 'rgba(255,255,255,0.5)', lineHeight: 1.6, marginBottom: 16 }}>Primești cereri de ofertă direct de la clienți din zona ta.</p>
             <div className="cta-btns" style={{ display: 'flex', gap: 10 }}>
-              <a href="/auth/register" className="cta-btn" style={{ padding: '12px 20px', borderRadius: 10, fontSize: 13, fontWeight: 700, background: '#fff', color: '#1a2332', textDecoration: 'none', display: 'inline-block' }}>Înregistrează service-ul →</a>
+              <a href="/auth/register" className="cta-btn" style={{ padding: '12px 20px', borderRadius: 10, fontSize: 13, fontWeight: 700, background: '#fff', color: 'var(--navy)', textDecoration: 'none', display: 'inline-block' }}>Înregistrează service-ul →</a>
               <a href="/auth/register" className="cta-btn" style={{ padding: '12px 20px', borderRadius: 10, fontSize: 13, fontWeight: 700, background: 'transparent', color: '#fff', border: '1px solid rgba(255,255,255,0.35)', textDecoration: 'none', display: 'inline-block' }}>Află mai mult</a>
             </div>
           </div>
 
           {/* Footer */}
-          <footer style={{ background: '#1a2332', borderRadius: 16, padding: '28px 20px 20px', marginBottom: 0 }}>
+          <footer style={{ background: 'var(--navy)', borderRadius: 16, padding: '28px 20px 20px', marginBottom: 0 }}>
             <div className="footer-grid" style={{ display: 'grid', gridTemplateColumns: '2fr 1fr 1fr 1fr', gap: 28, marginBottom: 20 }}>
               <div>
                 <div style={{ fontSize: 16, fontWeight: 800, color: '#fff', marginBottom: 8, display: 'flex', alignItems: 'center', gap: 6 }}>
-                  <span style={{ width: 22, height: 22, background: '#4A90D9', borderRadius: 6, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', fontSize: 12, fontWeight: 900, color: '#fff' }}>R</span>
+                  <span style={{ width: 22, height: 22, background: 'var(--blue)', borderRadius: 6, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', fontSize: 12, fontWeight: 900, color: '#fff' }}>R</span>
                   Reparo
                 </div>
                 <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.4)', lineHeight: 1.6 }}>Platforma care conectează șoferii cu cele mai bune service-uri auto din România.</div>
@@ -336,7 +322,7 @@ export default function HomeClient() {
             <div style={{ background: '#fff', borderRadius: '20px 20px 0 0', width: '100%', maxWidth: 660, maxHeight: '92vh', overflowY: 'auto' }}>
 
               {/* Header modal */}
-              <div style={{ background: '#1a2332', padding: '18px 20px', borderRadius: '20px 20px 0 0', display: 'flex', alignItems: 'center', justifyContent: 'space-between', position: 'sticky', top: 0, zIndex: 10 }}>
+              <div style={{ background: 'var(--navy)', padding: '18px 20px', borderRadius: '20px 20px 0 0', display: 'flex', alignItems: 'center', justifyContent: 'space-between', position: 'sticky', top: 0, zIndex: 10 }}>
                 <div>
                   <div style={{ fontSize: 16, fontWeight: 700, color: '#fff' }}>Cerere de ofertă</div>
                   <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.5)', marginTop: 2 }}>Pasul {modalStep + 1} din 4 — {STEP_LABELS[modalStep]}</div>
@@ -347,7 +333,7 @@ export default function HomeClient() {
               {/* Progress bar */}
               {!submitDone && (
                 <div style={{ height: 3, background: '#e0e0e0' }}>
-                  <div style={{ height: '100%', background: '#4A90D9', width: `${((modalStep + 1) / 4) * 100}%`, transition: 'width 0.3s' }}/>
+                  <div style={{ height: '100%', background: 'var(--blue)', width: `${((modalStep + 1) / 4) * 100}%`, transition: 'width 0.3s' }}/>
                 </div>
               )}
 
@@ -357,7 +343,7 @@ export default function HomeClient() {
                     <div style={{ fontSize: 56, marginBottom: 16 }}>✅</div>
                     <div style={{ fontSize: 20, fontWeight: 700, color: '#1a1a1a', marginBottom: 8 }}>Cererea a fost trimisă!</div>
                     <p style={{ fontSize: 14, color: '#888', lineHeight: 1.6, marginBottom: 24 }}>Service-urile din zona ta vor reveni cu oferte în maxim 24 de ore.</p>
-                    <button onClick={() => setModalOpen(false)} style={{ padding: '12px 28px', borderRadius: 10, border: 'none', background: '#4A90D9', color: '#fff', fontSize: 14, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit', width: '100%' }}>Închide</button>
+                    <button onClick={() => setModalOpen(false)} style={{ padding: '12px 28px', borderRadius: 10, border: 'none', background: 'var(--blue)', color: '#fff', fontSize: 14, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit', width: '100%' }}>Închide</button>
                   </div>
                 ) : modalStep === 0 ? (
                   <div>
@@ -393,7 +379,7 @@ export default function HomeClient() {
                     <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginBottom: 20 }}>
                       {SVC_LIST.map(s => (
                         <button key={s} onClick={() => toggleSvc(s)}
-                          style={{ padding: '9px 14px', borderRadius: 20, fontSize: 13, border: form.services.includes(s) ? '0.5px solid #4A90D9' : '0.5px solid #ddd', color: form.services.includes(s) ? '#1a5fa8' : '#555', background: form.services.includes(s) ? '#E6F0FB' : '#fafafa', fontWeight: form.services.includes(s) ? 600 : 400, cursor: 'pointer', fontFamily: 'inherit' }}>
+                          style={{ padding: '9px 14px', borderRadius: 20, fontSize: 13, border: form.services.includes(s) ? '0.5px solid var(--blue)' : '0.5px solid #ddd', color: form.services.includes(s) ? 'var(--blue)' : '#555', background: form.services.includes(s) ? '#eaf3ff' : '#fafafa', fontWeight: form.services.includes(s) ? 600 : 400, cursor: 'pointer', fontFamily: 'inherit' }}>
                           {s}
                         </button>
                       ))}
@@ -439,7 +425,7 @@ export default function HomeClient() {
                       <div style={{ display: 'flex', flexWrap: 'wrap', gap: 7 }}>
                         {BRANDS_PIESE.map(b => (
                           <button key={b} onClick={() => setForm(p => ({ ...p, preferred_brand: b }))}
-                            style={{ padding: '8px 12px', borderRadius: 20, fontSize: 12, border: form.preferred_brand === b ? '0.5px solid #4A90D9' : '0.5px solid #ddd', color: form.preferred_brand === b ? '#1a5fa8' : '#555', background: form.preferred_brand === b ? '#E6F0FB' : '#fafafa', fontWeight: form.preferred_brand === b ? 600 : 400, cursor: 'pointer', fontFamily: 'inherit' }}>
+                            style={{ padding: '8px 12px', borderRadius: 20, fontSize: 12, border: form.preferred_brand === b ? '0.5px solid var(--blue)' : '0.5px solid #ddd', color: form.preferred_brand === b ? 'var(--blue)' : '#555', background: form.preferred_brand === b ? '#eaf3ff' : '#fafafa', fontWeight: form.preferred_brand === b ? 600 : 400, cursor: 'pointer', fontFamily: 'inherit' }}>
                             {b}
                           </button>
                         ))}
@@ -496,12 +482,12 @@ export default function HomeClient() {
                   )}
                   {modalStep < 3 ? (
                     <button onClick={() => setModalStep(s => s + 1)}
-                      style={{ flex: 1, padding: '13px', borderRadius: 12, border: 'none', background: '#4A90D9', color: '#fff', fontSize: 15, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }}>
+                      style={{ flex: 1, padding: '13px', borderRadius: 12, border: 'none', background: 'var(--blue)', color: '#fff', fontSize: 15, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }}>
                       Continuă →
                     </button>
                   ) : (
                     <button onClick={submitRequest} disabled={submitting}
-                      style={{ flex: 1, padding: '13px', borderRadius: 12, border: 'none', background: '#FF6B35', color: '#fff', fontSize: 15, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit', opacity: submitting ? 0.6 : 1 }}>
+                      style={{ flex: 1, padding: '13px', borderRadius: 12, border: 'none', background: 'var(--yellow)', color: '#fff', fontSize: 15, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit', opacity: submitting ? 0.6 : 1 }}>
                       {submitting ? 'Se trimite...' : 'Trimite cererea →'}
                     </button>
                   )}

@@ -10,12 +10,12 @@ const NAV_TABS = [
   { label: 'Anunțuri piese', href: '/listing' },
   { label: 'ITP & RCA', href: '/itp-rca' },
   { label: 'Vopsitorie', href: '/search?category=vopsitorie' },
-  { label: 'Electrice & Diagnoză', href: '/search?category=electrica' },
+  { label: 'Electrice', href: '/search?category=electrica' },
   { label: 'Anvelope', href: '/search?category=anvelope' },
   { label: 'Tractări', href: '/search?category=tractari' },
 ]
-
 const EXCLUDED = ['/auth/login', '/auth/register', '/dashboard/service']
+const CITIES = ['Toate orașele','Alba Iulia','Alexandria','Arad','Bacău','Baia Mare','Bistrița','Botoșani','Brăila','Brașov','București','Buzău','Cluj-Napoca','Constanța','Craiova','Deva','Focșani','Galați','Iași','Miercurea Ciuc','Oradea','Piatra Neamț','Pitești','Ploiești','Râmnicu Vâlcea','Satu Mare','Sibiu','Slatina','Slobozia','Suceava','Târgoviște','Târgu Jiu','Târgu Mureș','Timișoara','Tulcea','Zalău']
 
 export default function GlobalLayout({ children }) {
   const [user, setUser] = useState(null)
@@ -26,219 +26,206 @@ export default function GlobalLayout({ children }) {
   const [searchQuery, setSearchQuery] = useState('')
   const pathname = usePathname()
   const supabase = createClient()
-
   const isExcluded = EXCLUDED.some(p => pathname?.startsWith(p))
-
-  const CITIES = [
-    'Toate orașele', 'Alba Iulia', 'Alexandria', 'Arad', 'Bacău', 'Baia Mare',
-    'Bistrița', 'Botoșani', 'Brăila', 'Brașov', 'București', 'Buzău',
-    'Cluj-Napoca', 'Constanța', 'Craiova', 'Deva', 'Focșani', 'Galați',
-    'Iași', 'Miercurea Ciuc', 'Oradea', 'Piatra Neamț', 'Pitești', 'Ploiești',
-    'Râmnicu Vâlcea', 'Satu Mare', 'Sibiu', 'Slatina', 'Slobozia', 'Suceava',
-    'Târgoviște', 'Târgu Jiu', 'Târgu Mureș', 'Timișoara', 'Tulcea', 'Zalău',
-  ]
+  const isActive = (href) => pathname === href || (href !== '/home' && pathname?.startsWith(href.split('?')[0]))
 
   useEffect(() => {
     supabase.auth.getUser().then(({ data: { user } }) => {
       setUser(user)
-      if (user) {
-        supabase.from('profiles').select('role, full_name').eq('id', user.id).single()
-          .then(({ data }) => setProfile(data))
-      }
+      if (user) supabase.from('profiles').select('role,full_name').eq('id', user.id).single().then(({ data }) => setProfile(data))
     })
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_e, session) => {
-      setUser(session?.user ?? null)
-    })
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_e, s) => setUser(s?.user ?? null))
     return () => subscription.unsubscribe()
   }, [])
 
   useEffect(() => {
     if (!cityDropdown) return
-    function handleClick(e) {
-      const el = document.getElementById('city-dropdown-wrapper')
-      if (el && !el.contains(e.target)) setCityDropdown(false)
-    }
-    document.addEventListener('mousedown', handleClick)
-    return () => document.removeEventListener('mousedown', handleClick)
+    const h = (e) => { if (!document.getElementById('city-dd')?.contains(e.target)) setCityDropdown(false) }
+    document.addEventListener('mousedown', h)
+    return () => document.removeEventListener('mousedown', h)
   }, [cityDropdown])
 
   if (isExcluded) return <>{children}</>
 
   return (
     <>
-      <style>{`
-        * { box-sizing: border-box; }
-        .nav-scrollbar::-webkit-scrollbar { display: none; }
-        .nav-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
-        @media (max-width: 768px) {
-          .hide-mobile { display: none !important; }
-          .show-mobile { display: flex !important; }
-        }
-        @media (min-width: 769px) {
-          .hide-desktop { display: none !important; }
-        }
-      `}</style>
 
-      <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', fontFamily: '-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif' }}>
 
-        {/* ═══ TOPBAR ═══ */}
-        <div style={{ background: '#1a2332', position: 'sticky', top: 0, zIndex: 100 }}>
+      <div style={{minHeight:'100vh',display:'flex',flexDirection:'column'}}>
 
-          {/* Row 1: Logo + Search + Buttons */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '10px 16px', maxWidth: 1280, margin: '0 auto' }}>
-
+        {/* NAV */}
+        <nav style={{position:'sticky',top:0,zIndex:100,background:'rgba(255,255,255,0.92)',backdropFilter:'blur(12px)',borderBottom:'1px solid var(--border)'}}>
+          
+          {/* Main row */}
+          <div style={{display:'flex',alignItems:'center',gap:12,padding:'0 32px',height:68,maxWidth:1280,margin:'0 auto'}}>
+            
             {/* Logo */}
-            <a href="/home" style={{ display: 'flex', alignItems: 'center', gap: 7, textDecoration: 'none', flexShrink: 0 }}>
-              <div style={{ width: 30, height: 30, background: '#4A90D9', borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 900, fontSize: 15, color: '#fff' }}>R</div>
-              <span style={{ fontSize: 18, fontWeight: 800, color: '#fff', letterSpacing: -0.8 }} className="hide-mobile">Reparo</span>
+            <a href="/home" style={{textDecoration:'none',flexShrink:0,display:'flex',alignItems:'center',gap:8}}>
+              <div style={{width:36,height:36,background:'var(--blue)',borderRadius:10,display:'flex',alignItems:'center',justifyContent:'center',fontFamily:"'Sora',sans-serif",fontWeight:800,fontSize:17,color:'#fff',boxShadow:'0 2px 8px rgba(26,86,219,0.3)'}}>R</div>
+              <span style={{fontFamily:"'Sora',sans-serif",fontWeight:800,fontSize:21,color:'var(--navy)',letterSpacing:-0.5}} className="hide-mob">Reparo</span>
             </a>
 
-            {/* Search bar — hidden on mobile (shown below) */}
-            <div style={{ flex: 1, display: 'flex', maxWidth: 640 }} className="hide-mobile">
-              <div id="city-dropdown-wrapper" style={{ position: 'relative' }}>
-                <div onClick={() => setCityDropdown(o => !o)}
-                  style={{ padding: '0 10px', background: '#fff', fontSize: 12, color: '#444', display: 'flex', alignItems: 'center', gap: 4, borderRadius: '9px 0 0 9px', borderRight: '1px solid #e5e5e5', minWidth: 110, height: 40, cursor: 'pointer', userSelect: 'none', whiteSpace: 'nowrap' }}>
-                  📍 {city.length > 12 ? city.substring(0, 12) + '...' : city}
-                  <svg width="8" height="5" viewBox="0 0 8 5" fill="none" style={{ marginLeft: 'auto', transform: cityDropdown ? 'rotate(180deg)' : 'none', transition: 'transform .2s', flexShrink: 0 }}>
-                    <path d="M1 1L4 4L7 1" stroke="#aaa" strokeWidth="1.2" strokeLinecap="round"/>
-                  </svg>
-                </div>
-                {cityDropdown && (
-                  <div style={{ position: 'absolute', top: '100%', left: 0, background: '#fff', borderRadius: '0 0 12px 12px', boxShadow: '0 8px 24px rgba(0,0,0,0.15)', zIndex: 200, minWidth: 190, maxHeight: 260, overflowY: 'auto', border: '0.5px solid #e5e5e5' }}>
-                    {CITIES.map(c => (
-                      <div key={c} onClick={() => { setCity(c); setCityDropdown(false) }}
-                        style={{ padding: '9px 14px', fontSize: 13, color: c === city ? '#4A90D9' : '#333', cursor: 'pointer', fontWeight: c === city ? 600 : 400, background: c === city ? '#E6F0FB' : 'transparent', borderBottom: '0.5px solid #f5f5f5' }}
-                        onMouseEnter={e => { if (c !== city) e.currentTarget.style.background = '#f8f8f8' }}
-                        onMouseLeave={e => { if (c !== city) e.currentTarget.style.background = 'transparent' }}>
-                        {c === 'Toate orașele' ? '🇷🇴 Toate orașele' : `📍 ${c}`}
+            {/* Nav divider + tag — desktop */}
+            <div className="hide-mob" style={{display:'flex',alignItems:'center',gap:12}}>
+              <div style={{width:1,height:24,background:'var(--border)'}}/>
+              <span style={{fontFamily:"'Sora',sans-serif",fontSize:10,fontWeight:700,letterSpacing:2,textTransform:'uppercase',color:'var(--muted)'}}>SERVICII <span style={{color:'var(--blue)'}}>AUTO</span></span>
+            </div>
+
+            {/* Search — desktop */}
+            <div className="hide-mob" style={{flex:1,display:'flex',maxWidth:580,marginLeft:8}}>
+              <div id="city-dd" style={{position:'relative'}}>
+                <button onClick={()=>setCityDropdown(o=>!o)}
+                  style={{height:44,padding:'0 14px',background:'var(--bg)',border:'1.5px solid var(--border)',borderRight:'none',borderRadius:'50px 0 0 50px',fontSize:13,color:'var(--text)',cursor:'pointer',display:'flex',alignItems:'center',gap:6,whiteSpace:'nowrap',fontFamily:"'DM Sans',sans-serif",minWidth:128,fontWeight:500}}>
+                  📍 {city.length>12?city.slice(0,12)+'…':city}
+                  <svg width="10" height="6" viewBox="0 0 10 6" fill="none" style={{marginLeft:'auto',transform:cityDropdown?'rotate(180deg)':'none',transition:'transform .2s',flexShrink:0}}><path d="M1 1L5 5L9 1" stroke="#6b7280" strokeWidth="1.5" strokeLinecap="round"/></svg>
+                </button>
+                {cityDropdown&&(
+                  <div style={{position:'absolute',top:'110%',left:0,background:'#fff',borderRadius:16,boxShadow:'0 8px 32px rgba(10,31,68,0.12)',zIndex:200,minWidth:200,maxHeight:280,overflowY:'auto',border:'1px solid var(--border)'}}>
+                    {CITIES.map(c=>(
+                      <div key={c} onClick={()=>{setCity(c);setCityDropdown(false)}}
+                        style={{padding:'10px 16px',fontSize:13,color:c===city?'var(--blue)':'var(--text)',cursor:'pointer',fontWeight:c===city?600:400,background:c===city?'#eaf3ff':'transparent',borderBottom:'1px solid #f5f5f5'}}
+                        onMouseEnter={e=>{if(c!==city)e.currentTarget.style.background='#f8faff'}}
+                        onMouseLeave={e=>{if(c!==city)e.currentTarget.style.background='transparent'}}>
+                        {c==='Toate orașele'?'🇷🇴 '+c:'📍 '+c}
                       </div>
                     ))}
                   </div>
                 )}
               </div>
-              <input value={searchQuery} onChange={e => setSearchQuery(e.target.value)}
+              <input value={searchQuery} onChange={e=>setSearchQuery(e.target.value)}
                 placeholder="Caută service, piesă, lucrare auto..."
-                onKeyDown={e => { if (e.key === 'Enter' && searchQuery) window.location.href = `/search?q=${encodeURIComponent(searchQuery)}&city=${encodeURIComponent(city)}` }}
-                style={{ flex: 1, padding: '0 12px', border: 'none', fontSize: 13, color: '#1a1a1a', outline: 'none', background: '#fff', height: 40, minWidth: 0 }}/>
-              <button onClick={() => window.location.href = `/search?q=${encodeURIComponent(searchQuery)}&city=${encodeURIComponent(city)}`}
-                style={{ padding: '0 16px', background: '#4A90D9', border: 'none', borderRadius: '0 9px 9px 0', cursor: 'pointer', height: 40, display: 'flex', alignItems: 'center' }}>
-                <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="6.5" cy="6.5" r="5" stroke="#fff" strokeWidth="1.6"/><path d="M10.5 10.5L14 14" stroke="#fff" strokeWidth="1.6" strokeLinecap="round"/></svg>
+                onKeyDown={e=>{if(e.key==='Enter')window.location.href=`/search?q=${encodeURIComponent(searchQuery)}&city=${encodeURIComponent(city)}`}}
+                style={{flex:1,height:44,padding:'0 16px',border:'1.5px solid var(--border)',borderLeft:'none',borderRight:'none',fontSize:14,color:'var(--text)',outline:'none',background:'#fff',fontFamily:"'DM Sans',sans-serif"}}/>
+              <button onClick={()=>window.location.href=`/search?q=${encodeURIComponent(searchQuery)}&city=${encodeURIComponent(city)}`}
+                style={{height:44,padding:'0 20px',background:'var(--blue)',border:'none',borderRadius:'0 50px 50px 0',cursor:'pointer',display:'flex',alignItems:'center',transition:'background .2s,transform .15s'}}
+                onMouseEnter={e=>e.currentTarget.style.background='#1741b0'}
+                onMouseLeave={e=>e.currentTarget.style.background='var(--blue)'}>
+                <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="6.5" cy="6.5" r="5" stroke="#fff" strokeWidth="1.8"/><path d="M10.5 10.5L14 14" stroke="#fff" strokeWidth="1.8" strokeLinecap="round"/></svg>
               </button>
             </div>
 
-            {/* Desktop buttons */}
-            <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexShrink: 0, marginLeft: 'auto' }} className="hide-mobile">
-              {user ? (
+            {/* Desktop auth buttons */}
+            <div className="hide-mob" style={{display:'flex',alignItems:'center',gap:8,marginLeft:'auto',flexShrink:0}}>
+              {user?(
                 <>
-                  <a href="/account" style={{ padding: '7px 10px', borderRadius: 8, fontSize: 12, fontWeight: 500, background: 'rgba(255,255,255,0.1)', color: '#fff', textDecoration: 'none', whiteSpace: 'nowrap' }}>Contul meu</a>
-                  <a href="/oferte" style={{ padding: '7px 10px', borderRadius: 8, fontSize: 12, fontWeight: 500, background: 'rgba(255,255,255,0.1)', color: '#fff', textDecoration: 'none', whiteSpace: 'nowrap' }}>Ofertele mele</a>
-                  {profile?.role === 'service' && (
-                    <a href="/dashboard/service" style={{ padding: '7px 10px', borderRadius: 8, fontSize: 12, fontWeight: 500, background: '#4A90D9', color: '#fff', textDecoration: 'none', whiteSpace: 'nowrap' }}>Dashboard</a>
+                  <a href="/account" style={{padding:'8px 14px',borderRadius:50,fontSize:13,fontWeight:600,color:'var(--navy)',textDecoration:'none',fontFamily:"'Sora',sans-serif",transition:'color .15s'}}
+                    onMouseEnter={e=>e.currentTarget.style.color='var(--blue)'}
+                    onMouseLeave={e=>e.currentTarget.style.color='var(--navy)'}>Contul meu</a>
+                  <a href="/oferte" style={{padding:'8px 14px',borderRadius:50,fontSize:13,fontWeight:600,color:'var(--navy)',textDecoration:'none',fontFamily:"'Sora',sans-serif"}}
+                    onMouseEnter={e=>e.currentTarget.style.color='var(--blue)'}
+                    onMouseLeave={e=>e.currentTarget.style.color='var(--navy)'}>Oferte</a>
+                  {profile?.role==='service'&&(
+                    <a href="/dashboard/service" style={{padding:'8px 16px',borderRadius:50,fontSize:13,fontWeight:600,background:'var(--bg)',color:'var(--blue)',textDecoration:'none',border:'1.5px solid var(--blue)',fontFamily:"'Sora',sans-serif"}}>Dashboard</a>
                   )}
-                  <button onClick={async () => { await supabase.auth.signOut(); window.location.href = '/home' }}
-                    style={{ padding: '7px 10px', borderRadius: 8, fontSize: 12, background: 'transparent', color: '#fff', border: '1px solid rgba(255,255,255,0.3)', cursor: 'pointer', fontFamily: 'inherit', whiteSpace: 'nowrap' }}>
+                  <button onClick={async()=>{await supabase.auth.signOut();window.location.href='/home'}}
+                    style={{padding:'8px 14px',borderRadius:50,fontSize:13,fontWeight:500,background:'none',color:'var(--muted)',border:'1.5px solid var(--border)',cursor:'pointer',fontFamily:"'DM Sans',sans-serif"}}>
                     Ieși
                   </button>
                 </>
-              ) : (
+              ):(
                 <>
-                  <a href="/auth/register" style={{ padding: '7px 10px', borderRadius: 8, fontSize: 12, fontWeight: 500, background: 'transparent', color: '#fff', border: '1px solid rgba(255,255,255,0.35)', textDecoration: 'none', whiteSpace: 'nowrap' }}>Înreg. service</a>
-                  <a href="/auth/login" style={{ padding: '7px 10px', borderRadius: 8, fontSize: 12, fontWeight: 500, background: '#4A90D9', color: '#fff', textDecoration: 'none', whiteSpace: 'nowrap' }}>Intră în cont</a>
+                  <a href="/auth/login" style={{padding:'8px 16px',borderRadius:50,fontSize:13,fontWeight:600,color:'var(--blue)',textDecoration:'none',border:'1.5px solid var(--blue)',fontFamily:"'Sora',sans-serif"}}>Intră în cont</a>
+                  <a href="/auth/register" style={{padding:'8px 16px',borderRadius:50,fontSize:13,fontWeight:600,color:'var(--muted)',textDecoration:'none',border:'1.5px solid var(--border)',fontFamily:"'Sora',sans-serif"}}>Înreg. service</a>
                 </>
               )}
-              <a href="/home" onClick={e => { e.preventDefault(); window.location.href = '/home#cerere' }}
-                style={{ padding: '7px 12px', borderRadius: 8, fontSize: 12, fontWeight: 700, background: '#FF6B35', color: '#fff', textDecoration: 'none', whiteSpace: 'nowrap' }}>
-                + Cerere ofertă
+              <a href="/home" onClick={e=>{e.preventDefault();window.dispatchEvent(new CustomEvent('open-quote-modal'))}}
+                style={{display:'inline-flex',alignItems:'center',gap:6,padding:'10px 22px',borderRadius:50,fontSize:13,fontWeight:700,background:'var(--blue)',color:'#fff',textDecoration:'none',fontFamily:"'Sora',sans-serif",boxShadow:'0 4px 16px rgba(26,86,219,0.25)',transition:'background .2s,transform .15s'}}
+                onMouseEnter={e=>{e.currentTarget.style.background='#1741b0';e.currentTarget.style.transform='translateY(-1px)'}}
+                onMouseLeave={e=>{e.currentTarget.style.background='var(--blue)';e.currentTarget.style.transform='none'}}>
+                ✦ Cere ofertă
               </a>
             </div>
 
-            {/* Mobile: Cerere + Hamburger */}
-            <div style={{ display: 'none', alignItems: 'center', gap: 8, marginLeft: 'auto' }} className="show-mobile">
-              <a href="/home" style={{ padding: '7px 12px', borderRadius: 8, fontSize: 12, fontWeight: 700, background: '#FF6B35', color: '#fff', textDecoration: 'none', whiteSpace: 'nowrap' }}>
-                Cerere ofertă
+            {/* Mobile: oferta + hamburger */}
+            <div className="mob-only" style={{display:'none',alignItems:'center',gap:8,marginLeft:'auto'}}>
+              <a href="/home" onClick={e=>{e.preventDefault();window.dispatchEvent(new CustomEvent('open-quote-modal'))}}
+                style={{padding:'8px 14px',borderRadius:50,fontSize:12,fontWeight:700,background:'var(--blue)',color:'#fff',textDecoration:'none',fontFamily:"'Sora',sans-serif",whiteSpace:'nowrap',boxShadow:'0 2px 8px rgba(26,86,219,0.2)'}}>
+                ✦ Ofertă
               </a>
-              <button onClick={() => setDrawerOpen(o => !o)}
-                style={{ display: 'flex', flexDirection: 'column', gap: 4, cursor: 'pointer', padding: '4px', background: 'none', border: 'none' }}>
-                <span style={{ display: 'block', width: 20, height: 2, background: '#fff', borderRadius: 2, transition: 'all .3s', transform: drawerOpen ? 'rotate(45deg) translate(3px,3px)' : 'none' }}/>
-                <span style={{ display: 'block', width: 20, height: 2, background: '#fff', borderRadius: 2, opacity: drawerOpen ? 0 : 1 }}/>
-                <span style={{ display: 'block', width: 20, height: 2, background: '#fff', borderRadius: 2, transition: 'all .3s', transform: drawerOpen ? 'rotate(-45deg) translate(3px,-3px)' : 'none' }}/>
+              <button onClick={()=>setDrawerOpen(o=>!o)}
+                style={{display:'flex',flexDirection:'column',gap:5,cursor:'pointer',padding:6,background:'none',border:'none'}}>
+                {[0,1,2].map(i=>(
+                  <span key={i} style={{display:'block',width:22,height:2,background:'var(--navy)',borderRadius:2,transition:'all .3s',
+                    transform:drawerOpen?(i===0?'rotate(45deg) translate(5px,5px)':i===2?'rotate(-45deg) translate(5px,-5px)':'none'):'none',
+                    opacity:drawerOpen&&i===1?0:1}}/>
+                ))}
               </button>
             </div>
           </div>
 
           {/* Mobile search bar */}
-          <div className="show-mobile" style={{ padding: '0 12px 10px', display: 'none' }}>
-            <div style={{ display: 'flex', borderRadius: 9, overflow: 'hidden' }}>
-              <input value={searchQuery} onChange={e => setSearchQuery(e.target.value)}
+          <div className="mob-only" style={{display:'none',padding:'0 16px 12px'}}>
+            <div style={{display:'flex',borderRadius:50,overflow:'hidden',border:'1.5px solid var(--border)',background:'#fff'}}>
+              <input value={searchQuery} onChange={e=>setSearchQuery(e.target.value)}
                 placeholder="Caută service, piesă..."
-                onKeyDown={e => { if (e.key === 'Enter') window.location.href = `/search?q=${encodeURIComponent(searchQuery)}` }}
-                style={{ flex: 1, padding: '10px 12px', border: 'none', fontSize: 14, outline: 'none', fontFamily: 'inherit' }}/>
-              <button onClick={() => window.location.href = `/search?q=${encodeURIComponent(searchQuery)}`}
-                style={{ padding: '0 14px', background: '#4A90D9', border: 'none', cursor: 'pointer' }}>
-                <svg width="15" height="15" viewBox="0 0 15 15" fill="none"><circle cx="6" cy="6" r="4.5" stroke="#fff" strokeWidth="1.5"/><path d="M9.5 9.5L13 13" stroke="#fff" strokeWidth="1.5" strokeLinecap="round"/></svg>
+                onKeyDown={e=>{if(e.key==='Enter')window.location.href=`/search?q=${encodeURIComponent(searchQuery)}`}}
+                style={{flex:1,padding:'11px 16px',border:'none',fontSize:14,outline:'none',fontFamily:"'DM Sans',sans-serif",background:'transparent',color:'var(--text)'}}/>
+              <button onClick={()=>window.location.href=`/search?q=${encodeURIComponent(searchQuery)}`}
+                style={{padding:'0 18px',background:'var(--blue)',border:'none',cursor:'pointer'}}>
+                <svg width="15" height="15" viewBox="0 0 15 15" fill="none"><circle cx="6" cy="6" r="4.5" stroke="#fff" strokeWidth="1.6"/><path d="M9.5 9.5L13 13" stroke="#fff" strokeWidth="1.6" strokeLinecap="round"/></svg>
               </button>
             </div>
           </div>
 
-          {/* Nav tabs */}
-          <div className="nav-scrollbar" style={{ display: 'flex', padding: '0 16px', maxWidth: 1280, margin: '0 auto', overflowX: 'auto' }}>
-            {NAV_TABS.map(t => (
+          {/* Nav tabs — desktop */}
+          <div className="nav-scroll hide-mob" style={{display:'flex',padding:'0 32px',maxWidth:1280,margin:'0 auto',overflowX:'auto',borderTop:'1px solid var(--border)'}}>
+            {NAV_TABS.map(t=>(
               <a key={t.label} href={t.href}
-                style={{ padding: '8px 14px', fontSize: 13, color: pathname === t.href || pathname?.startsWith(t.href.split('?')[0]) && t.href !== '/home' ? '#fff' : 'rgba(255,255,255,0.6)', background: 'none', border: 'none', borderBottom: pathname === t.href ? '2px solid #4A90D9' : '2px solid transparent', cursor: 'pointer', whiteSpace: 'nowrap', fontWeight: pathname === t.href ? 600 : 400, fontFamily: 'inherit', textDecoration: 'none', display: 'inline-block', flexShrink: 0 }}>
+                style={{padding:'10px 16px',fontSize:13,fontWeight:isActive(t.href)?700:500,color:isActive(t.href)?'var(--blue)':'var(--muted)',textDecoration:'none',whiteSpace:'nowrap',borderBottom:isActive(t.href)?'2px solid var(--blue)':'2px solid transparent',fontFamily:"'Sora',sans-serif",display:'inline-block',transition:'color .15s'}}
+                onMouseEnter={e=>{if(!isActive(t.href))e.currentTarget.style.color='var(--navy)'}}
+                onMouseLeave={e=>{if(!isActive(t.href))e.currentTarget.style.color='var(--muted)'}}>
                 {t.label}
               </a>
             ))}
           </div>
 
           {/* Mobile drawer */}
-          {drawerOpen && (
-            <div style={{ background: '#1a2332', borderTop: '0.5px solid rgba(255,255,255,0.1)', paddingBottom: 8 }}>
-              {NAV_TABS.map(t => (
-                <a key={t.label} href={t.href} onClick={() => setDrawerOpen(false)}
-                  style={{ display: 'block', padding: '12px 20px', fontSize: 15, color: 'rgba(255,255,255,0.8)', textDecoration: 'none', borderLeft: pathname?.startsWith(t.href.split('?')[0]) ? '3px solid #4A90D9' : '3px solid transparent' }}>
+          {drawerOpen&&(
+            <div style={{background:'#fff',borderTop:'1px solid var(--border)',paddingBottom:8}}>
+              {NAV_TABS.map(t=>(
+                <a key={t.label} href={t.href} onClick={()=>setDrawerOpen(false)}
+                  style={{display:'block',padding:'13px 24px',fontSize:15,fontWeight:isActive(t.href)?700:600,color:isActive(t.href)?'var(--blue)':'var(--navy)',textDecoration:'none',fontFamily:"'Sora',sans-serif",borderLeft:isActive(t.href)?'3px solid var(--blue)':'3px solid transparent'}}>
                   {t.label}
                 </a>
               ))}
-              <div style={{ borderTop: '0.5px solid rgba(255,255,255,0.1)', margin: '8px 0 4px' }}/>
-              {user ? (
+              <div style={{borderTop:'1px solid var(--border)',margin:'8px 0'}}/>
+              {user?(
                 <>
-                  <a href="/account" onClick={() => setDrawerOpen(false)} style={{ display: 'block', padding: '12px 20px', fontSize: 15, color: '#4A90D9', textDecoration: 'none', fontWeight: 600 }}>Contul meu</a>
-                  <a href="/oferte" onClick={() => setDrawerOpen(false)} style={{ display: 'block', padding: '12px 20px', fontSize: 15, color: 'rgba(255,255,255,0.7)', textDecoration: 'none' }}>Ofertele mele</a>
-                  {profile?.role === 'service' && <a href="/dashboard/service" onClick={() => setDrawerOpen(false)} style={{ display: 'block', padding: '12px 20px', fontSize: 15, color: 'rgba(255,255,255,0.7)', textDecoration: 'none' }}>Dashboard service</a>}
-                  <button onClick={async () => { await supabase.auth.signOut(); window.location.href = '/home' }}
-                    style={{ display: 'block', width: '100%', textAlign: 'left', padding: '12px 20px', fontSize: 15, color: 'rgba(255,255,255,0.4)', background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'inherit' }}>
+                  <a href="/account" onClick={()=>setDrawerOpen(false)} style={{display:'block',padding:'13px 24px',fontSize:15,fontWeight:600,color:'var(--blue)',textDecoration:'none',fontFamily:"'Sora',sans-serif"}}>Contul meu</a>
+                  <a href="/oferte" onClick={()=>setDrawerOpen(false)} style={{display:'block',padding:'13px 24px',fontSize:15,fontWeight:500,color:'var(--navy)',textDecoration:'none',fontFamily:"'DM Sans',sans-serif"}}>Ofertele mele</a>
+                  {profile?.role==='service'&&<a href="/dashboard/service" onClick={()=>setDrawerOpen(false)} style={{display:'block',padding:'13px 24px',fontSize:15,fontWeight:500,color:'var(--navy)',textDecoration:'none'}}>Dashboard service</a>}
+                  <button onClick={async()=>{await supabase.auth.signOut();window.location.href='/home'}}
+                    style={{display:'block',width:'100%',textAlign:'left',padding:'13px 24px',fontSize:15,color:'var(--muted)',background:'none',border:'none',cursor:'pointer',fontFamily:"'DM Sans',sans-serif"}}>
                     Ieși din cont
                   </button>
                 </>
-              ) : (
+              ):(
                 <>
-                  <a href="/auth/register" onClick={() => setDrawerOpen(false)} style={{ display: 'block', padding: '12px 20px', fontSize: 15, color: '#4A90D9', textDecoration: 'none', fontWeight: 600 }}>Înregistrează service-ul</a>
-                  <a href="/auth/login" onClick={() => setDrawerOpen(false)} style={{ display: 'block', padding: '12px 20px', fontSize: 15, color: 'rgba(255,255,255,0.7)', textDecoration: 'none' }}>Intră în cont</a>
+                  <a href="/auth/register" onClick={()=>setDrawerOpen(false)} style={{display:'block',padding:'13px 24px',fontSize:15,fontWeight:600,color:'var(--blue)',textDecoration:'none',fontFamily:"'Sora',sans-serif"}}>Înregistrează service-ul</a>
+                  <a href="/auth/login" onClick={()=>setDrawerOpen(false)} style={{display:'block',padding:'13px 24px',fontSize:15,fontWeight:500,color:'var(--navy)',textDecoration:'none'}}>Intră în cont</a>
                 </>
               )}
             </div>
           )}
-        </div>
+        </nav>
 
-        {/* PAGE CONTENT */}
-        <div style={{ flex: 1 }}>
-          {children}
-        </div>
+        {/* CONTENT */}
+        <div style={{flex:1}}>{children}</div>
 
         {/* Mobile bottom nav */}
-        <div className="show-mobile" style={{ display: 'none', position: 'fixed', bottom: 0, left: 0, right: 0, background: '#fff', borderTop: '0.5px solid #e5e5e5', zIndex: 99, paddingBottom: 'env(safe-area-inset-bottom, 0px)' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-around' }}>
+        <div className="mob-bottom" style={{position:'fixed',bottom:0,left:0,right:0,background:'rgba(255,255,255,0.95)',backdropFilter:'blur(12px)',borderTop:'1px solid var(--border)',zIndex:99,paddingBottom:'env(safe-area-inset-bottom,0px)'}}>
+          <div style={{display:'flex',maxWidth:500,margin:'0 auto'}}>
             {[
-              { href: '/home', icon: '🏠', label: 'Acasă' },
-              { href: '/search', icon: '🔍', label: 'Caută' },
-              { href: '/listing', icon: '📦', label: 'Piese' },
-              { href: '/itp-rca', icon: '🛡️', label: 'ITP & RCA' },
-              { href: user ? '/account' : '/auth/login', icon: '👤', label: user ? 'Contul meu' : 'Cont' },
-            ].map(item => (
+              {href:'/home',icon:'🏠',label:'Acasă'},
+              {href:'/search',icon:'🔍',label:'Caută'},
+              {href:'/listing',icon:'📦',label:'Piese'},
+              {href:'/itp-rca',icon:'🛡️',label:'ITP & RCA'},
+              {href:user?'/account':'/auth/login',icon:'👤',label:user?'Contul meu':'Cont'},
+            ].map(item=>(
               <a key={item.href} href={item.href}
-                style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2, padding: '8px 6px', textDecoration: 'none', flex: 1, color: pathname === item.href ? '#4A90D9' : '#888' }}>
-                <span style={{ fontSize: 20 }}>{item.icon}</span>
-                <span style={{ fontSize: 10, fontWeight: 500 }}>{item.label}</span>
+                style={{flex:1,display:'flex',flexDirection:'column',alignItems:'center',gap:3,padding:'8px 4px',textDecoration:'none',color:pathname===item.href?'var(--blue)':'var(--muted)',fontFamily:"'DM Sans',sans-serif",transition:'color .15s'}}>
+                <span style={{fontSize:20}}>{item.icon}</span>
+                <span style={{fontSize:10,fontWeight:pathname===item.href?700:500}}>{item.label}</span>
               </a>
             ))}
           </div>

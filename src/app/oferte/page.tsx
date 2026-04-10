@@ -3,39 +3,27 @@
 import { useEffect, useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
 
-type Offer = {
-  id: string
-  request_id: string
-  price_total: number | null
-  price_parts: number | null
-  price_labor: number | null
-  description: string | null
-  warranty_months: number
-  available_date: string | null
-  available_time: string | null
-  status: string
-  created_at: string
-  services?: { id: string; name: string; city: string | null; rating_avg: number; rating_count: number; phone: string | null }
+const S = {
+  navy:'#0a1f44',blue:'#1a56db',blueLight:'#3b82f6',yellow:'#f59e0b',
+  bg:'#f0f6ff',white:'#fff',text:'#111827',muted:'#6b7280',border:'#e5e7eb',
+  green:'#16a34a',greenBg:'#dcfce7',red:'#dc2626',redBg:'#fee2e2',
+  amber:'#d97706',amberBg:'#fef3c7',
 }
 
-type QuoteRequest = {
-  id: string
-  car_brand: string | null
-  car_model: string | null
-  car_year: number | null
-  services: string[] | null
-  status: string
-  created_at: string
-  city: string | null
-}
+const pill = (bg, color) => ({display:'inline-flex',alignItems:'center',padding:'3px 10px',borderRadius:50,background:bg,color,fontSize:11,fontWeight:700,fontFamily:"'Sora',sans-serif"})
+const card = (extra={}) => ({background:S.white,borderRadius:16,border:`1px solid ${S.border}`,boxShadow:'0 2px 12px rgba(10,31,68,0.06)',padding:20,...extra})
+const btn = (variant='primary') => ({display:'inline-flex',alignItems:'center',gap:6,padding:'9px 18px',borderRadius:50,fontSize:13,fontWeight:600,cursor:'pointer',fontFamily:"'DM Sans',sans-serif",transition:'all .15s',
+  ...(variant==='primary'?{background:S.blue,color:'#fff',border:'none',boxShadow:'0 2px 8px rgba(26,86,219,0.2)'}:
+     variant==='yellow'?{background:S.yellow,color:'#fff',border:'none',boxShadow:'0 2px 8px rgba(245,158,11,0.2)'}:
+     {background:'transparent',color:S.muted,border:`1.5px solid ${S.border}`})
+})
 
 export default function OfertePage() {
-  const [requests, setRequests] = useState<QuoteRequest[]>([])
-  const [offers, setOffers] = useState<Record<string, Offer[]>>({})
-  const [selectedReq, setSelectedReq] = useState<string | null>(null)
+  const [requests, setRequests] = useState([])
+  const [offers, setOffers] = useState({})
+  const [selectedReq, setSelectedReq] = useState(null)
   const [loading, setLoading] = useState(true)
-  const [accepting, setAccepting] = useState<string | null>(null)
-  const [accepted, setAccepted] = useState<string | null>(null)
+  const [accepting, setAccepting] = useState(null)
   const supabase = createClient()
 
   useEffect(() => {
@@ -43,222 +31,192 @@ export default function OfertePage() {
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) { window.location.href = '/auth/login'; return }
 
-      const { data: reqs } = await supabase
-        .from('quote_requests').select('*').eq('user_id', user.id)
-        .order('created_at', { ascending: false })
-      setRequests(reqs || [])
+      const { data: reqs } = await supabase.from('quote_requests').select('*').eq('user_id', user.id).order('created_at', {ascending:false})
+      setRequests(reqs||[])
 
-      if (reqs && reqs.length > 0) {
+      if (reqs?.length) {
         setSelectedReq(reqs[0].id)
         for (const req of reqs) {
-          const { data: offs } = await supabase
-            .from('offers').select('*, services(id,name,city,rating_avg,rating_count,phone)')
-            .eq('request_id', req.id).order('price_total', { ascending: true })
-          if (offs) setOffers(prev => ({ ...prev, [req.id]: offs }))
+          const { data: offs } = await supabase.from('offers').select('*, services(id,name,city,rating_avg,rating_count,phone)').eq('request_id', req.id).order('price_total', {ascending:true})
+          if (offs) setOffers(prev=>({...prev,[req.id]:offs}))
         }
       }
       setLoading(false)
     }
     load()
 
-    // Realtime — oferta noua
     const channel = supabase.channel('new-offers')
-      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'offers' }, async payload => {
-        const offer = payload.new as Offer
-        const { data: svc } = await supabase.from('services').select('id,name,city,rating_avg,rating_count,phone').eq('id', offer.service_id).single()
-        setOffers(prev => ({ ...prev, [offer.request_id]: [{ ...offer, services: svc }, ...(prev[offer.request_id] || [])] }))
+      .on('postgres_changes',{event:'INSERT',schema:'public',table:'offers'},async payload=>{
+        const offer = payload.new
+        const {data:svc} = await supabase.from('services').select('id,name,city,rating_avg,rating_count,phone').eq('id',offer.service_id).single()
+        setOffers(prev=>({...prev,[offer.request_id]:[{...offer,services:svc},...(prev[offer.request_id]||[])]}))
       }).subscribe()
-    return () => { supabase.removeChannel(channel) }
+    return () => supabase.removeChannel(channel)
   }, [])
 
-  async function acceptOffer(offerId: string, requestId: string, serviceId: string) {
+  async function acceptOffer(offerId, requestId, serviceId) {
     setAccepting(offerId)
-    // Accepta oferta
-    await supabase.from('offers').update({ status: 'acceptata' }).eq('id', offerId)
-    // Refuza celelalte
-    await supabase.from('offers').update({ status: 'refuzata' }).eq('request_id', requestId).neq('id', offerId)
-    // Actualizeaza cererea
-    await supabase.from('quote_requests').update({ status: 'in_progres' }).eq('id', requestId)
-    // Creeaza programare
-    const offer = offers[requestId]?.find(o => o.id === offerId)
+    await supabase.from('offers').update({status:'acceptata'}).eq('id',offerId)
+    await supabase.from('offers').update({status:'refuzata'}).eq('request_id',requestId).neq('id',offerId)
+    await supabase.from('quote_requests').update({status:'in_progres'}).eq('id',requestId)
+    const offer = offers[requestId]?.find(o=>o.id===offerId)
     if (offer) {
-      await supabase.from('appointments').insert({
-        user_id: (await supabase.auth.getUser()).data.user?.id,
-        service_id: serviceId,
-        offer_id: offerId,
-        scheduled_date: offer.available_date || new Date().toISOString().split('T')[0],
-        scheduled_time: offer.available_time || '09:00-12:00',
-        status: 'confirmata',
-      })
+      const {data:{user}} = await supabase.auth.getUser()
+      await supabase.from('appointments').insert({user_id:user.id,service_id:serviceId,offer_id:offerId,scheduled_date:offer.available_date||new Date().toISOString().split('T')[0],scheduled_time:offer.available_time||'09:00-12:00',status:'confirmata'})
     }
-    setAccepted(offerId)
-    setRequests(prev => prev.map(r => r.id === requestId ? { ...r, status: 'in_progres' } : r))
-    setOffers(prev => ({ ...prev, [requestId]: (prev[requestId] || []).map(o => ({ ...o, status: o.id === offerId ? 'acceptata' : 'refuzata' })) }))
+    setRequests(prev=>prev.map(r=>r.id===requestId?{...r,status:'in_progres'}:r))
+    setOffers(prev=>({...prev,[requestId]:(prev[requestId]||[]).map(o=>({...o,status:o.id===offerId?'acceptata':'refuzata'}))}))
     setAccepting(null)
   }
 
   if (loading) return (
-    <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-      <div className="w-8 h-8 border-2 border-[#4A90D9] border-t-transparent rounded-full animate-spin"/>
+    <div style={{minHeight:'60vh',display:'flex',alignItems:'center',justifyContent:'center'}}>
+      <div style={{width:36,height:36,border:`3px solid ${S.blue}`,borderTopColor:'transparent',borderRadius:'50%',animation:'spin 1s linear infinite'}}/>
+      <style>{`@keyframes spin{to{transform:rotate(360deg)}}`}</style>
     </div>
   )
 
-  const currentOffers = selectedReq ? (offers[selectedReq] || []) : []
-  const currentReq = requests.find(r => r.id === selectedReq)
+  const currentOffers = selectedReq?(offers[selectedReq]||[]):[]
+  const currentReq = requests.find(r=>r.id===selectedReq)
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Topbar */}
-      <div className="bg-[#1a2332] px-6 py-0 h-14 flex items-center justify-between sticky top-0 z-50">
-        <a href="/home" className="flex items-center gap-2 text-white font-black text-lg tracking-tight no-underline">
-          <span className="w-7 h-7 bg-[#4A90D9] rounded-lg flex items-center justify-center font-black text-sm">R</span>
-          Reparo
-        </a>
-        <div className="flex gap-3">
-          <a href="/account" className="text-white/60 hover:text-white text-sm transition-colors">Contul meu</a>
-          <a href="/home" className="text-white/60 hover:text-white text-sm transition-colors">Acasă</a>
-        </div>
-      </div>
+    <div style={{minHeight:'100vh',background:S.bg,fontFamily:"'DM Sans',sans-serif"}}>
+      <style>{`.req-card:hover{border-color:${S.blue}!important}`}</style>
 
-      <div className="max-w-6xl mx-auto px-4 py-6">
-        <h1 className="text-xl font-bold text-gray-900 mb-6">Ofertele mele</h1>
+      <div style={{maxWidth:1100,margin:'0 auto',padding:'24px 16px'}}>
+        <h1 style={{fontFamily:"'Sora',sans-serif",fontWeight:800,fontSize:22,color:S.navy,marginBottom:6}}>Ofertele mele</h1>
+        <p style={{color:S.muted,fontSize:13,marginBottom:24}}>Gestionează cererile trimise și ofertele primite de la service-uri.</p>
 
-        {requests.length === 0 ? (
-          <div className="bg-white rounded-2xl border border-gray-100 p-16 text-center">
-            <div className="text-5xl mb-4">📭</div>
-            <div className="text-gray-600 font-semibold text-lg mb-2">Nu ai nicio cerere de ofertă</div>
-            <p className="text-gray-400 text-sm mb-6">Trimite o cerere și vei primi oferte de la service-urile din zona ta în 24h.</p>
-            <a href="/home" className="inline-block px-6 py-3 bg-[#FF6B35] text-white font-bold rounded-xl text-sm hover:bg-[#e55a26] transition-colors no-underline">
-              Cere ofertă acum →
-            </a>
+        {requests.length===0?(
+          <div style={{...card(),textAlign:'center',padding:'80px 20px'}}>
+            <div style={{fontSize:64,marginBottom:16}}>📭</div>
+            <div style={{fontFamily:"'Sora',sans-serif",fontWeight:800,fontSize:20,color:S.navy,marginBottom:8}}>Nu ai nicio cerere de ofertă</div>
+            <p style={{fontSize:14,color:S.muted,marginBottom:24,maxWidth:360,margin:'0 auto 24px'}}>Trimite o cerere și vei primi oferte de la service-urile din zona ta în 24h.</p>
+            <a href="/home" style={{...btn('yellow'),textDecoration:'none',display:'inline-flex'}}>✦ Cere ofertă acum →</a>
           </div>
-        ) : (
-          <div className="flex gap-5">
+        ):(
+          <div style={{display:'flex',gap:20}}>
+
             {/* Cereri sidebar */}
-            <div className="w-72 flex-shrink-0 space-y-2">
-              <div className="text-xs font-bold text-gray-400 uppercase tracking-wide mb-3">Cererile tale</div>
-              {requests.map(r => (
-                <button key={r.id} onClick={() => setSelectedReq(r.id)}
-                  className={`w-full text-left p-4 rounded-2xl border transition-all ${selectedReq === r.id ? 'border-[#4A90D9] bg-[#E6F0FB]' : 'border-gray-100 bg-white hover:border-gray-300'}`}>
-                  <div className="font-bold text-sm text-gray-900 mb-1">{r.car_brand} {r.car_model} {r.car_year ? `(${r.car_year})` : ''}</div>
-                  <div className="text-xs text-gray-500 mb-2">{r.services?.slice(0,2).join(', ')}{(r.services?.length || 0) > 2 ? '...' : ''}</div>
-                  <div className="flex items-center justify-between">
-                    <span className={`text-xs px-2 py-0.5 rounded-full font-semibold ${
-                      r.status === 'activa' ? 'bg-blue-100 text-blue-700' :
-                      r.status === 'in_progres' ? 'bg-green-100 text-green-700' :
-                      'bg-gray-100 text-gray-500'
-                    }`}>{r.status === 'activa' ? 'Activă' : r.status === 'in_progres' ? 'În progres' : r.status}</span>
-                    <span className="text-xs text-gray-400">{(offers[r.id] || []).length} oferte</span>
+            <div style={{width:280,flexShrink:0}}>
+              <div style={{fontSize:11,fontWeight:700,color:S.muted,textTransform:'uppercase',letterSpacing:1,marginBottom:10,fontFamily:"'Sora',sans-serif"}}>Cererile tale</div>
+              {requests.map(r=>(
+                <button key={r.id} onClick={()=>setSelectedReq(r.id)} className="req-card"
+                  style={{...card({padding:14,marginBottom:8}),width:'100%',textAlign:'left',cursor:'pointer',border:`1.5px solid ${selectedReq===r.id?S.blue:S.border}`,background:selectedReq===r.id?'#eaf3ff':S.white}}>
+                  <div style={{fontFamily:"'Sora',sans-serif",fontWeight:700,fontSize:13,color:S.navy,marginBottom:3}}>
+                    {r.car_brand} {r.car_model} {r.car_year?`(${r.car_year})`:''}
+                  </div>
+                  <div style={{fontSize:11,color:S.muted,marginBottom:8}}>{r.services?.slice(0,2).join(', ')}{(r.services?.length||0)>2?'...':''}</div>
+                  <div style={{display:'flex',alignItems:'center',justifyContent:'space-between'}}>
+                    <span style={pill(r.status==='activa'?'#eaf3ff':r.status==='in_progres'?S.greenBg:S.bg,r.status==='activa'?S.blue:r.status==='in_progres'?S.green:S.muted)}>
+                      {r.status==='activa'?'Activă':r.status==='in_progres'?'În progres':r.status}
+                    </span>
+                    <span style={{fontSize:11,color:S.muted}}>{(offers[r.id]||[]).length} oferte</span>
                   </div>
                 </button>
               ))}
             </div>
 
             {/* Oferte */}
-            <div className="flex-1 min-w-0">
-              {currentReq && (
-                <div className="bg-white rounded-2xl border border-gray-100 p-4 mb-4 flex items-center justify-between">
+            <div style={{flex:1,minWidth:0}}>
+              {currentReq&&(
+                <div style={{...card({marginBottom:14,padding:'14px 18px'}),display:'flex',alignItems:'center',justifyContent:'space-between'}}>
                   <div>
-                    <span className="text-xs text-gray-400">Cerere pentru</span>
-                    <div className="font-bold text-gray-900">{currentReq.car_brand} {currentReq.car_model} · {currentReq.services?.join(', ')}</div>
+                    <div style={{fontSize:11,color:S.muted,marginBottom:2}}>Cerere pentru</div>
+                    <div style={{fontFamily:"'Sora',sans-serif",fontWeight:700,fontSize:14,color:S.navy}}>{currentReq.car_brand} {currentReq.car_model} · {currentReq.services?.join(', ')}</div>
                   </div>
-                  <div className="text-sm text-gray-500">{currentReq.city}</div>
+                  <span style={{fontSize:13,color:S.muted}}>{currentReq.city}</span>
                 </div>
               )}
 
-              {currentOffers.length === 0 ? (
-                <div className="bg-white rounded-2xl border border-gray-100 p-16 text-center">
-                  <div className="text-4xl mb-3">⏳</div>
-                  <div className="text-gray-600 font-semibold mb-2">Așteptăm oferte</div>
-                  <p className="text-gray-400 text-sm">Service-urile din zona ta vor trimite oferte în curând.</p>
+              {currentOffers.length===0?(
+                <div style={{...card(),textAlign:'center',padding:'60px 20px'}}>
+                  <div style={{fontSize:48,marginBottom:12}}>⏳</div>
+                  <div style={{fontFamily:"'Sora',sans-serif",fontWeight:700,fontSize:16,color:S.navy,marginBottom:6}}>Așteptăm oferte</div>
+                  <p style={{fontSize:13,color:S.muted}}>Service-urile din zona ta vor trimite oferte în curând.</p>
                 </div>
-              ) : (
-                <div className="space-y-4">
-                  {currentOffers.map(o => (
-                    <div key={o.id} className={`bg-white rounded-2xl border p-5 transition-all ${o.status === 'acceptata' ? 'border-green-300 shadow-sm' : o.status === 'refuzata' ? 'border-gray-100 opacity-60' : 'border-gray-100'}`}>
-                      {/* Service info */}
-                      <div className="flex items-start justify-between mb-4">
-                        <div className="flex items-center gap-3">
-                          <div className="w-11 h-11 bg-[#E6F0FB] rounded-xl flex items-center justify-center text-xl">🔧</div>
-                          <div>
-                            <div className="font-bold text-gray-900">{(o.services as any)?.name || 'Service auto'}</div>
-                            <div className="text-xs text-gray-400">
-                              {'⭐'.repeat(Math.round((o.services as any)?.rating_avg || 0))} ({(o.services as any)?.rating_count || 0} recenzii) · {(o.services as any)?.city}
+              ):(
+                <div style={{display:'flex',flexDirection:'column',gap:14}}>
+                  {currentOffers.map(o=>{
+                    const svc = o.services
+                    const isAccepted = o.status==='acceptata'
+                    const isRefused = o.status==='refuzata'
+                    return (
+                      <div key={o.id} style={{...card(),border:`1.5px solid ${isAccepted?S.green:isRefused?S.border:S.border}`,opacity:isRefused?.65:1}}>
+
+                        {/* Service info */}
+                        <div style={{display:'flex',alignItems:'flex-start',justifyContent:'space-between',marginBottom:16}}>
+                          <div style={{display:'flex',alignItems:'center',gap:12}}>
+                            <div style={{width:44,height:44,background:'#eaf3ff',borderRadius:12,display:'flex',alignItems:'center',justifyContent:'center',fontSize:22,flexShrink:0}}>🔧</div>
+                            <div>
+                              <div style={{fontFamily:"'Sora',sans-serif",fontWeight:700,fontSize:14,color:S.navy,marginBottom:2}}>{svc?.name||'Service auto'}</div>
+                              <div style={{fontSize:12,color:S.muted}}>
+                                {'⭐'.repeat(Math.round(svc?.rating_avg||0))} ({svc?.rating_count||0} recenzii) · {svc?.city}
+                              </div>
                             </div>
                           </div>
+                          <span style={pill(isAccepted?S.greenBg:isRefused?S.bg:o.status==='trimisa'?'#eaf3ff':S.bg,isAccepted?S.green:isRefused?S.muted:S.blue)}>
+                            {isAccepted?'✅ Acceptată':isRefused?'Refuzată':'🆕 Nouă'}
+                          </span>
                         </div>
-                        <span className={`text-xs px-3 py-1 rounded-full font-bold ${
-                          o.status === 'acceptata' ? 'bg-green-100 text-green-700' :
-                          o.status === 'refuzata' ? 'bg-gray-100 text-gray-400' :
-                          'bg-blue-100 text-blue-700'
-                        }`}>
-                          {o.status === 'acceptata' ? '✅ Acceptată' : o.status === 'refuzata' ? 'Refuzată' : '🆕 Nouă'}
-                        </span>
-                      </div>
 
-                      {/* Preturi */}
-                      <div className="grid grid-cols-3 gap-3 mb-4">
-                        {[
-                          { label: 'Total', value: o.price_total, highlight: true },
-                          { label: 'Piese', value: o.price_parts, highlight: false },
-                          { label: 'Manoperă', value: o.price_labor, highlight: false },
-                        ].map(p => (
-                          <div key={p.label} className={`rounded-xl p-3 text-center ${p.highlight ? 'bg-[#1a2332]' : 'bg-gray-50'}`}>
-                            <div className={`text-xs mb-1 ${p.highlight ? 'text-white/50' : 'text-gray-400'}`}>{p.label}</div>
-                            <div className={`font-black text-lg ${p.highlight ? 'text-white' : 'text-gray-800'}`}>
-                              {p.value ? `${p.value.toLocaleString()} RON` : '—'}
+                        {/* Preturi */}
+                        <div style={{display:'grid',gridTemplateColumns:'repeat(3,1fr)',gap:10,marginBottom:14}}>
+                          {[['Total',o.price_total,true],['Piese',o.price_parts,false],['Manoperă',o.price_labor,false]].map(([l,v,highlight])=>(
+                            <div key={l} style={{borderRadius:12,padding:'12px 14px',textAlign:'center',background:highlight?S.navy:S.bg}}>
+                              <div style={{fontSize:11,color:highlight?'rgba(255,255,255,0.5)':S.muted,marginBottom:4}}>{l}</div>
+                              <div style={{fontFamily:"'Sora',sans-serif",fontWeight:800,fontSize:18,color:highlight?'#fff':S.navy}}>
+                                {v?`${v.toLocaleString()} RON`:'—'}
+                              </div>
                             </div>
-                          </div>
-                        ))}
-                      </div>
-
-                      {/* Detalii */}
-                      <div className="grid grid-cols-2 gap-3 mb-4 text-sm">
-                        {o.available_date && (
-                          <div className="bg-gray-50 rounded-xl p-3">
-                            <div className="text-xs text-gray-400 mb-1">Data disponibilă</div>
-                            <div className="font-semibold text-gray-800">📅 {new Date(o.available_date).toLocaleDateString('ro-RO', { day: 'numeric', month: 'long' })} · {o.available_time}</div>
-                          </div>
-                        )}
-                        {o.warranty_months > 0 && (
-                          <div className="bg-gray-50 rounded-xl p-3">
-                            <div className="text-xs text-gray-400 mb-1">Garanție lucrare</div>
-                            <div className="font-semibold text-gray-800">🛡️ {o.warranty_months} luni</div>
-                          </div>
-                        )}
-                      </div>
-
-                      {o.description && (
-                        <div className="bg-amber-50 border border-amber-100 rounded-xl p-3 mb-4">
-                          <div className="text-xs font-bold text-amber-700 mb-1">Detalii ofertă</div>
-                          <p className="text-sm text-amber-800">{o.description}</p>
+                          ))}
                         </div>
-                      )}
 
-                      {/* Butoane actiune */}
-                      {o.status === 'trimisa' && (
-                        <div className="flex gap-3">
-                          <button onClick={() => acceptOffer(o.id, o.request_id, (o.services as any)?.id)}
-                            disabled={accepting === o.id}
-                            className="flex-1 py-3 bg-[#FF6B35] text-white font-bold rounded-xl text-sm hover:bg-[#e55a26] transition-colors disabled:opacity-50">
-                            {accepting === o.id ? 'Se procesează...' : '✅ Acceptă oferta & Programează'}
-                          </button>
-                          {(o.services as any)?.phone && (
-                            <a href={`tel:${(o.services as any).phone}`}
-                              className="px-4 py-3 border border-gray-200 rounded-xl text-sm font-semibold text-gray-600 hover:border-gray-400 transition-colors no-underline flex items-center gap-2">
-                              📞 Sună
-                            </a>
+                        {/* Detalii */}
+                        <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:10,marginBottom:o.description?14:0}}>
+                          {o.available_date&&(
+                            <div style={{background:S.bg,borderRadius:10,padding:'10px 12px'}}>
+                              <div style={{fontSize:10,color:S.muted,marginBottom:2}}>Data disponibilă</div>
+                              <div style={{fontWeight:600,fontSize:13,color:S.navy}}>📅 {new Date(o.available_date).toLocaleDateString('ro-RO',{day:'numeric',month:'long'})} · {o.available_time}</div>
+                            </div>
+                          )}
+                          {o.warranty_months>0&&(
+                            <div style={{background:S.bg,borderRadius:10,padding:'10px 12px'}}>
+                              <div style={{fontSize:10,color:S.muted,marginBottom:2}}>Garanție lucrare</div>
+                              <div style={{fontWeight:600,fontSize:13,color:S.navy}}>🛡️ {o.warranty_months} luni</div>
+                            </div>
                           )}
                         </div>
-                      )}
-                      {o.status === 'acceptata' && (
-                        <div className="bg-green-50 border border-green-200 rounded-xl p-3 text-center">
-                          <div className="text-green-700 font-bold text-sm">✅ Ai acceptat această ofertă!</div>
-                          <div className="text-green-600 text-xs mt-1">Programarea a fost confirmată. Service-ul te va contacta în curând.</div>
-                        </div>
-                      )}
-                    </div>
-                  ))}
+
+                        {o.description&&(
+                          <div style={{background:S.amberBg,border:`1px solid ${S.amber}30`,borderRadius:10,padding:'10px 14px',marginTop:12,marginBottom:14}}>
+                            <div style={{fontSize:10,fontWeight:700,color:S.amber,marginBottom:4}}>DETALII OFERTĂ</div>
+                            <p style={{fontSize:13,color:S.amber,lineHeight:1.6}}>{o.description}</p>
+                          </div>
+                        )}
+
+                        {/* Actiuni */}
+                        {o.status==='trimisa'&&(
+                          <div style={{display:'flex',gap:10,marginTop:14}}>
+                            <button onClick={()=>acceptOffer(o.id,o.request_id,svc?.id)} disabled={accepting===o.id}
+                              style={{...btn('yellow'),flex:1,justifyContent:'center',padding:'12px',fontSize:14,opacity:accepting===o.id?.6:1}}>
+                              {accepting===o.id?'Se procesează...':'✅ Acceptă oferta & Programează'}
+                            </button>
+                            {svc?.phone&&(
+                              <a href={`tel:${svc.phone}`} style={{...btn('outline'),textDecoration:'none',flexShrink:0}}>📞 Sună</a>
+                            )}
+                          </div>
+                        )}
+
+                        {isAccepted&&(
+                          <div style={{background:S.greenBg,border:`1px solid ${S.green}30`,borderRadius:10,padding:'12px 16px',marginTop:14,textAlign:'center'}}>
+                            <div style={{fontFamily:"'Sora',sans-serif",fontWeight:700,color:S.green,fontSize:14}}>✅ Ai acceptat această ofertă!</div>
+                            <div style={{fontSize:12,color:S.green,opacity:.8,marginTop:3}}>Programarea a fost confirmată. Service-ul te va contacta în curând.</div>
+                          </div>
+                        )}
+                      </div>
+                    )
+                  })}
                 </div>
               )}
             </div>
