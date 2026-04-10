@@ -70,6 +70,7 @@ export default function LoginPage() {
             <div style={{marginBottom:20}}>
               <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:6}}>
                 <label style={{fontSize:11,fontWeight:700,color:S.muted,textTransform:'uppercase',letterSpacing:1,fontFamily:"'Sora',sans-serif"}}>Parolă</label>
+                <a href="/auth/forgot-password" style={{fontSize:12,color:S.blue,textDecoration:'none',fontWeight:600}}>Ai uitat parola?</a>
               </div>
               <input className="auth-inp" type="password" required value={password} onChange={e=>setPassword(e.target.value)} placeholder="••••••••" style={inp}/>
             </div>
