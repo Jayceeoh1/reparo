@@ -21,6 +21,20 @@ const BRANDS = ['BMW','Mercedes-Benz','Audi','Volkswagen','Toyota','Dacia','Rena
 const FUELS = ['Benzină','Diesel','Hybrid','Electric','GPL']
 const DOC_TYPES = [{key:'itp',label:'ITP',icon:'🛡️',color:S.blue,bg:'#eaf3ff'},{key:'rca',label:'RCA',icon:'📄',color:S.green,bg:S.greenBg},{key:'rovinieta',label:'Rovinietă',icon:'🛣️',color:S.amber,bg:S.amberBg},{key:'casco',label:'CASCO',icon:'🔒',color:S.purple,bg:S.purpleBg}]
 
+function Modal({title, onClose, children}) {
+  return (
+    <div onClick={e=>{if(e.target===e.currentTarget)onClose()}} style={{position:'fixed',inset:0,background:'rgba(10,31,68,0.5)',zIndex:1000,display:'flex',alignItems:'center',justifyContent:'center',padding:16}}>
+      <div style={{background:'#fff',borderRadius:20,width:'100%',maxWidth:520,padding:24,maxHeight:'90vh',overflowY:'auto'}}>
+        <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:20}}>
+          <h3 style={{fontFamily:"'Sora',sans-serif",fontWeight:800,fontSize:16,color:'#0a1f44'}}>{title}</h3>
+          <button onClick={onClose} style={{background:'none',border:'none',cursor:'pointer',color:'#6b7280',fontSize:20}}>✕</button>
+        </div>
+        {children}
+      </div>
+    </div>
+  )
+}
+
 export default function AccountPage() {
   const [tab, setTab] = useState('Mașinile mele')
   const [user, setUser] = useState(null)
@@ -117,17 +131,7 @@ export default function AccountPage() {
     </div>
   )
 
-  const Modal = ({title, onClose, children}) => (
-    <div onClick={e=>{if(e.target===e.currentTarget)onClose()}} style={{position:'fixed',inset:0,background:'rgba(10,31,68,0.5)',zIndex:1000,display:'flex',alignItems:'center',justifyContent:'center',padding:16}}>
-      <div style={{background:S.white,borderRadius:20,width:'100%',maxWidth:520,padding:24,maxHeight:'90vh',overflowY:'auto'}}>
-        <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:20}}>
-          <h3 style={{fontFamily:"'Sora',sans-serif",fontWeight:800,fontSize:16,color:S.navy}}>{title}</h3>
-          <button onClick={onClose} style={{background:'none',border:'none',cursor:'pointer',color:S.muted,fontSize:20}}>✕</button>
-        </div>
-        {children}
-      </div>
-    </div>
-  )
+
 
   return (
     <div style={{minHeight:'100vh',background:S.bg,fontFamily:"'DM Sans',sans-serif"}}>
