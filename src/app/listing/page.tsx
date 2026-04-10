@@ -4,192 +4,214 @@ import { useEffect, useState, Suspense } from 'react'
 import { useSearchParams } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 
+const S = {
+  navy:'#0a1f44',blue:'#1a56db',blueLight:'#3b82f6',yellow:'#f59e0b',
+  bg:'#f0f6ff',white:'#fff',text:'#111827',muted:'#6b7280',border:'#e5e7eb',
+  green:'#16a34a',greenBg:'#dcfce7',red:'#dc2626',redBg:'#fee2e2',
+  amber:'#d97706',amberBg:'#fef3c7',purple:'#7c3aed',purpleBg:'#ede9fe',
+}
+
+const card = (extra={}) => ({background:S.white,borderRadius:16,border:`1px solid ${S.border}`,boxShadow:'0 2px 12px rgba(10,31,68,0.06)',padding:20,...extra})
+const pill = (bg,color) => ({display:'inline-flex',alignItems:'center',padding:'3px 10px',borderRadius:50,background:bg,color,fontSize:11,fontWeight:700,fontFamily:"'Sora',sans-serif"})
+const inp = {width:'100%',padding:'10px 14px',border:`1.5px solid ${S.border}`,borderRadius:10,fontSize:13,color:S.text,outline:'none',fontFamily:"'DM Sans',sans-serif",background:S.white}
+const btnPrimary = {display:'inline-flex',alignItems:'center',gap:6,padding:'10px 20px',borderRadius:50,fontSize:13,fontWeight:600,cursor:'pointer',border:'none',fontFamily:"'DM Sans',sans-serif",background:S.blue,color:'#fff',boxShadow:'0 2px 8px rgba(26,86,219,0.2)',transition:'all .15s'}
+
 const CATEGORIES = [
-  { key: 'piese', label: 'Piese auto', icon: '🔧' },
-  { key: 'anvelope', label: 'Anvelope & jante', icon: '⭕' },
-  { key: 'accesorii', label: 'Accesorii', icon: '🎯' },
-  { key: 'electronice', label: 'Electronice auto', icon: '💡' },
-  { key: 'caroserie', label: 'Caroserie', icon: '🚘' },
-  { key: 'motoare', label: 'Motoare & transmisii', icon: '⚙️' },
-  { key: 'unelte', label: 'Unelte & echipamente', icon: '🛠️' },
-  { key: 'altele', label: 'Altele', icon: '📦' },
+  {key:'toate',label:'Toate',icon:'📦'},
+  {key:'piese',label:'Piese auto',icon:'🔧'},
+  {key:'anvelope',label:'Anvelope & jante',icon:'⭕'},
+  {key:'accesorii',label:'Accesorii',icon:'🎯'},
+  {key:'electronice',label:'Electronice',icon:'💡'},
+  {key:'caroserie',label:'Caroserie',icon:'🚘'},
+  {key:'motoare',label:'Motoare',icon:'⚙️'},
+  {key:'unelte',label:'Unelte',icon:'🛠️'},
+  {key:'altele',label:'Altele',icon:'📦'},
 ]
 
 const CONDITIONS = [
-  { key: 'nou', label: 'Nou', color: '#EAF3DE', text: '#3B6D11' },
-  { key: 'folosit', label: 'Folosit', color: '#E6F0FB', text: '#1a5fa8' },
-  { key: 'reconditionat', label: 'Recondiționat', color: '#FEF3E2', text: '#854F0B' },
+  {key:'nou',label:'Nou',bg:S.greenBg,color:S.green},
+  {key:'folosit',label:'Folosit',bg:'#eaf3ff',color:S.blue},
+  {key:'reconditionat',label:'Recondiționat',bg:S.amberBg,color:S.amber},
 ]
 
 function ListingsContent() {
   const searchParams = useSearchParams()
   const [listings, setListings] = useState([])
   const [loading, setLoading] = useState(true)
-  const [showAddListing, setShowAddListing] = useState(false)
-  const [activeCategory, setActiveCategory] = useState(searchParams.get('cat') || 'toate')
+  const [showAdd, setShowAdd] = useState(false)
+  const [activeCategory, setActiveCategory] = useState('toate')
   const [sortBy, setSortBy] = useState('recent')
   const [query, setQuery] = useState('')
-  const [selectedListing, setSelectedListing] = useState(null)
+  const [selected, setSelected] = useState(null)
   const [user, setUser] = useState(null)
   const [saving, setSaving] = useState(false)
-  const [listingForm, setListingForm] = useState({
-    title: '', description: '', price: '', category: 'piese', condition: 'folosit',
-    compatible_brands: '', city: '', phone_contact: ''
-  })
+  const [uploadedFiles, setUploadedFiles] = useState([])
+  const [uploadingFiles, setUploadingFiles] = useState(false)
+  const [favorites, setFavorites] = useState(new Set())
+  const [form, setForm] = useState({title:'',description:'',price:'',category:'piese',condition:'folosit',compatible_brands:'',city:'',phone_contact:''})
   const supabase = createClient()
 
   useEffect(() => {
-    supabase.auth.getUser().then(({ data: { user } }) => setUser(user))
+    supabase.auth.getUser().then(({data:{user}})=>setUser(user))
     loadListings()
   }, [activeCategory, sortBy])
 
   async function loadListings() {
     setLoading(true)
-    let q = supabase.from('listings').select('*, listing_media(url, is_cover)').eq('status', 'activ')
-    if (activeCategory !== 'toate') q = q.eq('category', activeCategory)
-    if (sortBy === 'pret_asc') q = q.order('price', { ascending: true })
-    else if (sortBy === 'pret_desc') q = q.order('price', { ascending: false })
-    else q = q.order('created_at', { ascending: false })
-    const { data } = await q.limit(40)
-    let results = data || []
-    if (query) results = results.filter(l => l.title.toLowerCase().includes(query.toLowerCase()))
+    let q = supabase.from('listings').select('*, listing_media(url, is_cover)').eq('status','activ')
+    if (activeCategory!=='toate') q = q.eq('category', activeCategory)
+    if (sortBy==='pret_asc') q = q.order('price',{ascending:true})
+    else if (sortBy==='pret_desc') q = q.order('price',{ascending:false})
+    else q = q.order('created_at',{ascending:false})
+    const {data} = await q.limit(40)
+    let results = data||[]
+    if (query) results = results.filter(l=>l.title.toLowerCase().includes(query.toLowerCase()))
     setListings(results)
     setLoading(false)
   }
 
-  const [uploadedFiles, setUploadedFiles] = useState([])
-  const [uploadingFiles, setUploadingFiles] = useState(false)
-
   async function handleFileUpload(files) {
-    if (!user || !files.length) return
+    if (!user||!files.length) return
     setUploadingFiles(true)
     const urls = []
     for (const file of Array.from(files)) {
       const ext = file.name.split('.').pop()
       const path = `${user.id}/${Date.now()}.${ext}`
-      const { error } = await supabase.storage.from('listing-media').upload(path, file)
+      const {error} = await supabase.storage.from('listing-media').upload(path, file)
       if (!error) {
-        const { data: { publicUrl } } = supabase.storage.from('listing-media').getPublicUrl(path)
+        const {data:{publicUrl}} = supabase.storage.from('listing-media').getPublicUrl(path)
         urls.push(publicUrl)
       }
     }
-    setUploadedFiles(prev => [...prev, ...urls])
+    setUploadedFiles(prev=>[...prev,...urls])
     setUploadingFiles(false)
   }
 
   async function addListing() {
-    if (!user) { window.location.href = '/auth/login'; return }
+    if (!user) { window.location.href='/auth/login'; return }
     setSaving(true)
-    const { data } = await supabase.from('listings').insert({
-      user_id: user.id, title: listingForm.title, description: listingForm.description,
-      price: listingForm.price ? parseFloat(listingForm.price) : null,
-      category: listingForm.category, condition: listingForm.condition, city: listingForm.city,
-      status: 'activ', compatible_brands: listingForm.compatible_brands ? listingForm.compatible_brands.split(',').map(s => s.trim()) : null,
+    const {data} = await supabase.from('listings').insert({
+      user_id:user.id,title:form.title,description:form.description,
+      price:form.price?parseFloat(form.price):null,category:form.category,
+      condition:form.condition,city:form.city,status:'activ',
+      compatible_brands:form.compatible_brands?form.compatible_brands.split(',').map(s=>s.trim()):null,
     }).select().single()
-
-    // Salveaza pozele
-    if (data && uploadedFiles.length > 0) {
-      await supabase.from('listing_media').insert(
-        uploadedFiles.map((url, i) => ({ listing_id: data.id, url, is_cover: i === 0, sort_order: i }))
-      )
-      data.listing_media = uploadedFiles.map((url, i) => ({ url, is_cover: i === 0 }))
+    if (data&&uploadedFiles.length>0) {
+      await supabase.from('listing_media').insert(uploadedFiles.map((url,i)=>({listing_id:data.id,url,is_cover:i===0,sort_order:i})))
+      data.listing_media = uploadedFiles.map((url,i)=>({url,is_cover:i===0}))
     }
-
-    if (data) setListings(prev => [data, ...prev])
-    setShowAddListing(false)
-    setSaving(false)
-    setUploadedFiles([])
-    setListingForm({ title: '', description: '', price: '', category: 'piese', condition: 'folosit', compatible_brands: '', city: '', phone_contact: '' })
+    if (data) setListings(prev=>[data,...prev])
+    setShowAdd(false); setSaving(false); setUploadedFiles([])
+    setForm({title:'',description:'',price:'',category:'piese',condition:'folosit',compatible_brands:'',city:'',phone_contact:''})
   }
 
   function handleSearch(e) { e.preventDefault(); loadListings() }
+  function toggleFav(id) { setFavorites(prev=>{const n=new Set(prev);n.has(id)?n.delete(id):n.add(id);return n}) }
+
+  const Modal = ({title,onClose,children}) => (
+    <div onClick={e=>{if(e.target===e.currentTarget)onClose()}} style={{position:'fixed',inset:0,background:'rgba(10,31,68,0.5)',zIndex:1000,display:'flex',alignItems:'center',justifyContent:'center',padding:16}}>
+      <div style={{background:S.white,borderRadius:20,width:'100%',maxWidth:540,padding:24,maxHeight:'90vh',overflowY:'auto'}}>
+        <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:20}}>
+          <h3 style={{fontFamily:"'Sora',sans-serif",fontWeight:800,fontSize:16,color:S.navy}}>{title}</h3>
+          <button onClick={onClose} style={{background:'none',border:'none',cursor:'pointer',color:S.muted,fontSize:20}}>✕</button>
+        </div>
+        {children}
+      </div>
+    </div>
+  )
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Subheader specific paginii - fara topbar duplicat */}
-      <div className="bg-white border-b border-gray-100 px-4 py-3">
-        <div className="max-w-6xl mx-auto flex items-center gap-3">
-          <form onSubmit={handleSearch} className="flex flex-1 max-w-xl">
-            <input value={query} onChange={e => setQuery(e.target.value)}
-              placeholder="Caută piese, anvelope, accesorii..."
-              className="flex-1 px-4 py-2.5 text-sm rounded-l-xl border border-gray-200 outline-none focus:border-[#4A90D9] bg-gray-50"/>
-            <button type="submit" className="px-5 bg-[#4A90D9] text-white rounded-r-xl border-none cursor-pointer font-semibold text-sm">
-              Caută
+    <div style={{minHeight:'100vh',background:S.bg,fontFamily:"'DM Sans',sans-serif"}}>
+      <style>{`.listing-card:hover{border-color:${S.blue}!important;box-shadow:0 4px 20px rgba(26,86,219,0.1)!important}.cat-btn:hover{border-color:${S.blue}!important;color:${S.blue}!important}`}</style>
+
+      {/* Subheader */}
+      <div style={{background:S.white,borderBottom:`1px solid ${S.border}`,padding:'12px 24px'}}>
+        <div style={{maxWidth:1100,margin:'0 auto',display:'flex',alignItems:'center',gap:10}}>
+          <form onSubmit={handleSearch} style={{display:'flex',flex:1,maxWidth:520}}>
+            <input value={query} onChange={e=>setQuery(e.target.value)} placeholder="Caută piese, anvelope, accesorii..."
+              style={{...inp,borderRadius:'50px 0 0 50px',borderRight:'none',padding:'10px 18px'}}/>
+            <button type="submit" style={{padding:'0 18px',background:S.blue,border:'none',borderRadius:'0 50px 50px 0',cursor:'pointer'}}>
+              <svg width="15" height="15" viewBox="0 0 15 15" fill="none"><circle cx="6" cy="6" r="4.5" stroke="#fff" strokeWidth="1.6"/><path d="M9.5 9.5L13 13" stroke="#fff" strokeWidth="1.6" strokeLinecap="round"/></svg>
             </button>
           </form>
-          <button onClick={() => user ? setShowAddListing(true) : window.location.href = '/auth/login'}
-            className="px-5 py-2.5 bg-[#FF6B35] text-white font-bold rounded-xl text-sm border-none cursor-pointer flex-shrink-0 hover:bg-[#e55a26] transition-colors">
+          <button onClick={()=>user?setShowAdd(true):window.location.href='/auth/login'}
+            style={{...btnPrimary,background:S.yellow,boxShadow:'0 2px 8px rgba(245,158,11,0.25)',flexShrink:0}}>
             + Adaugă anunț
           </button>
         </div>
       </div>
 
-      <div className="max-w-6xl mx-auto px-4 py-6">
+      <div style={{maxWidth:1100,margin:'0 auto',padding:'24px 16px'}}>
+
         {/* Categorii */}
-        <div className="flex gap-2 mb-5 overflow-x-auto pb-1">
-          <button onClick={() => setActiveCategory('toate')}
-            className={`flex-shrink-0 px-4 py-2 rounded-xl text-sm font-semibold border transition-all ${activeCategory === 'toate' ? 'bg-[#4A90D9] text-white border-[#4A90D9]' : 'bg-white text-gray-600 border-gray-200 hover:border-[#4A90D9]'}`}>
-            📦 Toate
-          </button>
-          {CATEGORIES.map(c => (
-            <button key={c.key} onClick={() => setActiveCategory(c.key)}
-              className={`flex-shrink-0 px-4 py-2 rounded-xl text-sm font-semibold border transition-all ${activeCategory === c.key ? 'bg-[#4A90D9] text-white border-[#4A90D9]' : 'bg-white text-gray-600 border-gray-200 hover:border-[#4A90D9]'}`}>
+        <div style={{display:'flex',gap:8,marginBottom:20,overflowX:'auto',paddingBottom:4}}>
+          {CATEGORIES.map(c=>(
+            <button key={c.key} onClick={()=>setActiveCategory(c.key)} className="cat-btn"
+              style={{flexShrink:0,padding:'8px 16px',borderRadius:50,fontSize:13,fontWeight:600,cursor:'pointer',border:`1.5px solid ${activeCategory===c.key?S.blue:S.border}`,background:activeCategory===c.key?'#eaf3ff':S.white,color:activeCategory===c.key?S.blue:S.muted,fontFamily:"'DM Sans',sans-serif",transition:'all .15s',display:'flex',alignItems:'center',gap:6}}>
               {c.icon} {c.label}
             </button>
           ))}
         </div>
 
-        <div className="flex items-center justify-between mb-4">
-          <div className="text-sm text-gray-500">{loading ? 'Se caută...' : `${listings.length} anunțuri`}</div>
-          <select value={sortBy} onChange={e => setSortBy(e.target.value)}
-            className="px-3 py-2 rounded-xl border border-gray-200 text-sm bg-white focus:outline-none focus:border-[#4A90D9]">
+        {/* Sort + count */}
+        <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:16}}>
+          <div style={{fontSize:14,color:S.muted}}>
+            {loading?'Se caută...':<><span style={{fontWeight:700,color:S.navy}}>{listings.length}</span> anunțuri</>}
+          </div>
+          <select value={sortBy} onChange={e=>setSortBy(e.target.value)}
+            style={{padding:'8px 14px',borderRadius:50,border:`1.5px solid ${S.border}`,fontSize:13,background:S.white,color:S.navy,fontFamily:"'DM Sans',sans-serif",outline:'none',cursor:'pointer'}}>
             <option value="recent">Cele mai recente</option>
             <option value="pret_asc">Preț crescător</option>
             <option value="pret_desc">Preț descrescător</option>
           </select>
         </div>
 
-        {loading ? (
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            {[1,2,3,4,5,6,7,8].map(i => <div key={i} className="bg-white rounded-2xl h-60 animate-pulse border border-gray-100"/>)}
+        {/* Grid */}
+        {loading?(
+          <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fill,minmax(220px,1fr))',gap:14}}>
+            {[1,2,3,4,5,6].map(i=><div key={i} style={{...card({height:240}),animation:'pulse 1.5s infinite'}}/>)}
+            <style>{`@keyframes pulse{0%,100%{opacity:1}50%{opacity:.5}}`}</style>
           </div>
-        ) : listings.length === 0 ? (
-          <div className="bg-white rounded-2xl border border-gray-100 p-16 text-center">
-            <div className="text-5xl mb-4">🔍</div>
-            <div className="text-gray-600 font-semibold mb-2">Niciun anunț în această categorie</div>
-            <button onClick={() => setShowAddListing(true)} className="mt-3 px-6 py-3 bg-[#FF6B35] text-white font-bold rounded-xl text-sm">
+        ):listings.length===0?(
+          <div style={{...card(),textAlign:'center',padding:'80px 20px'}}>
+            <div style={{fontSize:56,marginBottom:14}}>🔍</div>
+            <div style={{fontFamily:"'Sora',sans-serif",fontWeight:700,fontSize:18,color:S.navy,marginBottom:6}}>Niciun anunț în această categorie</div>
+            <button onClick={()=>user?setShowAdd(true):window.location.href='/auth/login'}
+              style={{...btnPrimary,background:S.yellow,boxShadow:'0 2px 8px rgba(245,158,11,0.2)',marginTop:8}}>
               Fii primul care adaugă un anunț
             </button>
           </div>
-        ) : (
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            {listings.map(l => {
-              const cond = CONDITIONS.find(c => c.key === l.condition)
-              const daysAgo = Math.floor((new Date() - new Date(l.created_at)) / (1000 * 60 * 60 * 24))
+        ):(
+          <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fill,minmax(220px,1fr))',gap:14}}>
+            {listings.map(l=>{
+              const coverImg = l.listing_media?.find(m=>m.is_cover)?.url||l.listing_media?.[0]?.url
+              const cond = CONDITIONS.find(c=>c.key===l.condition)
+              const daysAgo = Math.floor((new Date().getTime()-new Date(l.created_at).getTime())/(1000*60*60*24))
               return (
-                <div key={l.id} onClick={() => setSelectedListing(l)}
-                  className="bg-white rounded-2xl border border-gray-100 overflow-hidden cursor-pointer hover:border-[#4A90D9] transition-all">
-                  <div className="h-36 bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center text-4xl relative overflow-hidden">
-                    {l.listing_media?.[0]?.url ? (
-                      <img src={l.listing_media[0].url} alt={l.title} className="w-full h-full object-cover"/>
-                    ) : (
-                      CATEGORIES.find(c => c.key === l.category)?.icon || '📦'
+                <div key={l.id} onClick={()=>setSelected(l)} className="listing-card"
+                  style={{...card({padding:0}),overflow:'hidden',cursor:'pointer',transition:'all .2s'}}>
+                  {/* Image */}
+                  <div style={{height:150,background:'#eaf3ff',position:'relative',display:'flex',alignItems:'center',justifyContent:'center',overflow:'hidden'}}>
+                    {coverImg?(
+                      <img src={coverImg} alt={l.title} style={{width:'100%',height:'100%',objectFit:'cover'}}/>
+                    ):(
+                      <span style={{fontSize:44}}>{CATEGORIES.find(c=>c.key===l.category)?.icon||'📦'}</span>
                     )}
-                    {l.is_promoted && (
-                      <span className="absolute top-2 left-2 bg-[#FF6B35] text-white text-xs font-bold px-2 py-0.5 rounded-lg">TOP</span>
-                    )}
-                    {cond && (
-                      <span style={{ background: cond.color, color: cond.text }} className="absolute top-2 right-2 text-xs font-bold px-2 py-0.5 rounded-lg">{cond.label}</span>
-                    )}
+                    {l.is_promoted&&<span style={{position:'absolute',top:8,left:8,background:S.yellow,color:'#fff',fontSize:10,fontWeight:700,padding:'3px 8px',borderRadius:6,fontFamily:"'Sora',sans-serif"}}>TOP</span>}
+                    {cond&&<span style={{...pill(cond.bg,cond.color),position:'absolute',top:8,right:8,fontSize:10}}>{cond.label}</span>}
+                    <button onClick={e=>{e.stopPropagation();toggleFav(l.id)}}
+                      style={{position:'absolute',bottom:8,right:8,width:30,height:30,background:'rgba(255,255,255,0.92)',borderRadius:'50%',border:'none',cursor:'pointer',fontSize:14,display:'flex',alignItems:'center',justifyContent:'center',boxShadow:'0 1px 4px rgba(0,0,0,0.1)'}}>
+                      {favorites.has(l.id)?'❤️':'🤍'}
+                    </button>
                   </div>
-                  <div className="p-3">
-                    <div className="font-black text-base text-gray-900 mb-1">
-                      {l.price ? `${l.price.toLocaleString()} lei` : 'Preț negociabil'}
+                  <div style={{padding:'12px 14px 14px'}}>
+                    <div style={{fontFamily:"'Sora',sans-serif",fontWeight:800,fontSize:17,color:S.navy,marginBottom:4}}>
+                      {l.price?`${l.price.toLocaleString('ro-RO')} lei`:'Preț negociabil'}
                     </div>
-                    <div className="text-xs text-gray-600 line-clamp-2 mb-2">{l.title}</div>
-                    <div className="text-xs text-gray-400 flex items-center justify-between">
-                      <span>📍 {l.city || 'Locație'}</span>
-                      <span>{daysAgo === 0 ? 'Azi' : `${daysAgo}z`}</span>
+                    <div style={{fontSize:12,color:S.muted,marginBottom:6,lineHeight:1.4,display:'-webkit-box',WebkitLineClamp:2,WebkitBoxOrient:'vertical',overflow:'hidden'}}>{l.title}</div>
+                    <div style={{fontSize:11,color:S.muted,display:'flex',justifyContent:'space-between'}}>
+                      <span>📍 {l.city||'Locație'}</span>
+                      <span>{daysAgo===0?'Azi':daysAgo===1?'Ieri':`${daysAgo}z`}</span>
                     </div>
                   </div>
                 </div>
@@ -200,155 +222,126 @@ function ListingsContent() {
       </div>
 
       {/* Modal detalii anunț */}
-      {selectedListing && (
-        <div onClick={e => { if (e.target === e.currentTarget) setSelectedListing(null) }}
-          style={{ position: 'fixed', inset: 0, background: 'rgba(10,18,30,0.65)', zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16 }}>
-          <div className="bg-white rounded-2xl w-full max-w-lg p-6 max-h-[90vh] overflow-y-auto">
-            <div className="flex items-start justify-between mb-4">
-              <div>
-                <h2 className="text-lg font-bold text-gray-900">{selectedListing.title}</h2>
-                <div className="text-sm text-gray-400 mt-1">📍 {selectedListing.city}</div>
-              </div>
-              <button onClick={() => setSelectedListing(null)} className="text-gray-400 text-xl border-none bg-transparent cursor-pointer ml-4">✕</button>
-            </div>
-            <div className="bg-gray-50 rounded-2xl h-48 flex items-center justify-center text-6xl mb-4">
-              {CATEGORIES.find(c => c.key === selectedListing.category)?.icon || '📦'}
-            </div>
-            <div className="text-3xl font-black text-gray-900 mb-4">
-              {selectedListing.price ? `${selectedListing.price.toLocaleString()} lei` : 'Preț negociabil'}
-            </div>
-            {selectedListing.description && (
-              <div className="bg-gray-50 rounded-xl p-4 mb-4">
-                <div className="text-xs font-bold text-gray-400 uppercase mb-2">Descriere</div>
-                <p className="text-sm text-gray-700 leading-relaxed">{selectedListing.description}</p>
-              </div>
-            )}
-            <div className="grid grid-cols-2 gap-3 mb-4">
-              {selectedListing.condition && (
-                <div className="bg-gray-50 rounded-xl p-3">
-                  <div className="text-xs text-gray-400 mb-1">Stare</div>
-                  <div className="font-bold text-sm">{CONDITIONS.find(c => c.key === selectedListing.condition)?.label}</div>
-                </div>
-              )}
-              {selectedListing.compatible_brands && selectedListing.compatible_brands.length > 0 && (
-                <div className="bg-gray-50 rounded-xl p-3">
-                  <div className="text-xs text-gray-400 mb-1">Compatibil cu</div>
-                  <div className="font-bold text-sm">{selectedListing.compatible_brands.join(', ')}</div>
-                </div>
-              )}
-            </div>
-            <div className="flex gap-3">
-              <a href={`tel:${selectedListing.phone_contact || ''}`}
-                className="flex-1 py-3 bg-[#4A90D9] text-white font-bold rounded-xl text-sm text-center no-underline">
-                📞 Contactează vânzătorul
-              </a>
-              <button onClick={() => setSelectedListing(null)}
-                className="px-4 py-3 border border-gray-200 rounded-xl text-sm font-semibold text-gray-600">
-                Închide
-              </button>
-            </div>
+      {selected&&(
+        <Modal title={selected.title} onClose={()=>setSelected(null)}>
+          <div style={{height:200,background:'#eaf3ff',borderRadius:14,display:'flex',alignItems:'center',justifyContent:'center',marginBottom:16,overflow:'hidden'}}>
+            {selected.listing_media?.[0]?.url?(
+              <img src={selected.listing_media[0].url} alt={selected.title} style={{width:'100%',height:'100%',objectFit:'cover'}}/>
+            ):<span style={{fontSize:64}}>{CATEGORIES.find(c=>c.key===selected.category)?.icon||'📦'}</span>}
           </div>
-        </div>
+          <div style={{fontFamily:"'Sora',sans-serif",fontWeight:800,fontSize:28,color:S.navy,marginBottom:16}}>
+            {selected.price?`${selected.price.toLocaleString()} lei`:'Preț negociabil'}
+          </div>
+          {selected.description&&(
+            <div style={{background:S.bg,borderRadius:12,padding:'12px 16px',marginBottom:14}}>
+              <div style={{fontSize:10,fontWeight:700,color:S.muted,textTransform:'uppercase',letterSpacing:1,marginBottom:6}}>Descriere</div>
+              <p style={{fontSize:13,color:S.text,lineHeight:1.6}}>{selected.description}</p>
+            </div>
+          )}
+          <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:10,marginBottom:16}}>
+            {selected.condition&&<div style={{background:S.bg,borderRadius:10,padding:'10px 12px'}}>
+              <div style={{fontSize:10,color:S.muted,marginBottom:2}}>Stare</div>
+              <div style={{fontWeight:600,fontSize:13,color:S.navy}}>{CONDITIONS.find(c=>c.key===selected.condition)?.label}</div>
+            </div>}
+            {selected.city&&<div style={{background:S.bg,borderRadius:10,padding:'10px 12px'}}>
+              <div style={{fontSize:10,color:S.muted,marginBottom:2}}>Locație</div>
+              <div style={{fontWeight:600,fontSize:13,color:S.navy}}>📍 {selected.city}</div>
+            </div>}
+            {selected.compatible_brands?.length>0&&<div style={{background:S.bg,borderRadius:10,padding:'10px 12px',gridColumn:'1/-1'}}>
+              <div style={{fontSize:10,color:S.muted,marginBottom:2}}>Compatibil cu</div>
+              <div style={{fontWeight:600,fontSize:13,color:S.navy}}>{selected.compatible_brands.join(', ')}</div>
+            </div>}
+          </div>
+          <div style={{display:'flex',gap:10}}>
+            <a href={`tel:${selected.phone_contact||''}`} style={{...btnPrimary,flex:1,justifyContent:'center',textDecoration:'none',fontSize:14}}>📞 Contactează vânzătorul</a>
+            <button onClick={()=>setSelected(null)} style={{padding:'10px 18px',borderRadius:50,border:`1.5px solid ${S.border}`,background:S.white,color:S.muted,cursor:'pointer',fontSize:13,fontFamily:"'DM Sans',sans-serif"}}>Închide</button>
+          </div>
+        </Modal>
       )}
 
       {/* Modal adaugă anunț */}
-      {showAddListing && (
-        <div onClick={e => { if (e.target === e.currentTarget) setShowAddListing(false) }}
-          style={{ position: 'fixed', inset: 0, background: 'rgba(10,18,30,0.65)', zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16 }}>
-          <div className="bg-white rounded-2xl w-full max-w-lg p-6 max-h-[90vh] overflow-y-auto">
-            <div className="flex items-center justify-between mb-5">
-              <h3 className="text-lg font-bold text-gray-900">Adaugă anunț</h3>
-              <button onClick={() => setShowAddListing(false)} className="text-gray-400 text-xl border-none bg-transparent cursor-pointer">✕</button>
+      {showAdd&&(
+        <Modal title="Publică anunț nou" onClose={()=>setShowAdd(false)}>
+          <div>
+            <div style={{marginBottom:12}}>
+              <label style={{display:'block',fontSize:11,fontWeight:700,color:S.muted,textTransform:'uppercase',letterSpacing:1,marginBottom:5,fontFamily:"'Sora',sans-serif"}}>Titlu anunț *</label>
+              <input value={form.title} onChange={e=>setForm(p=>({...p,title:e.target.value}))} placeholder="ex: Plăcuțe frână față Brembo BMW E90" style={inp}/>
             </div>
-            <div className="space-y-4">
+            <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:10,marginBottom:12}}>
               <div>
-                <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1.5">Titlu anunț *</label>
-                <input value={listingForm.title} onChange={e => setListingForm(p => ({ ...p, title: e.target.value }))}
-                  placeholder="ex: Plăcuțe frână față Brembo BMW E90"
-                  className="w-full px-4 py-3 rounded-xl border border-gray-200 text-sm focus:outline-none focus:border-[#4A90D9] bg-gray-50"/>
-              </div>
-              <div>
-                <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1.5">Categorie</label>
-                <select value={listingForm.category} onChange={e => setListingForm(p => ({ ...p, category: e.target.value }))}
-                  className="w-full px-4 py-3 rounded-xl border border-gray-200 text-sm focus:outline-none focus:border-[#4A90D9] bg-gray-50">
-                  {CATEGORIES.map(c => <option key={c.key} value={c.key}>{c.icon} {c.label}</option>)}
+                <label style={{display:'block',fontSize:11,fontWeight:700,color:S.muted,textTransform:'uppercase',letterSpacing:1,marginBottom:5,fontFamily:"'Sora',sans-serif"}}>Categorie</label>
+                <select value={form.category} onChange={e=>setForm(p=>({...p,category:e.target.value}))} style={inp}>
+                  {CATEGORIES.filter(c=>c.key!=='toate').map(c=><option key={c.key} value={c.key}>{c.icon} {c.label}</option>)}
                 </select>
               </div>
               <div>
-                <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1.5">Stare</label>
-                <div className="flex gap-2">
-                  {CONDITIONS.map(c => (
-                    <button key={c.key} onClick={() => setListingForm(p => ({ ...p, condition: c.key }))}
-                      style={{ background: listingForm.condition === c.key ? c.color : '#f8f8f8', color: listingForm.condition === c.key ? c.text : '#888', borderColor: listingForm.condition === c.key ? c.text : '#e0e0e0' }}
-                      className="flex-1 py-2.5 rounded-xl text-sm font-bold border transition-all cursor-pointer">
+                <label style={{display:'block',fontSize:11,fontWeight:700,color:S.muted,textTransform:'uppercase',letterSpacing:1,marginBottom:5,fontFamily:"'Sora',sans-serif"}}>Stare</label>
+                <div style={{display:'flex',gap:6}}>
+                  {CONDITIONS.map(c=>(
+                    <button key={c.key} onClick={()=>setForm(p=>({...p,condition:c.key}))}
+                      style={{flex:1,padding:'8px 4px',borderRadius:10,border:`1.5px solid ${form.condition===c.key?c.color:S.border}`,background:form.condition===c.key?c.bg:S.white,color:form.condition===c.key?c.color:S.muted,fontSize:11,fontWeight:700,cursor:'pointer',fontFamily:"'Sora',sans-serif"}}>
                       {c.label}
                     </button>
                   ))}
                 </div>
               </div>
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1.5">Preț (lei)</label>
-                  <input type="number" value={listingForm.price} onChange={e => setListingForm(p => ({ ...p, price: e.target.value }))}
-                    placeholder="0"
-                    className="w-full px-4 py-3 rounded-xl border border-gray-200 text-sm focus:outline-none focus:border-[#4A90D9] bg-gray-50"/>
-                </div>
-                <div>
-                  <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1.5">Oraș</label>
-                  <input value={listingForm.city} onChange={e => setListingForm(p => ({ ...p, city: e.target.value }))}
-                    placeholder="București"
-                    className="w-full px-4 py-3 rounded-xl border border-gray-200 text-sm focus:outline-none focus:border-[#4A90D9] bg-gray-50"/>
-                </div>
+              <div>
+                <label style={{display:'block',fontSize:11,fontWeight:700,color:S.muted,textTransform:'uppercase',letterSpacing:1,marginBottom:5,fontFamily:"'Sora',sans-serif"}}>Preț (lei)</label>
+                <input type="number" value={form.price} onChange={e=>setForm(p=>({...p,price:e.target.value}))} placeholder="0" style={inp}/>
               </div>
               <div>
-                <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1.5">Compatibil cu (mărci, separat cu virgulă)</label>
-                <input value={listingForm.compatible_brands} onChange={e => setListingForm(p => ({ ...p, compatible_brands: e.target.value }))}
-                  placeholder="BMW, Audi, Mercedes"
-                  className="w-full px-4 py-3 rounded-xl border border-gray-200 text-sm focus:outline-none focus:border-[#4A90D9] bg-gray-50"/>
+                <label style={{display:'block',fontSize:11,fontWeight:700,color:S.muted,textTransform:'uppercase',letterSpacing:1,marginBottom:5,fontFamily:"'Sora',sans-serif"}}>Oraș</label>
+                <input value={form.city} onChange={e=>setForm(p=>({...p,city:e.target.value}))} placeholder="București" style={inp}/>
               </div>
-              <div>
-                <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1.5">Descriere</label>
-                <textarea value={listingForm.description} onChange={e => setListingForm(p => ({ ...p, description: e.target.value }))}
-                  rows={3} placeholder="Descrie piesa în detaliu..."
-                  className="w-full px-4 py-3 rounded-xl border border-gray-200 text-sm focus:outline-none focus:border-[#4A90D9] bg-gray-50 resize-none"/>
-              </div>
-              <div>
-                <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1.5">Fotografii produs</label>
-                <div className="border-2 border-dashed border-gray-200 rounded-xl p-4 text-center cursor-pointer hover:border-[#4A90D9] transition-colors"
-                  onClick={() => document.getElementById('listing-photos').click()}>
-                  <div className="text-2xl mb-1">📷</div>
-                  <div className="text-sm text-gray-500">{uploadingFiles ? 'Se încarcă...' : 'Click pentru a adăuga poze'}</div>
-                  <div className="text-xs text-gray-400">JPG, PNG · max 5MB per poză</div>
-                  <input id="listing-photos" type="file" multiple accept="image/*" className="hidden"
-                    onChange={e => handleFileUpload(e.target.files)}/>
-                </div>
-                {uploadedFiles.length > 0 && (
-                  <div className="flex gap-2 flex-wrap mt-2">
-                    {uploadedFiles.map((url, i) => (
-                      <div key={i} className="relative">
-                        <img src={url} alt="" className="w-16 h-16 object-cover rounded-xl border border-gray-200"/>
-                        {i === 0 && <span className="absolute -top-1 -left-1 bg-[#4A90D9] text-white text-xs px-1 rounded">Cover</span>}
-                        <button onClick={() => setUploadedFiles(prev => prev.filter((_, j) => j !== i))}
-                          className="absolute -top-1 -right-1 w-4 h-4 bg-red-500 text-white rounded-full text-xs flex items-center justify-center border-none cursor-pointer">✕</button>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </div>
-              <button onClick={addListing} disabled={saving || !listingForm.title}
-                className="w-full py-3 bg-[#FF6B35] text-white font-bold rounded-xl text-sm hover:bg-[#e55a26] transition-colors disabled:opacity-50">
-                {saving ? 'Se publică...' : '📢 Publică anunțul gratuit'}
-              </button>
             </div>
+            <div style={{marginBottom:12}}>
+              <label style={{display:'block',fontSize:11,fontWeight:700,color:S.muted,textTransform:'uppercase',letterSpacing:1,marginBottom:5,fontFamily:"'Sora',sans-serif"}}>Compatibil cu (mărci, virgulă)</label>
+              <input value={form.compatible_brands} onChange={e=>setForm(p=>({...p,compatible_brands:e.target.value}))} placeholder="BMW, Audi, Mercedes" style={inp}/>
+            </div>
+            <div style={{marginBottom:12}}>
+              <label style={{display:'block',fontSize:11,fontWeight:700,color:S.muted,textTransform:'uppercase',letterSpacing:1,marginBottom:5,fontFamily:"'Sora',sans-serif"}}>Descriere</label>
+              <textarea value={form.description} onChange={e=>setForm(p=>({...p,description:e.target.value}))} rows={3} placeholder="Descrie piesa în detaliu..." style={{...inp,resize:'none'}}/>
+            </div>
+            {/* Upload poze */}
+            <div style={{marginBottom:16}}>
+              <label style={{display:'block',fontSize:11,fontWeight:700,color:S.muted,textTransform:'uppercase',letterSpacing:1,marginBottom:5,fontFamily:"'Sora',sans-serif"}}>Fotografii produs</label>
+              <div onClick={()=>document.getElementById('listing-photos').click()}
+                style={{border:`2px dashed ${S.border}`,borderRadius:12,padding:'20px',textAlign:'center',cursor:'pointer',transition:'border-color .15s'}}
+                onMouseEnter={e=>e.currentTarget.style.borderColor=S.blue}
+                onMouseLeave={e=>e.currentTarget.style.borderColor=S.border}>
+                <div style={{fontSize:28,marginBottom:6}}>📷</div>
+                <div style={{fontSize:13,color:S.muted}}>{uploadingFiles?'Se încarcă...':'Click pentru a adăuga poze'}</div>
+                <div style={{fontSize:11,color:S.muted,marginTop:2}}>JPG, PNG · max 5MB</div>
+                <input id="listing-photos" type="file" multiple accept="image/*" style={{display:'none'}} onChange={e=>handleFileUpload(e.target.files)}/>
+              </div>
+              {uploadedFiles.length>0&&(
+                <div style={{display:'flex',gap:8,flexWrap:'wrap',marginTop:8}}>
+                  {uploadedFiles.map((url,i)=>(
+                    <div key={i} style={{position:'relative'}}>
+                      <img src={url} alt="" style={{width:60,height:60,objectFit:'cover',borderRadius:10,border:`1px solid ${S.border}`}}/>
+                      {i===0&&<span style={{position:'absolute',top:-4,left:-4,background:S.blue,color:'#fff',fontSize:8,padding:'1px 5px',borderRadius:4,fontWeight:700}}>Cover</span>}
+                      <button onClick={()=>setUploadedFiles(prev=>prev.filter((_,j)=>j!==i))}
+                        style={{position:'absolute',top:-4,right:-4,width:16,height:16,background:S.red,color:'#fff',borderRadius:'50%',fontSize:10,border:'none',cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'center'}}>✕</button>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+            <button onClick={addListing} disabled={saving||!form.title}
+              style={{...btnPrimary,background:S.yellow,boxShadow:'0 2px 8px rgba(245,158,11,0.2)',width:'100%',justifyContent:'center',padding:'12px',fontSize:14,opacity:!form.title?.5:1}}>
+              {saving?'Se publică...':'📢 Publică anunțul gratuit'}
+            </button>
           </div>
-        </div>
+        </Modal>
       )}
     </div>
   )
 }
 
 export default function ListingsPage() {
-  return <Suspense fallback={<div className="min-h-screen bg-gray-50 flex items-center justify-center"><div className="w-8 h-8 border-2 border-[#4A90D9] border-t-transparent rounded-full animate-spin"/></div>}>
-    <ListingsContent/>
-  </Suspense>
+  return (
+    <Suspense fallback={<div style={{minHeight:'60vh',display:'flex',alignItems:'center',justifyContent:'center',background:'#f0f6ff'}}><div style={{width:36,height:36,border:'3px solid #1a56db',borderTopColor:'transparent',borderRadius:'50%',animation:'spin 1s linear infinite'}}/><style>{`@keyframes spin{to{transform:rotate(360deg)}}`}</style></div>}>
+      <ListingsContent/>
+    </Suspense>
+  )
 }
