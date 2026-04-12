@@ -93,13 +93,19 @@ export default function ServiceProfilePage({ params }: { params: { id: string } 
       <style>{`.inp:focus{border-color:#1a56db!important;outline:none!important}`}</style>
 
       {/* Cover */}
-      <div style={{height:240,background:service.cover_image_url?`url(${service.cover_image_url}) center/cover`:`linear-gradient(135deg,${S.navy} 0%,#1a3a6b 100%)`,position:'relative'}}>
+      <div style={{height:'min(240px,40vw)',background:service.cover_image_url?`url(${service.cover_image_url}) center/cover`:`linear-gradient(135deg,${S.navy} 0%,#1a3a6b 100%)`,position:'relative'}}>
         <div style={{position:'absolute',inset:0,background:'rgba(10,31,68,0.4)'}}/>
         <a href="/search" style={{position:'absolute',top:16,left:20,color:'#fff',textDecoration:'none',fontSize:13,fontWeight:600,background:'rgba(255,255,255,0.15)',padding:'6px 14px',borderRadius:50,backdropFilter:'blur(4px)'}}>← Înapoi</a>
       </div>
 
       <div style={{maxWidth:1000,margin:'-60px auto 0',padding:'0 20px 60px',position:'relative'}}>
-        <div style={{display:'grid',gridTemplateColumns:'1fr 320px',gap:20,alignItems:'start'}}>
+        <style>{`
+          @media(max-width:768px){
+            .svc-profile-grid{grid-template-columns:1fr!important}
+            .svc-profile-sidebar{position:relative!important;top:0!important}
+          }
+        `}</style>
+        <div className="svc-profile-grid" style={{display:'grid',gridTemplateColumns:'1fr 320px',gap:20,alignItems:'start'}}>
 
           {/* Main col */}
           <div>
@@ -149,7 +155,7 @@ export default function ServiceProfilePage({ params }: { params: { id: string } 
             {offerings.length>0 && (
               <div style={card({marginBottom:16})}>
                 <h2 style={{fontFamily:"'Sora',sans-serif",fontWeight:700,fontSize:16,color:S.navy,marginBottom:14}}>🔧 Servicii & prețuri</h2>
-                <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:10}}>
+                <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fill,minmax(200px,1fr))',gap:10}}>
                   {offerings.map(o=>(
                     <div key={o.id} style={{background:S.bg,borderRadius:12,padding:'14px 16px',border:`1px solid ${S.border}`}}>
                       <div style={{fontFamily:"'Sora',sans-serif",fontWeight:700,fontSize:14,color:S.navy,marginBottom:4}}>{o.name}</div>
@@ -235,7 +241,7 @@ export default function ServiceProfilePage({ params }: { params: { id: string } 
           </div>
 
           {/* Sidebar actiuni */}
-          <div style={{position:'sticky',top:20}}>
+          <div className="svc-profile-sidebar" style={{position:'sticky',top:20}}>
             <div style={card({marginBottom:14})}>
               <h3 style={{fontFamily:"'Sora',sans-serif",fontWeight:700,fontSize:15,color:S.navy,marginBottom:16}}>Contactează service-ul</h3>
               <button onClick={()=>window.dispatchEvent(new CustomEvent('open-quote-modal'))}

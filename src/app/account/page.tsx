@@ -176,7 +176,7 @@ export default function AccountPage() {
         </div>
 
         {/* Tabs */}
-        <div style={{display:'flex',background:S.white,borderRadius:50,border:`1px solid ${S.border}`,padding:4,marginBottom:20,overflowX:'auto',gap:2}}>
+        <div style={{display:'flex',background:S.white,borderRadius:50,border:`1px solid ${S.border}`,padding:4,marginBottom:20,overflowX:'auto',gap:2,scrollbarWidth:'none',WebkitOverflowScrolling:'touch'}}>
           {TABS.map(t=>(
             <button key={t} onClick={()=>setTab(t)} className={tab===t?'':'tab-acc'}
               style={{flexShrink:0,padding:'8px 16px',borderRadius:50,fontSize:13,fontWeight:600,cursor:'pointer',border:'none',background:tab===t?S.blue:'transparent',color:tab===t?'#fff':S.muted,fontFamily:"'DM Sans',sans-serif",transition:'all .15s',whiteSpace:'nowrap'}}>
@@ -200,7 +200,7 @@ export default function AccountPage() {
                 <button onClick={()=>setShowAddCar(true)} style={btn(true)}>Adaugă prima mașină</button>
               </div>
             ):(
-              <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fill,minmax(300px,1fr))',gap:14}}>
+              <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fill,minmax(min(300px,100%),1fr))',gap:14}}>
                 {cars.map(car=>(
                   <div key={car.id} style={{...card(),border:`1.5px solid ${car.is_default?S.blue:S.border}`}}>
                     <div style={{display:'flex',alignItems:'center',gap:12,marginBottom:14}}>

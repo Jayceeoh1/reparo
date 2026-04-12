@@ -107,14 +107,20 @@ export default function ListingDetailPage({ params }: { params: { id: string } }
       </div>
 
       <div style={{maxWidth:1100,margin:'0 auto',padding:'24px 16px'}}>
-        <div style={{display:'grid',gridTemplateColumns:'1fr 340px',gap:20,alignItems:'start'}}>
+        <style>{`
+          @media(max-width:768px){
+            .listing-detail-grid{grid-template-columns:1fr!important}
+            .listing-detail-sidebar{position:relative!important;top:0!important}
+          }
+        `}</style>
+        <div className="listing-detail-grid" style={{display:'grid',gridTemplateColumns:'1fr 340px',gap:20,alignItems:'start'}}>
 
           {/* LEFT COL */}
           <div>
             {/* Photo gallery */}
             <div style={{background:S.white,borderRadius:16,border:`1px solid ${S.border}`,overflow:'hidden',marginBottom:16,boxShadow:'0 2px 12px rgba(10,31,68,0.06)'}}>
               {/* Main photo */}
-              <div style={{height:400,background:'#eaf3ff',display:'flex',alignItems:'center',justifyContent:'center',overflow:'hidden',position:'relative'}}>
+              <div style={{height:'min(400px,60vw)',background:'#eaf3ff',display:'flex',alignItems:'center',justifyContent:'center',overflow:'hidden',position:'relative'}}>
                 {photos.length>0 ? (
                   <>
                     <img src={photos[activePhoto]?.url} alt={listing.title}
@@ -237,7 +243,7 @@ export default function ListingDetailPage({ params }: { params: { id: string } }
           </div>
 
           {/* RIGHT COL — sticky */}
-          <div style={{position:'sticky',top:90}}>
+          <div className="listing-detail-sidebar" style={{position:'sticky',top:90}}>
 
             {/* Contact card */}
             <div style={{background:S.white,borderRadius:16,border:`1px solid ${S.border}`,padding:20,marginBottom:14,boxShadow:'0 2px 12px rgba(10,31,68,0.06)'}}>
