@@ -238,6 +238,23 @@ export default function GlobalLayout({ children }) {
         </div>
 
       </div>
+
+      {/* Mobile bottom nav */}
+      <div className="mob-bottom" style={{display:'none',position:'fixed',bottom:0,left:0,right:0,background:'rgba(255,255,255,0.97)',backdropFilter:'blur(12px)',borderTop:'1px solid #e5e7eb',zIndex:90,padding:'8px 0',justifyContent:'space-around',alignItems:'center'}}>
+        {[
+          {href:'/home',icon:'🏠',label:'Acasă'},
+          {href:'/search',icon:'🔍',label:'Service-uri'},
+          {href:'/listing',icon:'📦',label:'Anunțuri'},
+          {href:'/itp-rca',icon:'🛡️',label:'ITP & RCA'},
+          {href:user?'/account':'/auth/login',icon:'👤',label:user?'Contul meu':'Intră'},
+        ].map(item=>(
+          <a key={item.href} href={item.href}
+            style={{display:'flex',flexDirection:'column',alignItems:'center',gap:2,textDecoration:'none',flex:1,padding:'4px 0'}}>
+            <span style={{fontSize:20}}>{item.icon}</span>
+            <span style={{fontSize:10,color:pathname===item.href?'#1a56db':'#6b7280',fontWeight:pathname===item.href?700:400,fontFamily:"'DM Sans',sans-serif"}}>{item.label}</span>
+          </a>
+        ))}
+      </div>
     </>
   )
 }
