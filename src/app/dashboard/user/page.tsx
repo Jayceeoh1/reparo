@@ -1,14 +1,5 @@
-// @ts-nocheck
-'use client'
-import { useEffect } from 'react'
+import { redirect } from 'next/navigation'
 
-export default function UserDashboard() {
-  useEffect(() => {
-    window.location.href = '/account'
-  }, [])
-  return (
-    <div style={{ minHeight: '100vh', background: '#f5f5f5', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-      <div style={{ color: '#888', fontSize: 14 }}>Se redirecționează...</div>
-    </div>
-  )
+export default function DashboardUserPage() {
+  redirect('/account')
 }

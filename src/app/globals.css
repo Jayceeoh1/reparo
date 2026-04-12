@@ -77,3 +77,12 @@ body {
 .feat-card:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(26,86,219,0.1) !important; }
 .feat-card { transition: all .2s; }
 .plan-card { transition: all .25s; }
+
+/* Auth pages */
+.auth-inp:focus { border-color: #1a56db !important; box-shadow: 0 0 0 3px rgba(26,86,219,0.1) !important; }
+.role-card:hover { border-color: #1a56db !important; background: #eaf3ff !important; }
+.cnt-inp:focus { border-color: #1a56db !important; box-shadow: 0 0 0 3px rgba(26,86,219,0.1) !important; }
+
+/* Animations */
+@keyframes fadeUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+.fade-up { animation: fadeUp .5s ease both; }

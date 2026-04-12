@@ -61,13 +61,6 @@ export default function RegisterPage() {
 
   return (
     <div style={{minHeight:'100vh',background:'linear-gradient(135deg,#eaf3ff 0%,#f8fbff 60%,#fff8ed 100%)',display:'flex',alignItems:'center',justifyContent:'center',padding:16,fontFamily:"'DM Sans',sans-serif"}}>
-      <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700;800&family=DM+Sans:wght@400;500;600&display=swap');
-        .auth-inp:focus{border-color:#1a56db!important;box-shadow:0 0 0 3px rgba(26,86,219,0.1)!important}
-        .role-card:hover{border-color:#1a56db!important;background:#eaf3ff!important}
-        @keyframes fadeUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
-        .fade-up{animation:fadeUp .5s ease both}
-      `}</style>
 
       <div style={{width:'100%',maxWidth:480}}>
         {/* Logo */}

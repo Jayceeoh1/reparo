@@ -16,7 +16,7 @@ const inp = {width:'100%',padding:'10px 14px',border:`1.5px solid ${S.border}`,b
 const lbl = {display:'block',fontSize:11,fontWeight:700,color:S.muted,textTransform:'uppercase',letterSpacing:1,marginBottom:5,fontFamily:"'Sora',sans-serif"}
 const btn = (primary=true) => ({display:'inline-flex',alignItems:'center',gap:6,padding:'9px 18px',borderRadius:50,fontSize:13,fontWeight:600,cursor:'pointer',border:primary?'none':`1.5px solid ${S.border}`,fontFamily:"'DM Sans',sans-serif",background:primary?S.blue:'transparent',color:primary?'#fff':S.muted,boxShadow:primary?'0 2px 8px rgba(26,86,219,0.2)':'none',transition:'all .15s'})
 
-const TABS = ['Mașinile mele','Programări','Istoric lucrări','Documente','Oferte primite','Setări cont']
+const TABS = ['Mașinile mele','Anunțurile mele','Programări','Istoric lucrări','Documente','Oferte primite','Setări cont']
 const BRANDS = ['BMW','Mercedes-Benz','Audi','Volkswagen','Toyota','Dacia','Renault','Ford','Opel','Peugeot','Skoda','Hyundai','Kia','Volvo','Mazda','Honda','Nissan','Fiat','Seat','Alfa Romeo']
 const FUELS = ['Benzină','Diesel','Hybrid','Electric','GPL']
 const DOC_TYPES = [{key:'itp',label:'ITP',icon:'🛡️',color:S.blue,bg:'#eaf3ff'},{key:'rca',label:'RCA',icon:'📄',color:S.green,bg:S.greenBg},{key:'rovinieta',label:'Rovinietă',icon:'🛣️',color:S.amber,bg:S.amberBg},{key:'casco',label:'CASCO',icon:'🔒',color:S.purple,bg:S.purpleBg}]
@@ -141,8 +141,27 @@ export default function AccountPage() {
 
         {/* Profile header */}
         <div style={{...card({marginBottom:20,display:'flex',alignItems:'center',gap:16,flexWrap:'wrap'})}}>
-          <div style={{width:60,height:60,background:'#eaf3ff',borderRadius:16,display:'flex',alignItems:'center',justifyContent:'center',fontFamily:"'Sora',sans-serif",fontWeight:800,fontSize:24,color:S.blue,flexShrink:0}}>
-            {profile?.full_name?.charAt(0)?.toUpperCase()||'U'}
+          <div style={{position:'relative',flexShrink:0}}>
+            <div onClick={()=>document.getElementById('avatar-upload').click()}
+              style={{width:64,height:64,background:'#eaf3ff',borderRadius:16,display:'flex',alignItems:'center',justifyContent:'center',fontFamily:"'Sora',sans-serif",fontWeight:800,fontSize:24,color:S.blue,cursor:'pointer',overflow:'hidden',border:`2px solid ${S.border}`}}>
+              {profile?.avatar_url
+                ? <img src={profile.avatar_url} alt="" style={{width:'100%',height:'100%',objectFit:'cover'}}/>
+                : profile?.full_name?.charAt(0)?.toUpperCase()||'U'}
+            </div>
+            <div onClick={()=>document.getElementById('avatar-upload').click()}
+              style={{position:'absolute',bottom:-4,right:-4,width:22,height:22,background:S.blue,borderRadius:'50%',display:'flex',alignItems:'center',justifyContent:'center',cursor:'pointer',fontSize:11,color:'#fff',border:'2px solid #fff'}}>✏️</div>
+            <input id="avatar-upload" type="file" accept="image/*" style={{display:'none'}} onChange={async(e)=>{
+              const file = e.target.files?.[0]; if(!file||!user) return
+              const ext = file.name.split('.').pop()
+              const path = `avatars/${user.id}.${ext}`
+              const supabaseClient = createClient()
+              const {error} = await supabaseClient.storage.from('avatars').upload(path, file, {upsert:true})
+              if(!error){
+                const {data:{publicUrl}} = supabaseClient.storage.from('avatars').getPublicUrl(path)
+                await supabaseClient.from('profiles').update({avatar_url:publicUrl}).eq('id',user.id)
+                setProfile(p=>({...p,avatar_url:publicUrl}))
+              }
+            }}/>
           </div>
           <div style={{flex:1}}>
             <div style={{fontFamily:"'Sora',sans-serif",fontWeight:800,fontSize:18,color:S.navy,marginBottom:2}}>{profile?.full_name||'Utilizator'}</div>
@@ -455,6 +474,30 @@ export default function AccountPage() {
                 ))}
               </div>
             )}
+          </div>
+        )}
+
+        {/* ══ ANUNTURILE MELE ══ */}
+        {tab==='Anunțurile mele'&&(
+          <div>
+            <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:20}}>
+              <h2 style={{fontFamily:"'Sora',sans-serif",fontWeight:800,fontSize:18,color:S.navy}}>Anunțurile mele</h2>
+              <a href="/listing/create" style={{display:'inline-flex',alignItems:'center',gap:6,padding:'10px 20px',background:S.yellow,color:'#fff',borderRadius:50,textDecoration:'none',fontSize:13,fontWeight:700,fontFamily:"'Sora',sans-serif",boxShadow:'0 4px 16px rgba(245,158,11,0.3)'}}>
+                + Adaugă anunț nou
+              </a>
+            </div>
+            <a href="/anunturile-mele" style={{display:'block',textDecoration:'none'}}>
+              <div style={{...card(),display:'flex',alignItems:'center',gap:16,cursor:'pointer',transition:'all .2s',border:`1.5px solid ${S.border}`}}
+                onMouseEnter={e=>e.currentTarget.style.borderColor=S.blue}
+                onMouseLeave={e=>e.currentTarget.style.borderColor=S.border}>
+                <div style={{width:52,height:52,background:'#eaf3ff',borderRadius:14,display:'flex',alignItems:'center',justifyContent:'center',fontSize:24,flexShrink:0}}>📋</div>
+                <div style={{flex:1}}>
+                  <div style={{fontFamily:"'Sora',sans-serif",fontWeight:700,fontSize:15,color:S.navy,marginBottom:4}}>Gestionează anunțurile tale</div>
+                  <div style={{fontSize:13,color:S.muted}}>Editează, activează/dezactivează sau șterge anunțurile publicate.</div>
+                </div>
+                <div style={{color:S.blue,fontSize:20}}>→</div>
+              </div>
+            </a>
           </div>
         )}
 

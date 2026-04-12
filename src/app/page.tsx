@@ -42,7 +42,7 @@ export default function LandingPage() {
   const [openFaq, setOpenFaq] = useState(null)
 
   useEffect(() => {
-    const onScroll = () => setScrolled(window.scrollY > 20)
+    const onScroll = () => setScrolled(window.scrollY > 80)
     window.addEventListener('scroll', onScroll)
     return () => window.removeEventListener('scroll', onScroll)
   }, [])
@@ -61,19 +61,19 @@ export default function LandingPage() {
 
 
       {/* NAV */}
-      <nav style={{position:'fixed',top:0,left:0,right:0,zIndex:100,background:scrolled?'rgba(255,255,255,0.95)':'transparent',backdropFilter:scrolled?'blur(12px)':'none',borderBottom:scrolled?`1px solid ${S.border}`:'none',transition:'all .3s',padding:'0 24px',height:68,display:'flex',alignItems:'center',justifyContent:'space-between',maxWidth:1200,margin:'0 auto',width:'100%'}}>
-        <div style={{position:'fixed',top:0,left:0,right:0,zIndex:100,background:scrolled?'rgba(255,255,255,0.95)':'transparent',backdropFilter:scrolled?'blur(12px)':'none',borderBottom:scrolled?`1px solid ${S.border}`:'none',transition:'all .3s',padding:'0 48px',height:68,display:'flex',alignItems:'center',justifyContent:'space-between'}}>
+      <nav style={{position:'fixed',top:0,left:0,right:0,zIndex:100,background:scrolled?'rgba(10,31,68,0.97)':'transparent',backdropFilter:scrolled?'blur(16px)':'none',borderBottom:scrolled?'1px solid rgba(255,255,255,0.08)':'none',transition:'all .4s',padding:'0 24px',height:68,display:'flex',alignItems:'center',justifyContent:'space-between',maxWidth:1200,margin:'0 auto',width:'100%'}}>
+        <div style={{position:'fixed',top:0,left:0,right:0,zIndex:100,background:scrolled?'rgba(10,31,68,0.97)':'transparent',backdropFilter:scrolled?'blur(16px)':'none',borderBottom:scrolled?'1px solid rgba(255,255,255,0.08)':'none',transition:'all .4s',padding:'0 48px',height:68,display:'flex',alignItems:'center',justifyContent:'space-between'}}>
           <a href="/home" style={{textDecoration:'none',display:'flex',alignItems:'center',gap:8}}>
             <div style={{width:36,height:36,background:S.blue,borderRadius:10,display:'flex',alignItems:'center',justifyContent:'center',fontFamily:"'Sora',sans-serif",fontWeight:800,fontSize:17,color:'#fff'}}>R</div>
-            <span style={{fontFamily:"'Sora',sans-serif",fontWeight:800,fontSize:20,color:scrolled?S.navy:'#fff',letterSpacing:-0.5}}>Reparo</span>
+            <span style={{fontFamily:"'Sora',sans-serif",fontWeight:800,fontSize:20,color:'#fff',letterSpacing:-0.5}}>Reparo</span>
           </a>
           <div style={{display:'flex',alignItems:'center',gap:24}}>
             {[['Funcții','#funcții'],['Cum funcționează','#cum-functioneaza'],['Prețuri','#prețuri'],['FAQ','#faq'],['Contact','/contact']].map(([item,href])=>(
-              <a key={item} href={href} style={{fontSize:14,fontWeight:500,color:scrolled?S.muted:'rgba(255,255,255,0.8)',textDecoration:'none',transition:'color .2s'}}>
+              <a key={item} href={href} style={{fontSize:14,fontWeight:500,color:scrolled?'rgba(255,255,255,0.95)':'rgba(255,255,255,0.75)',textDecoration:'none',transition:'color .2s'}}>
                 {item}
               </a>
             ))}
-            <a href="/auth/login" style={{fontSize:14,fontWeight:600,color:scrolled?S.blue:'#fff',textDecoration:'none',border:`1.5px solid ${scrolled?S.blue:'rgba(255,255,255,0.5)'}`,padding:'8px 16px',borderRadius:50}}>
+            <a href="/auth/login" style={{fontSize:14,fontWeight:600,color:'#fff',textDecoration:'none',border:'1.5px solid rgba(255,255,255,0.35)',padding:'8px 16px',borderRadius:50,transition:'border-color .2s'}}>
               Intră în cont
             </a>
             <a href="/auth/register" style={{fontSize:14,fontWeight:700,background:S.yellow,color:'#fff',textDecoration:'none',padding:'10px 20px',borderRadius:50,boxShadow:'0 4px 16px rgba(245,158,11,0.3)',fontFamily:"'Sora',sans-serif"}}>

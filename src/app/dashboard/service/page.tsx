@@ -1,6 +1,6 @@
 // @ts-nocheck
 'use client'
-import { useEffect, useState } from 'react'
+import React, { useEffect, useState, useRef } from 'react'
 import { createClient } from '@/lib/supabase/client'
 
 const S = {
@@ -42,6 +42,234 @@ const ALL_SERVICES = ['Schimb ulei & filtre','Frâne & discuri','Geometrie roți
 const ALL_BRANDS = ['Toate mărcile','Alfa Romeo','Audi','BMW','Chevrolet','Citroën','Dacia','Fiat','Ford','Honda','Hyundai','Jaguar','Jeep','Kia','Land Rover','Lexus','Mazda','Mercedes-Benz','Mini','Mitsubishi','Nissan','Opel','Peugeot','Porsche','Renault','Seat','Skoda','Subaru','Suzuki','Tesla','Toyota','Volkswagen','Volvo']
 const COUNTIES = ['Alba','Arad','Argeș','Bacău','Bihor','Bistrița-Năsăud','Botoșani','Brăila','Brașov','București','Buzău','Călărași','Caraș-Severin','Cluj','Constanța','Covasna','Dâmbovița','Dolj','Galați','Giurgiu','Gorj','Harghita','Hunedoara','Ialomița','Iași','Ilfov','Maramureș','Mehedinți','Mureș','Neamț','Olt','Prahova','Sălaj','Satu Mare','Sibiu','Suceava','Teleorman','Timiș','Tulcea','Vâlcea','Vaslui','Vrancea']
 const APT_STATUS = {in_asteptare:{label:'Așteptare',bg:S.amberBg,color:S.amber},confirmata:{label:'Confirmată',bg:'#dbeafe',color:S.blue},in_lucru:{label:'În lucru',bg:S.purpleBg,color:S.purple},finalizata:{label:'Finalizată',bg:S.greenBg,color:S.green},anulata:{label:'Anulată',bg:S.redBg,color:S.red}}
+
+
+// ══ MapPicker Component — Click pe hartă = adresă automată ══
+function MapPicker({ address, city, onAddressChange }) {
+  const [search, setSearch] = useState(address || '')
+  const [searching, setSearching] = useState(false)
+  const [results, setResults] = useState([])
+  const [pinLat, setPinLat] = useState(null)
+  const [pinLon, setPinLon] = useState(null)
+  const [saved, setSaved] = useState(false)
+  const [loading, setLoading] = useState(false)
+  const mapRef = React.useRef(null)
+  const leafletMapRef = React.useRef(null)
+  const markerRef = React.useRef(null)
+
+  const S2 = { navy:'#0a1f44', blue:'#1a56db', bg:'#f0f6ff', white:'#fff', muted:'#6b7280', border:'#e5e7eb', green:'#16a34a' }
+
+  // Load Leaflet
+  React.useEffect(() => {
+    if (typeof window === 'undefined' || leafletMapRef.current) return
+
+    const linkEl = document.createElement('link')
+    linkEl.rel = 'stylesheet'
+    linkEl.href = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.css'
+    document.head.appendChild(linkEl)
+
+    const script = document.createElement('script')
+    script.src = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.js'
+    script.onload = () => initMap()
+    document.head.appendChild(script)
+
+    return () => {}
+  }, [])
+
+  function initMap() {
+    if (!mapRef.current || leafletMapRef.current) return
+    const L = window.L
+    if (!L) return
+
+    // Initial coordinates — Bucharest default
+    const initLat = pinLat || 44.4268
+    const initLon = pinLon || 26.1025
+
+    const map = L.map(mapRef.current, { zoomControl: true }).setView([initLat, initLon], 13)
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '© OpenStreetMap',
+      maxZoom: 19
+    }).addTo(map)
+
+    // Custom pin icon
+    const icon = L.divIcon({
+      html: `<div style="width:32px;height:32px;background:#1a56db;border:3px solid #fff;border-radius:50% 50% 50% 0;transform:rotate(-45deg);box-shadow:0 2px 8px rgba(0,0,0,0.3)"></div>`,
+      iconSize: [32, 32],
+      iconAnchor: [16, 32],
+      className: ''
+    })
+
+    // If we already have address, geocode it first
+    if (address && city) {
+      geocodeAndCenter(address, city, map, icon)
+    }
+
+    // Click on map
+    map.on('click', async (e) => {
+      const { lat, lng } = e.latlng
+      setPinLat(lat)
+      setPinLon(lng)
+
+      // Place/move marker
+      if (markerRef.current) {
+        markerRef.current.setLatLng([lat, lng])
+      } else {
+        markerRef.current = L.marker([lat, lng], { icon, draggable: true }).addTo(map)
+        markerRef.current.on('dragend', async (ev) => {
+          const pos = ev.target.getLatLng()
+          await reverseGeocode(pos.lat, pos.lng)
+        })
+      }
+
+      await reverseGeocode(lat, lng)
+    })
+
+    leafletMapRef.current = map
+  }
+
+  async function geocodeAndCenter(addr, cty, map, icon) {
+    try {
+      const q = encodeURIComponent(addr + ', ' + cty + ', Romania')
+      const res = await fetch(`https://nominatim.openstreetmap.org/search?q=${q}&format=json&limit=1`, { headers: {'Accept-Language':'ro'} })
+      const data = await res.json()
+      if (data[0]) {
+        const lat = parseFloat(data[0].lat)
+        const lon = parseFloat(data[0].lon)
+        map.setView([lat, lon], 16)
+        setPinLat(lat); setPinLon(lon)
+        const L = window.L
+        if (markerRef.current) markerRef.current.setLatLng([lat, lon])
+        else {
+          const ic = L.divIcon({ html:`<div style="width:32px;height:32px;background:#1a56db;border:3px solid #fff;border-radius:50% 50% 50% 0;transform:rotate(-45deg);box-shadow:0 2px 8px rgba(0,0,0,0.3)"></div>`, iconSize:[32,32], iconAnchor:[16,32], className:'' })
+          markerRef.current = L.marker([lat, lon], { icon: ic, draggable: true }).addTo(map)
+          markerRef.current.on('dragend', async (ev) => {
+            const pos = ev.target.getLatLng()
+            await reverseGeocode(pos.lat, pos.lng)
+          })
+        }
+      }
+    } catch(e) { console.error(e) }
+  }
+
+  async function reverseGeocode(lat, lon) {
+    setLoading(true)
+    try {
+      const res = await fetch(`https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lon}&format=json&addressdetails=1`, { headers: {'Accept-Language':'ro'} })
+      const data = await res.json()
+      if (data && data.address) {
+        const a = data.address
+        const road = a.road || a.pedestrian || a.footway || ''
+        const nr = a.house_number || ''
+        const streetAddr = [road, nr].filter(Boolean).join(' ')
+        const cityName = a.city || a.town || a.village || a.municipality || a.county || city || ''
+        setSearch(streetAddr)
+        onAddressChange(streetAddr, cityName)
+      }
+    } catch(e) { console.error(e) }
+    setLoading(false)
+  }
+
+  async function searchAddress() {
+    if (!search.trim()) return
+    setSearching(true)
+    setResults([])
+    try {
+      const q = encodeURIComponent(search + ', ' + (city||'') + ', Romania')
+      const res = await fetch(`https://nominatim.openstreetmap.org/search?q=${q}&format=json&limit=5&addressdetails=1`, { headers:{'Accept-Language':'ro'} })
+      const data = await res.json()
+      setResults(data||[])
+    } catch(e) { console.error(e) }
+    setSearching(false)
+  }
+
+  function selectResult(r) {
+    const lat = parseFloat(r.lat)
+    const lon = parseFloat(r.lon)
+    const a = r.address || {}
+    const road = a.road || a.pedestrian || ''
+    const nr = a.house_number || ''
+    const streetAddr = [road, nr].filter(Boolean).join(' ') || r.display_name.split(',')[0]
+    const cityName = a.city || a.town || a.village || city || ''
+
+    setSearch(streetAddr)
+    setPinLat(lat); setPinLon(lon)
+    setResults([])
+    onAddressChange(streetAddr, cityName)
+
+    if (leafletMapRef.current) {
+      leafletMapRef.current.setView([lat, lon], 17)
+      const L = window.L
+      const icon = L.divIcon({ html:`<div style="width:32px;height:32px;background:#1a56db;border:3px solid #fff;border-radius:50% 50% 50% 0;transform:rotate(-45deg);box-shadow:0 2px 8px rgba(0,0,0,0.3)"></div>`, iconSize:[32,32], iconAnchor:[16,32], className:'' })
+      if (markerRef.current) markerRef.current.setLatLng([lat, lon])
+      else {
+        markerRef.current = L.marker([lat, lon], { icon, draggable: true }).addTo(leafletMapRef.current)
+        markerRef.current.on('dragend', async (ev) => {
+          const pos = ev.target.getLatLng()
+          await reverseGeocode(pos.lat, pos.lng)
+        })
+      }
+    }
+  }
+
+  function handleSave() {
+    setSaved(true)
+    setTimeout(() => setSaved(false), 2500)
+  }
+
+  return (
+    <div>
+      {/* Search */}
+      <div style={{ display:'flex', gap:8, marginBottom:8, position:'relative' }}>
+        <div style={{ flex:1, position:'relative' }}>
+          <input value={search} onChange={e=>setSearch(e.target.value)}
+            onKeyDown={e=>e.key==='Enter'&&searchAddress()}
+            placeholder="Caută adresa sau dă click direct pe hartă..."
+            style={{ width:'100%', padding:'10px 14px', border:`1.5px solid ${S2.border}`, borderRadius:10, fontSize:13, fontFamily:"'DM Sans',sans-serif", outline:'none', boxSizing:'border-box' }}/>
+          {results.length>0&&(
+            <div style={{ position:'absolute', top:'100%', left:0, right:0, background:S2.white, border:`1px solid ${S2.border}`, borderRadius:10, zIndex:9999, boxShadow:'0 4px 20px rgba(10,31,68,0.15)', maxHeight:220, overflowY:'auto', marginTop:4 }}>
+              {results.map((r,i)=>(
+                <div key={i} onClick={()=>selectResult(r)}
+                  style={{ padding:'10px 14px', cursor:'pointer', fontSize:12, color:S2.navy, borderBottom:i<results.length-1?`1px solid ${S2.border}`:'none', lineHeight:1.5 }}
+                  onMouseEnter={e=>e.currentTarget.style.background='#f0f6ff'}
+                  onMouseLeave={e=>e.currentTarget.style.background='transparent'}>
+                  📍 {r.display_name}
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+        <button onClick={searchAddress} disabled={searching}
+          style={{ padding:'10px 18px', background:S2.blue, color:'#fff', border:'none', borderRadius:10, fontSize:13, fontWeight:600, cursor:'pointer', flexShrink:0, opacity:searching?.6:1 }}>
+          {searching?'...':'🔍 Caută'}
+        </button>
+      </div>
+
+      {/* Hint */}
+      <div style={{ fontSize:12, color:S2.muted, marginBottom:8, display:'flex', alignItems:'center', gap:4 }}>
+        👆 Dă click pe hartă pentru a plasa pinul · Pinul se poate trage
+        {loading&&<span style={{ marginLeft:8, color:S2.blue }}>Se detectează adresa...</span>}
+      </div>
+
+      {/* Map */}
+      <div ref={mapRef} style={{ height:280, borderRadius:14, overflow:'hidden', border:`1.5px solid ${S2.border}`, marginBottom:10 }}/>
+
+      {/* Actions */}
+      <div style={{ display:'flex', alignItems:'center', gap:10, flexWrap:'wrap' }}>
+        <button onClick={handleSave}
+          style={{ padding:'9px 20px', background:saved?S2.green:S2.blue, color:'#fff', border:'none', borderRadius:50, fontSize:13, fontWeight:700, cursor:'pointer', fontFamily:"'DM Sans',sans-serif", transition:'background .2s' }}>
+          {saved?'✅ Locație confirmată!':'📍 Confirmă locația'}
+        </button>
+        {pinLat&&pinLon&&(
+          <a href={`https://maps.google.com/maps?q=${pinLat},${pinLon}`} target="_blank" rel="noopener noreferrer"
+            style={{ fontSize:12, color:S2.blue, textDecoration:'none', fontWeight:600 }}>
+            🗺️ Deschide în Google Maps →
+          </a>
+        )}
+        {search&&<div style={{ fontSize:12, color:S2.muted, background:S2.bg, borderRadius:8, padding:'6px 12px', flex:1 }}>📍 {search}</div>}
+      </div>
+    </div>
+  )
+}
 
 export default function ServiceDashboard() {
   const [tab, setTab] = useState('Acasă')
@@ -92,7 +320,8 @@ export default function ServiceDashboard() {
         const sm={}; (apts.data||[]).forEach(a=>sm[a.id]=a.status); setAptStatuses(sm)
         setReviews(revs.data||[])
         setOffers(offs.data||[])
-        setOfferings(offrs.data||[])
+        setOfferings(offrs.error ? [] : (offrs.data||[]))
+        if (offrs.error) console.warn('service_offerings table missing - run SQL fix:', offrs.error.message)
       }
       setLoading(false)
     }
@@ -128,7 +357,16 @@ export default function ServiceDashboard() {
 
   async function addOffering() {
     if (!service||!newOffering.name) return
-    const {data} = await supabase.from('service_offerings').insert({...newOffering,service_id:service.id,price_from:newOffering.price_from?parseFloat(newOffering.price_from):null,price_to:newOffering.price_to?parseFloat(newOffering.price_to):null,duration_min:newOffering.duration_min?parseInt(newOffering.duration_min):null,is_active:true}).select().single()
+    const {data, error} = await supabase.from('service_offerings').insert({
+      name: newOffering.name,
+      description: newOffering.description,
+      price_from: newOffering.price_from ? parseFloat(newOffering.price_from) : null,
+      price_to: newOffering.price_to ? parseFloat(newOffering.price_to) : null,
+      duration_min: newOffering.duration_min ? parseInt(newOffering.duration_min) : null,
+      service_id: service.id,
+      is_active: true
+    }).select().single()
+    if (error) { alert('Eroare: ' + error.message + '\nRuleaza SQL-ul din service_offerings_fix.sql in Supabase!'); return }
     if (data) setOfferings(prev=>[data,...prev])
     setNewOffering({name:'',price_from:'',price_to:'',duration_min:'',description:''})
   }
@@ -149,6 +387,7 @@ export default function ServiceDashboard() {
     {name:'Cereri',icon:'📋',badge:requests.length||null},
     {name:'Programări',icon:'📅',badge:appointments.filter(a=>['in_asteptare','confirmata','in_lucru'].includes(aptStatuses[a.id]||a.status)).length||null},
     {name:'Oferte trimise',icon:'💬',badge:offers.filter(o=>o.status==='trimisa').length||null},
+    {name:'Anunțuri',icon:'📦',badge:null},
     {name:'Recenzii',icon:'⭐',badge:reviews.length||null},
     {name:'Setări',icon:'⚙️',badge:null},
   ]
@@ -168,8 +407,8 @@ export default function ServiceDashboard() {
       <style>{`
         @keyframes spin{to{transform:rotate(360deg)}}
         .dash-input:focus{border-color:${S.blue}!important;box-shadow:0 0 0 3px rgba(26,86,219,0.1)!important}
-        .tab-btn:hover{background:${S.bg}!important;color:${S.navy}!important}
-        .tab-btn.active{background:#eaf3ff!important;color:${S.blue}!important}
+        .tab-btn:hover{background:rgba(255,255,255,0.08)!important;color:#fff!important}
+        .tab-btn.active{background:rgba(26,86,219,0.25)!important;color:#fff!important}
         .nav-link:hover{color:${S.navy}!important}
         .card-hover:hover{border-color:${S.blueLight}!important;box-shadow:0 4px 20px rgba(26,86,219,0.1)!important}
         .apt-btn:hover{border-color:${S.blue}!important;color:${S.blue}!important}
@@ -199,34 +438,40 @@ export default function ServiceDashboard() {
 
       <div style={{display:'flex',flex:1,overflow:'hidden',position:'relative'}}>
 
-        {/* SIDEBAR */}
+        {/* SIDEBAR — Dark Navy */}
         <aside className={`dash-sidebar${sidebarOpen?' open':''}`}
-          style={{width:220,background:S.white,borderRight:`1px solid ${S.border}`,display:'flex',flexDirection:'column',flexShrink:0,transition:'transform .25s',overflow:'hidden auto'}}>
+          style={{width:220,background:'#0a1f44',display:'flex',flexDirection:'column',flexShrink:0,transition:'transform .25s',overflow:'hidden auto'}}>
           
           {/* Service info */}
-          <div style={{padding:'20px 16px 14px',borderBottom:`1px solid ${S.border}`}}>
-            <div style={{width:44,height:44,background:'#eaf3ff',borderRadius:12,display:'flex',alignItems:'center',justifyContent:'center',fontSize:22,marginBottom:10}}>🔧</div>
-            <div style={{fontSize:11,color:S.muted,fontWeight:600,textTransform:'uppercase',letterSpacing:0.5,fontFamily:"'Sora',sans-serif",marginBottom:3}}>Service</div>
-            <div style={{fontSize:14,fontWeight:700,color:S.navy,fontFamily:"'Sora',sans-serif",marginBottom:2}}>{service?.name||'—'}</div>
-            <div style={{fontSize:12,color:S.muted,marginBottom:8}}>{service?.city}</div>
-            <span style={pill(service?.plan==='pro'?S.amberBg:'#f1f5f9',service?.plan==='pro'?S.amber:S.muted,'')}>{service?.plan==='pro'?'⭐ Pro':'🔓 Free'}</span>
+          <div style={{padding:'20px 16px 16px',borderBottom:'1px solid rgba(255,255,255,0.08)'}}>
+            <div style={{width:44,height:44,background:'rgba(26,86,219,0.3)',border:'1.5px solid rgba(26,86,219,0.5)',borderRadius:12,display:'flex',alignItems:'center',justifyContent:'center',fontSize:22,marginBottom:12}}>🔧</div>
+            <div style={{fontSize:10,color:'rgba(255,255,255,0.35)',fontWeight:700,textTransform:'uppercase',letterSpacing:1.5,fontFamily:"'Sora',sans-serif",marginBottom:4}}>Service</div>
+            <div style={{fontSize:14,fontWeight:700,color:'#fff',fontFamily:"'Sora',sans-serif",marginBottom:2}}>{service?.name||'—'}</div>
+            <div style={{fontSize:12,color:'rgba(255,255,255,0.45)',marginBottom:10}}>{service?.city}</div>
+            <span style={{display:'inline-flex',alignItems:'center',padding:'3px 10px',borderRadius:50,background:service?.plan==='pro'?'rgba(245,158,11,0.2)':'rgba(255,255,255,0.08)',color:service?.plan==='pro'?S.yellow:'rgba(255,255,255,0.45)',fontSize:11,fontWeight:700,fontFamily:"'Sora',sans-serif"}}>
+              {service?.plan==='pro'?'⭐ Pro':'🔓 Free'}
+            </span>
           </div>
 
           {/* Nav */}
-          <nav style={{padding:'8px 8px',flex:1}}>
+          <nav style={{padding:'10px 10px',flex:1}}>
             {TABS.map(t=>(
-              <button key={t.name} className={`tab-btn${tab===t.name?' active':''}`}
+              <button key={t.name}
                 onClick={()=>{setTab(t.name);setSidebarOpen(false)}}
-                style={{width:'100%',display:'flex',alignItems:'center',gap:10,padding:'10px 12px',borderRadius:10,border:'none',cursor:'pointer',background:tab===t.name?'#eaf3ff':'transparent',color:tab===t.name?S.blue:S.muted,fontFamily:"'DM Sans',sans-serif",fontSize:13,fontWeight:tab===t.name?600:500,marginBottom:2,transition:'all .15s'}}>
-                <span style={{fontSize:16}}>{t.icon}</span>
+                style={{width:'100%',display:'flex',alignItems:'center',gap:10,padding:'10px 12px',borderRadius:10,border:'none',cursor:'pointer',marginBottom:2,transition:'all .15s',
+                  background:tab===t.name?'rgba(26,86,219,0.25)':'transparent',
+                  color:tab===t.name?'#fff':'rgba(255,255,255,0.5)',
+                  fontFamily:"'DM Sans',sans-serif",fontSize:13,fontWeight:tab===t.name?600:400,
+                  borderRight:tab===t.name?`2px solid ${S.blue}`:'2px solid transparent'}}>
+                <span style={{fontSize:15}}>{t.icon}</span>
                 <span style={{flex:1,textAlign:'left'}}>{t.name}</span>
-                {t.badge&&<span style={{...pill(tab===t.name?S.blue:'#e5e7eb',tab===t.name?'#fff':S.muted,''),padding:'2px 7px',fontSize:10}}>{t.badge}</span>}
+                {t.badge&&<span style={{background:tab===t.name?S.blue:'rgba(255,255,255,0.15)',color:'#fff',borderRadius:50,padding:'2px 7px',fontSize:10,fontWeight:700}}>{t.badge}</span>}
               </button>
             ))}
           </nav>
 
-          <div style={{padding:'8px',borderTop:`1px solid ${S.border}`}}>
-            <a href="/home" style={{display:'flex',alignItems:'center',gap:8,padding:'10px 12px',borderRadius:10,color:S.muted,textDecoration:'none',fontSize:13,fontFamily:"'DM Sans',sans-serif"}}>🏠 Înapoi la site</a>
+          <div style={{padding:'10px',borderTop:'1px solid rgba(255,255,255,0.08)'}}>
+            <a href="/home" style={{display:'flex',alignItems:'center',gap:8,padding:'10px 12px',borderRadius:10,color:'rgba(255,255,255,0.4)',textDecoration:'none',fontSize:13,fontFamily:"'DM Sans',sans-serif"}}>🏠 Înapoi la site</a>
           </div>
         </aside>
 
@@ -239,9 +484,29 @@ export default function ServiceDashboard() {
           {/* ══ ACASĂ ══ */}
           {tab==='Acasă'&&(
             <div>
-              <div style={{marginBottom:24}}>
-                <h1 style={{fontFamily:"'Sora',sans-serif",fontWeight:800,fontSize:24,color:S.navy,marginBottom:4}}>Bună ziua, {service?.name}! 👋</h1>
-                <p style={{color:S.muted,fontSize:14}}>{new Date().toLocaleDateString('ro-RO',{weekday:'long',day:'numeric',month:'long',year:'numeric'})}</p>
+              {/* Hero gradient card */}
+              <div style={{background:'linear-gradient(135deg,#1a56db 0%,#0a1f44 100%)',borderRadius:20,padding:'24px 28px',marginBottom:20,display:'flex',alignItems:'center',justifyContent:'space-between',position:'relative',overflow:'hidden'}}>
+                <div style={{position:'absolute',top:-40,right:-40,width:180,height:180,borderRadius:'50%',background:'rgba(255,255,255,0.04)',pointerEvents:'none'}}/>
+                <div style={{position:'absolute',bottom:-60,right:60,width:240,height:240,borderRadius:'50%',background:'rgba(255,255,255,0.03)',pointerEvents:'none'}}/>
+                <div>
+                  <div style={{fontSize:11,color:'rgba(255,255,255,0.45)',fontWeight:600,textTransform:'uppercase',letterSpacing:1.5,marginBottom:8,fontFamily:"'Sora',sans-serif"}}>
+                    {new Date().toLocaleDateString('ro-RO',{weekday:'long',day:'numeric',month:'long',year:'numeric'})}
+                  </div>
+                  <h1 style={{fontFamily:"'Sora',sans-serif",fontWeight:800,fontSize:22,color:'#fff',marginBottom:6}}>Bună ziua, {service?.name}! 👋</h1>
+                  <p style={{color:'rgba(255,255,255,0.55)',fontSize:13}}>
+                    {requests.length > 0 ? `Ai ${requests.length} cereri noi care te așteaptă.` : 'Profilul tău este activ și vizibil în căutări.'}
+                  </p>
+                </div>
+                <div style={{display:'flex',gap:10,flexShrink:0}}>
+                  <button onClick={()=>setTab('Cereri')}
+                    style={{background:'rgba(255,255,255,0.15)',color:'#fff',border:'1px solid rgba(255,255,255,0.2)',borderRadius:50,padding:'9px 18px',fontSize:13,fontWeight:600,cursor:'pointer',fontFamily:"'DM Sans',sans-serif",backdropFilter:'blur(4px)'}}>
+                    📋 Cereri noi
+                  </button>
+                  <button onClick={()=>setTab('Profil public')}
+                    style={{background:S.yellow,color:'#fff',border:'none',borderRadius:50,padding:'9px 18px',fontSize:13,fontWeight:700,cursor:'pointer',fontFamily:"'Sora',sans-serif",boxShadow:'0 4px 16px rgba(245,158,11,0.35)'}}>
+                    ✦ Promovare
+                  </button>
+                </div>
               </div>
 
               {(!pf.description||!pf.phone||!pf.address)&&(
@@ -258,18 +523,20 @@ export default function ServiceDashboard() {
               {/* Stats */}
               <div style={{display:'grid',gridTemplateColumns:'repeat(4,1fr)',gap:12,marginBottom:20}}>
                 {[
-                  {label:'Cereri noi',value:requests.length,icon:'📋',bg:'#eaf3ff',color:S.blue,tab:'Cereri'},
-                  {label:'Programări azi',value:appointments.filter(a=>a.scheduled_date===today).length,icon:'📅',bg:S.greenBg,color:S.green,tab:'Programări'},
-                  {label:'Oferte active',value:offers.filter(o=>o.status==='trimisa').length,icon:'💬',bg:S.purpleBg,color:S.purple,tab:'Oferte trimise'},
-                  {label:'Rating',value:service?.rating_avg>0?service.rating_avg.toFixed(1)+' ⭐':'Nou',icon:'⭐',bg:S.amberBg,color:S.amber,tab:'Recenzii'},
+                  {label:'Cereri noi',value:requests.length,icon:'📋',accent:S.blue,accentBg:'#eaf3ff',tab:'Cereri'},
+                  {label:'Programări azi',value:appointments.filter(a=>a.scheduled_date===today).length,icon:'📅',accent:S.green,accentBg:S.greenBg,tab:'Programări'},
+                  {label:'Oferte active',value:offers.filter(o=>o.status==='trimisa').length,icon:'💬',accent:S.purple,accentBg:S.purpleBg,tab:'Oferte trimise'},
+                  {label:'Rating',value:service?.rating_avg>0?service.rating_avg.toFixed(1):null,icon:'⭐',accent:S.amber,accentBg:S.amberBg,tab:'Recenzii'},
                 ].map(s=>(
                   <button key={s.label} onClick={()=>setTab(s.tab)}
-                    style={{background:s.bg,borderRadius:16,padding:'18px 16px',border:`1px solid ${s.color}20`,cursor:'pointer',textAlign:'left',transition:'transform .15s'}}
-                    onMouseEnter={e=>e.currentTarget.style.transform='translateY(-2px)'}
-                    onMouseLeave={e=>e.currentTarget.style.transform='none'}>
-                    <div style={{fontSize:24,marginBottom:10}}>{s.icon}</div>
-                    <div style={{fontFamily:"'Sora',sans-serif",fontWeight:800,fontSize:26,color:s.color,marginBottom:2}}>{s.value}</div>
-                    <div style={{fontSize:12,color:s.color,opacity:.7}}>{s.label}</div>
+                    style={{background:S.white,borderRadius:16,padding:'16px',border:`1px solid ${S.border}`,cursor:'pointer',textAlign:'left',transition:'all .15s',boxShadow:'0 2px 8px rgba(10,31,68,0.04)'}}
+                    onMouseEnter={e=>{e.currentTarget.style.borderColor=s.accent;e.currentTarget.style.transform='translateY(-2px)';e.currentTarget.style.boxShadow=`0 4px 16px rgba(10,31,68,0.1)`}}
+                    onMouseLeave={e=>{e.currentTarget.style.borderColor=S.border;e.currentTarget.style.transform='none';e.currentTarget.style.boxShadow='0 2px 8px rgba(10,31,68,0.04)'}}>
+                    <div style={{width:36,height:36,background:s.accentBg,borderRadius:10,display:'flex',alignItems:'center',justifyContent:'center',fontSize:17,marginBottom:12}}>{s.icon}</div>
+                    <div style={{fontFamily:"'Sora',sans-serif",fontWeight:800,fontSize:26,color:s.value!==null&&s.value!==undefined?s.accent:'#d97706',marginBottom:2}}>
+                      {s.value!==null&&s.value!==undefined?s.value:'Nou'}
+                    </div>
+                    <div style={{fontSize:11,color:S.muted,textTransform:'uppercase',letterSpacing:0.5}}>{s.label}</div>
                   </button>
                 ))}
               </div>
@@ -331,6 +598,39 @@ export default function ServiceDashboard() {
                 </div>
               </div>
 
+              {/* Logo & Cover Upload */}
+              <div style={{...card({marginBottom:16,gridColumn:'1/-1'})}}>
+                <h3 style={{fontFamily:"'Sora',sans-serif",fontWeight:700,fontSize:14,color:S.navy,marginBottom:16}}>📸 Fotografii profil</h3>
+                <div style={{display:'grid',gridTemplateColumns:'120px 1fr',gap:16,alignItems:'start'}}>
+                  <div>
+                    <div style={{fontSize:11,fontWeight:700,color:S.muted,textTransform:'uppercase',letterSpacing:1,marginBottom:8,fontFamily:"'Sora',sans-serif"}}>Logo</div>
+                    <div onClick={()=>document.getElementById('logo-upload').click()}
+                      style={{width:120,height:120,background:service?.logo_url?'transparent':'#eaf3ff',borderRadius:16,display:'flex',alignItems:'center',justifyContent:'center',cursor:'pointer',overflow:'hidden',border:`2px dashed ${S.border}`}}>
+                      {service?.logo_url?<img src={service.logo_url} alt="" style={{width:'100%',height:'100%',objectFit:'cover'}}/>:<div style={{textAlign:'center',color:S.muted}}><div style={{fontSize:32,marginBottom:4}}>🔧</div><div style={{fontSize:10}}>Click pentru logo</div></div>}
+                    </div>
+                    <input id="logo-upload" type="file" accept="image/*" style={{display:'none'}} onChange={async(e)=>{
+                      const file=e.target.files?.[0]; if(!file||!service) return
+                      const path=`${service.id}/logo-${Date.now()}.${file.name.split('.').pop()}`
+                      const {error}=await supabase.storage.from('service-media').upload(path,file,{upsert:true})
+                      if(!error){const {data:{publicUrl}}=supabase.storage.from('service-media').getPublicUrl(path);await supabase.from('services').update({logo_url:publicUrl}).eq('id',service.id);setService(p=>({...p,logo_url:publicUrl}))}
+                    }}/>
+                  </div>
+                  <div>
+                    <div style={{fontSize:11,fontWeight:700,color:S.muted,textTransform:'uppercase',letterSpacing:1,marginBottom:8,fontFamily:"'Sora',sans-serif"}}>Banner / Cover</div>
+                    <div onClick={()=>document.getElementById('cover-upload').click()}
+                      style={{width:'100%',height:120,background:service?.cover_image_url?'transparent':'#eaf3ff',borderRadius:16,display:'flex',alignItems:'center',justifyContent:'center',cursor:'pointer',overflow:'hidden',border:`2px dashed ${S.border}`}}>
+                      {service?.cover_image_url?<img src={service.cover_image_url} alt="" style={{width:'100%',height:'100%',objectFit:'cover'}}/>:<div style={{textAlign:'center',color:S.muted}}><div style={{fontSize:28,marginBottom:4}}>🖼️</div><div style={{fontSize:11}}>Click pentru banner</div><div style={{fontSize:10,marginTop:2}}>Recomandat: 1200×400px</div></div>}
+                    </div>
+                    <input id="cover-upload" type="file" accept="image/*" style={{display:'none'}} onChange={async(e)=>{
+                      const file=e.target.files?.[0]; if(!file||!service) return
+                      const path=`${service.id}/cover-${Date.now()}.${file.name.split('.').pop()}`
+                      const {error}=await supabase.storage.from('service-media').upload(path,file,{upsert:true})
+                      if(!error){const {data:{publicUrl}}=supabase.storage.from('service-media').getPublicUrl(path);await supabase.from('services').update({cover_image_url:publicUrl}).eq('id',service.id);setService(p=>({...p,cover_image_url:publicUrl}))}
+                    }}/>
+                  </div>
+                </div>
+              </div>
+
               <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:16}}>
                 {/* Informatii baza */}
                 <div style={card()}>
@@ -368,15 +668,15 @@ export default function ServiceDashboard() {
                       </select>
                     </div>
                   </div>
-                  {pf.address&&pf.city&&(
-                    <div>
-                      <label style={label}>Hartă</label>
-                      <div style={{borderRadius:12,overflow:'hidden',border:`1px solid ${S.border}`}}>
-                        <iframe src={`https://maps.google.com/maps?q=${encodeURIComponent(pf.address+', '+pf.city+', Romania')}&output=embed&z=15`} width="100%" height="180" style={{border:0,display:'block'}} allowFullScreen loading="lazy"/>
-                      </div>
-                      <a href={`https://maps.google.com/maps?q=${encodeURIComponent(pf.address+', '+pf.city)}`} target="_blank" style={{fontSize:12,color:S.blue,textDecoration:'none',display:'block',marginTop:6}}>🗺️ Verifică pe Google Maps →</a>
-                    </div>
-                  )}
+                  {/* Hartă interactivă cu search */}
+                  <div>
+                    <label style={label}>Hartă & locație</label>
+                    <MapPicker
+                      address={pf.address}
+                      city={pf.city}
+                      onAddressChange={(addr, city) => setPf(p => ({...p, address: addr, city: city||p.city}))}
+                    />
+                  </div>
 
                   <h3 style={{fontFamily:"'Sora',sans-serif",fontWeight:700,fontSize:14,color:S.navy,margin:'20px 0 12px'}}>🕐 Program lucru</h3>
                   {Object.entries(pf.opening_hours).map(([day,hours])=>(
@@ -697,6 +997,32 @@ export default function ServiceDashboard() {
           )}
 
           {/* ══ RECENZII ══ */}
+          {/* ══ ANUNTURI ══ */}
+          {tab==='Anunțuri'&&(
+            <div>
+              <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:20}}>
+                <div>
+                  <h1 style={{fontFamily:"'Sora',sans-serif",fontWeight:800,fontSize:22,color:S.navy,marginBottom:4}}>Anunțurile mele</h1>
+                  <p style={{color:S.muted,fontSize:13}}>Piese, accesorii sau alte produse auto pe care le vinzi.</p>
+                </div>
+                <a href="/listing/create" style={{display:'inline-flex',alignItems:'center',gap:8,padding:'10px 20px',background:S.yellow,color:'#fff',borderRadius:50,textDecoration:'none',fontSize:13,fontWeight:700,fontFamily:"'Sora',sans-serif",boxShadow:'0 4px 16px rgba(245,158,11,0.3)'}}>
+                  + Adaugă anunț
+                </a>
+              </div>
+              <a href="/anunturile-mele"
+                style={{display:'flex',alignItems:'center',gap:16,padding:20,background:S.white,borderRadius:16,border:`1.5px solid ${S.border}`,textDecoration:'none',marginBottom:12,transition:'border-color .2s'}}
+                onMouseEnter={e=>e.currentTarget.style.borderColor=S.blue}
+                onMouseLeave={e=>e.currentTarget.style.borderColor=S.border}>
+                <div style={{width:52,height:52,background:'#eaf3ff',borderRadius:14,display:'flex',alignItems:'center',justifyContent:'center',fontSize:26}}>📋</div>
+                <div style={{flex:1}}>
+                  <div style={{fontFamily:"'Sora',sans-serif",fontWeight:700,fontSize:15,color:S.navy,marginBottom:4}}>Gestionează toate anunțurile</div>
+                  <div style={{fontSize:13,color:S.muted}}>Editează prețuri, activează/dezactivează, șterge.</div>
+                </div>
+                <div style={{color:S.blue,fontSize:20,fontWeight:300}}>→</div>
+              </a>
+            </div>
+          )}
+
           {tab==='Recenzii'&&(
             <div>
               <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:20}}>
@@ -734,34 +1060,168 @@ export default function ServiceDashboard() {
 
           {/* ══ SETARI ══ */}
           {tab==='Setări'&&(
-            <div style={{maxWidth:560}}>
-              <h1 style={{fontFamily:"'Sora',sans-serif",fontWeight:800,fontSize:22,color:S.navy,marginBottom:20}}>Setări cont</h1>
-              <div style={{...card({marginBottom:16})}}>
-                <h3 style={{fontFamily:"'Sora',sans-serif",fontWeight:700,fontSize:14,color:S.navy,marginBottom:12}}>Plan abonament</h3>
-                <div style={{background:service?.plan==='pro'?S.amberBg:S.bg,borderRadius:12,padding:16,marginBottom:14,border:`1px solid ${service?.plan==='pro'?S.amber:S.border}`}}>
-                  <div style={{fontFamily:"'Sora',sans-serif",fontWeight:800,fontSize:18,color:service?.plan==='pro'?S.amber:S.navy,marginBottom:4}}>{service?.plan==='pro'?'⭐ Plan Pro':'🔓 Plan Free'}</div>
-                  <div style={{fontSize:13,color:S.muted}}>{service?.plan==='free'?'Treci la Pro pentru vizibilitate crescută și funcții avansate.':'Ai acces la toate funcțiile platformei.'}</div>
-                </div>
-                {service?.plan==='free'&&(
-                  <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:12}}>
-                    {[{plan:'Basic',price:'99 RON/lună',features:['Profil complet','Cereri din oraș','Calendar programări']},{plan:'Pro',price:'199 RON/lună',features:['Tot din Basic','Anunțuri promovate','Statistici avansate','Badge Pro','Prioritate în căutări']}].map(p=>(
-                      <div key={p.plan} style={{padding:16,borderRadius:12,border:`1.5px solid ${p.plan==='Pro'?S.blue:S.border}`,background:p.plan==='Pro'?'#eaf3ff':S.white}}>
-                        <div style={{fontFamily:"'Sora',sans-serif",fontWeight:700,fontSize:14,color:S.navy,marginBottom:4}}>{p.plan}</div>
-                        <div style={{fontFamily:"'Sora',sans-serif",fontWeight:800,fontSize:20,color:S.blue,marginBottom:10}}>{p.price}</div>
-                        {p.features.map(f=><div key={f} style={{fontSize:12,color:S.muted,marginBottom:3}}>✓ {f}</div>)}
-                        <button style={{...btn(p.plan==='Pro'?'primary':'ghost'),width:'100%',justifyContent:'center',marginTop:12,fontSize:12}}>Alege {p.plan}</button>
+            <div>
+              <h1 style={{fontFamily:"'Sora',sans-serif",fontWeight:800,fontSize:22,color:S.navy,marginBottom:6}}>Setări cont</h1>
+              <p style={{fontSize:14,color:S.muted,marginBottom:24}}>Gestionează abonamentul, notificările și securitatea contului tău.</p>
+
+              <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:16,marginBottom:16}}>
+
+                {/* Plan curent */}
+                <div style={{...card(),gridColumn:'1/-1'}}>
+                  <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:16}}>
+                    <h3 style={{fontFamily:"'Sora',sans-serif",fontWeight:700,fontSize:15,color:S.navy}}>💳 Plan abonament</h3>
+                    {service?.plan_expires_at&&<div style={{fontSize:12,color:S.muted}}>Expiră: {new Date(service.plan_expires_at).toLocaleDateString('ro-RO')}</div>}
+                  </div>
+                  <div style={{display:'grid',gridTemplateColumns:'repeat(3,1fr)',gap:12}}>
+                    {[
+                      {plan:'free',label:'Free',price:'0',period:'',color:S.muted,features:['Profil public basic','10 cereri/lună','Fără badge verificat']},
+                      {plan:'basic',label:'Basic',price:'99',period:'/lună',color:S.blue,features:['Cereri nelimitate','Notificări instant','Badge verificat','Statistici de bază']},
+                      {plan:'pro',label:'Pro',price:'199',period:'/lună',color:S.amber,features:['Tot din Basic','Prioritate în căutări','Badge Pro ⭐','Statistici avansate','Suport dedicat']},
+                    ].map(p=>(
+                      <div key={p.plan} style={{borderRadius:14,padding:16,border:`2px solid ${service?.plan===p.plan?p.color:S.border}`,background:service?.plan===p.plan?p.plan==='pro'?S.amberBg:p.plan==='basic'?'#eaf3ff':S.bg:S.white,position:'relative',transition:'all .2s'}}>
+                        {service?.plan===p.plan&&<div style={{position:'absolute',top:-1,right:12,background:p.color,color:'#fff',fontSize:10,fontWeight:700,padding:'3px 10px',borderRadius:'0 0 8px 8px',fontFamily:"'Sora',sans-serif"}}>ACTIV</div>}
+                        <div style={{fontFamily:"'Sora',sans-serif",fontWeight:700,fontSize:13,color:S.navy,marginBottom:6}}>{p.label}</div>
+                        <div style={{display:'flex',alignItems:'baseline',gap:3,marginBottom:12}}>
+                          <span style={{fontFamily:"'Sora',sans-serif",fontWeight:800,fontSize:26,color:p.color}}>{p.price} RON</span>
+                          <span style={{fontSize:12,color:S.muted}}>{p.period}</span>
+                        </div>
+                        {p.features.map(f=>(
+                          <div key={f} style={{display:'flex',alignItems:'center',gap:6,marginBottom:5,fontSize:12,color:S.muted}}>
+                            <span style={{color:p.color,fontWeight:700}}>✓</span>{f}
+                          </div>
+                        ))}
+                        {service?.plan!==p.plan&&p.plan!=='free'&&(
+                          <button
+                            onClick={async()=>{
+                              const res = await fetch('/api/stripe/checkout',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({type:'subscription',plan:p.plan,service_id:service?.id})})
+                              const {url} = await res.json()
+                              if(url) window.location.href=url
+                            }}
+                            style={{...btn('primary'),width:'100%',justifyContent:'center',marginTop:12,fontSize:12,background:p.color,boxShadow:`0 2px 8px ${p.color}40`}}>
+                            Upgrade la {p.label} →
+                          </button>
+                        )}
+                        {service?.plan===p.plan&&p.plan!=='free'&&(
+                          <div style={{marginTop:12,fontSize:12,color:p.color,fontWeight:600,textAlign:'center'}}>✅ Planul tău curent</div>
+                        )}
                       </div>
                     ))}
                   </div>
-                )}
-              </div>
-              <div style={{background:S.redBg,border:`1px solid ${S.red}20`,borderRadius:16,padding:16}}>
-                <h3 style={{fontFamily:"'Sora',sans-serif",fontWeight:700,fontSize:14,color:S.red,marginBottom:6}}>Zona periculoasă</h3>
-                <p style={{fontSize:13,color:S.red,opacity:.8,marginBottom:10}}>Dezactivează profilul temporar.</p>
-                <button onClick={async()=>{await supabase.from('services').update({is_active:false}).eq('id',service?.id);alert('Profilul a fost dezactivat.')}}
-                  style={{padding:'8px 16px',border:`1.5px solid ${S.red}`,borderRadius:50,color:S.red,background:S.white,cursor:'pointer',fontSize:13,fontWeight:600,fontFamily:"'DM Sans',sans-serif"}}>
-                  Dezactivează profilul
-                </button>
+                </div>
+
+                {/* Promovare */}
+                <div style={card()}>
+                  <h3 style={{fontFamily:"'Sora',sans-serif",fontWeight:700,fontSize:15,color:S.navy,marginBottom:12}}>🚀 Promovare service</h3>
+                  <p style={{fontSize:13,color:S.muted,marginBottom:14,lineHeight:1.6}}>Apari primul în căutări din orașul tău. Vizibilitate maximă, mai mulți clienți.</p>
+                  {service?.is_promoted&&service?.promoted_until?(
+                    <div style={{background:S.amberBg,borderRadius:10,padding:'10px 14px',marginBottom:12,border:`1px solid ${S.amber}30`}}>
+                      <div style={{fontWeight:700,fontSize:13,color:S.amber}}>⭐ Promovare activă</div>
+                      <div style={{fontSize:12,color:S.amber,opacity:.8}}>Până pe {new Date(service.promoted_until).toLocaleDateString('ro-RO')}</div>
+                    </div>
+                  ):(
+                    <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:8,marginBottom:12}}>
+                      {[{label:'7 zile',price:'49 RON',key:'service_top_7'},{label:'30 zile',price:'149 RON',key:'service_top_30'}].map(opt=>(
+                        <button key={opt.key}
+                          onClick={async()=>{
+                            const res = await fetch('/api/stripe/checkout',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({type:'promotion',promo_type:opt.key,service_id:service?.id})})
+                            const {url} = await res.json()
+                            if(url) window.location.href=url
+                          }}
+                          style={{padding:'12px',borderRadius:12,border:`1.5px solid ${S.border}`,background:S.bg,cursor:'pointer',fontFamily:"'DM Sans',sans-serif",transition:'all .15s'}}
+                          onMouseEnter={e=>{e.currentTarget.style.borderColor=S.blue;e.currentTarget.style.background='#eaf3ff'}}
+                          onMouseLeave={e=>{e.currentTarget.style.borderColor=S.border;e.currentTarget.style.background=S.bg}}>
+                          <div style={{fontWeight:700,fontSize:13,color:S.navy,marginBottom:3}}>{opt.label}</div>
+                          <div style={{fontFamily:"'Sora',sans-serif",fontWeight:800,fontSize:16,color:S.blue}}>{opt.price}</div>
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                  <div style={{fontSize:11,color:S.muted}}>💡 Serviciile promovate primesc în medie 3x mai multe cereri.</div>
+                </div>
+
+                {/* Notificări */}
+                <div style={card()}>
+                  <h3 style={{fontFamily:"'Sora',sans-serif",fontWeight:700,fontSize:15,color:S.navy,marginBottom:14}}>🔔 Notificări</h3>
+                  {[
+                    {label:'Cerere ofertă nouă',desc:'Când un client trimite o cerere în orașul tău',key:'notif_requests',default:true},
+                    {label:'Programare confirmată',desc:'Când un client acceptă oferta ta',key:'notif_appointments',default:true},
+                    {label:'Recenzie nouă',desc:'Când primești o recenzie de la un client',key:'notif_reviews',default:true},
+                    {label:'Mesaj nou',desc:'Când primești un mesaj de la un client',key:'notif_messages',default:true},
+                  ].map((n,i)=>(
+                    <div key={n.key} style={{display:'flex',alignItems:'center',justifyContent:'space-between',padding:'10px 0',borderBottom:i<3?`1px solid ${S.border}`:'none'}}>
+                      <div>
+                        <div style={{fontSize:13,fontWeight:600,color:S.navy,marginBottom:2}}>{n.label}</div>
+                        <div style={{fontSize:11,color:S.muted}}>{n.desc}</div>
+                      </div>
+                      <div style={{width:44,height:24,background:S.green,borderRadius:12,position:'relative',cursor:'pointer',flexShrink:0}}>
+                        <div style={{width:20,height:20,background:'#fff',borderRadius:'50%',position:'absolute',top:2,right:2,transition:'left .2s'}}/>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+
+                {/* Securitate */}
+                <div style={card()}>
+                  <h3 style={{fontFamily:"'Sora',sans-serif",fontWeight:700,fontSize:15,color:S.navy,marginBottom:14}}>🔒 Securitate cont</h3>
+                  <div style={{display:'flex',flexDirection:'column',gap:10}}>
+                    <a href="/auth/forgot-password" style={{display:'flex',alignItems:'center',gap:12,padding:'12px 14px',background:S.bg,borderRadius:12,textDecoration:'none',border:`1px solid ${S.border}`,transition:'border-color .15s'}}
+                      onMouseEnter={e=>e.currentTarget.style.borderColor=S.blue}
+                      onMouseLeave={e=>e.currentTarget.style.borderColor=S.border}>
+                      <div style={{width:36,height:36,background:'#eaf3ff',borderRadius:10,display:'flex',alignItems:'center',justifyContent:'center',fontSize:16}}>🔑</div>
+                      <div>
+                        <div style={{fontSize:13,fontWeight:600,color:S.navy}}>Schimbă parola</div>
+                        <div style={{fontSize:11,color:S.muted}}>Trimite email de resetare</div>
+                      </div>
+                      <span style={{marginLeft:'auto',color:S.blue,fontSize:14}}>→</span>
+                    </a>
+                    <a href="/messages" style={{display:'flex',alignItems:'center',gap:12,padding:'12px 14px',background:S.bg,borderRadius:12,textDecoration:'none',border:`1px solid ${S.border}`,transition:'border-color .15s'}}
+                      onMouseEnter={e=>e.currentTarget.style.borderColor=S.blue}
+                      onMouseLeave={e=>e.currentTarget.style.borderColor=S.border}>
+                      <div style={{width:36,height:36,background:'#eaf3ff',borderRadius:10,display:'flex',alignItems:'center',justifyContent:'center',fontSize:16}}>💬</div>
+                      <div>
+                        <div style={{fontSize:13,fontWeight:600,color:S.navy}}>Mesaje clienți</div>
+                        <div style={{fontSize:11,color:S.muted}}>Deschide inbox-ul</div>
+                      </div>
+                      <span style={{marginLeft:'auto',color:S.blue,fontSize:14}}>→</span>
+                    </a>
+                    {service?.id&&(
+                      <a href={`/service/${service.id}`} target="_blank" style={{display:'flex',alignItems:'center',gap:12,padding:'12px 14px',background:S.bg,borderRadius:12,textDecoration:'none',border:`1px solid ${S.border}`,transition:'border-color .15s'}}
+                        onMouseEnter={e=>e.currentTarget.style.borderColor=S.blue}
+                        onMouseLeave={e=>e.currentTarget.style.borderColor=S.border}>
+                        <div style={{width:36,height:36,background:'#eaf3ff',borderRadius:10,display:'flex',alignItems:'center',justifyContent:'center',fontSize:16}}>👁️</div>
+                        <div>
+                          <div style={{fontSize:13,fontWeight:600,color:S.navy}}>Profilul public</div>
+                          <div style={{fontSize:11,color:S.muted}}>Cum te văd clienții</div>
+                        </div>
+                        <span style={{marginLeft:'auto',color:S.blue,fontSize:14}}>↗</span>
+                      </a>
+                    )}
+                  </div>
+                </div>
+
+                {/* Zona periculoasa */}
+                <div style={{background:S.redBg,border:`1px solid ${S.red}20`,borderRadius:16,padding:20,gridColumn:'1/-1'}}>
+                  <h3 style={{fontFamily:"'Sora',sans-serif",fontWeight:700,fontSize:15,color:S.red,marginBottom:6}}>⚠️ Zona periculoasă</h3>
+                  <p style={{fontSize:13,color:S.red,opacity:.8,marginBottom:14,lineHeight:1.6}}>Aceste acțiuni sunt ireversibile sau pot afecta vizibilitatea profilului tău.</p>
+                  <div style={{display:'flex',gap:10,flexWrap:'wrap'}}>
+                    <button onClick={async()=>{
+                        if(!confirm('Ești sigur că vrei să dezactivezi profilul? Clienții nu te vor mai putea găsi în căutări.')) return
+                        await supabase.from('services').update({is_active:!service?.is_active}).eq('id',service?.id)
+                        window.location.reload()
+                      }}
+                      style={{padding:'9px 18px',border:`1.5px solid ${S.red}`,borderRadius:50,color:S.red,background:S.white,cursor:'pointer',fontSize:13,fontWeight:600,fontFamily:"'DM Sans',sans-serif"}}>
+                      {service?.is_active?'Dezactivează profilul temporar':'Reactivează profilul'}
+                    </button>
+                    <button onClick={async()=>{
+                        await supabase.auth.signOut()
+                        window.location.href='/home'
+                      }}
+                      style={{padding:'9px 18px',border:`1.5px solid ${S.border}`,borderRadius:50,color:S.muted,background:S.white,cursor:'pointer',fontSize:13,fontWeight:600,fontFamily:"'DM Sans',sans-serif"}}>
+                      Deconectează-te
+                    </button>
+                  </div>
+                </div>
+
               </div>
             </div>
           )}

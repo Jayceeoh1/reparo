@@ -58,7 +58,7 @@ function ListingsContent() {
 
   async function loadListings() {
     setLoading(true)
-    let q = supabase.from('listings').select('*, listing_media(url, is_cover)').eq('status','activ')
+    let q = supabase.from('listings').select('id, title, price, city, category, condition, created_at, is_promoted, negotiable, listing_media(url, is_cover)').eq('status','activ')
     if (activeCategory!=='toate') q = q.eq('category', activeCategory)
     if (sortBy==='pret_asc') q = q.order('price',{ascending:true})
     else if (sortBy==='pret_desc') q = q.order('price',{ascending:false})
@@ -122,26 +122,26 @@ function ListingsContent() {
 
   return (
     <div style={{minHeight:'100vh',background:S.bg,fontFamily:"'DM Sans',sans-serif"}}>
-      <style>{`.listing-card:hover{border-color:${S.blue}!important;box-shadow:0 4px 20px rgba(26,86,219,0.1)!important}.cat-btn:hover{border-color:${S.blue}!important;color:${S.blue}!important}`}</style>
+      <style>{`.listing-card{text-decoration:none!important;color:inherit!important}.listing-card:hover{border-color:${S.blue}!important;box-shadow:0 4px 20px rgba(26,86,219,0.1)!important}.listing-card *{text-decoration:none!important}.cat-btn:hover{border-color:${S.blue}!important;color:${S.blue}!important}`}</style>
 
-      {/* Subheader */}
-      <div style={{background:S.white,borderBottom:`1px solid ${S.border}`,padding:'12px 24px'}}>
-        <div style={{maxWidth:1100,margin:'0 auto',display:'flex',alignItems:'center',gap:10}}>
-          <form onSubmit={handleSearch} style={{display:'flex',flex:1,maxWidth:520}}>
+
+
+      <div style={{maxWidth:1100,margin:'0 auto',padding:'24px 16px'}}>
+
+        {/* Search + Add button */}
+        <div style={{display:'flex',gap:10,marginBottom:20,alignItems:'center'}}>
+          <form onSubmit={handleSearch} style={{display:'flex',flex:1,maxWidth:560}}>
             <input value={query} onChange={e=>setQuery(e.target.value)} placeholder="Caută piese, anvelope, accesorii..."
-              style={{...inp,borderRadius:'50px 0 0 50px',borderRight:'none',padding:'10px 18px'}}/>
-            <button type="submit" style={{padding:'0 18px',background:S.blue,border:'none',borderRadius:'0 50px 50px 0',cursor:'pointer'}}>
+              style={{...inp,borderRadius:'50px 0 0 50px',borderRight:'none',padding:'10px 18px',flex:1}}/>
+            <button type="submit" style={{padding:'0 18px',background:S.blue,border:'none',borderRadius:'0 50px 50px 0',cursor:'pointer',height:44}}>
               <svg width="15" height="15" viewBox="0 0 15 15" fill="none"><circle cx="6" cy="6" r="4.5" stroke="#fff" strokeWidth="1.6"/><path d="M9.5 9.5L13 13" stroke="#fff" strokeWidth="1.6" strokeLinecap="round"/></svg>
             </button>
           </form>
-          <button onClick={()=>user?setShowAdd(true):window.location.href='/auth/login'}
-            style={{...btnPrimary,background:S.yellow,boxShadow:'0 2px 8px rgba(245,158,11,0.25)',flexShrink:0}}>
+          <a href="/listing/create"
+            style={{...btnPrimary,background:S.yellow,boxShadow:'0 2px 8px rgba(245,158,11,0.25)',flexShrink:0,textDecoration:'none'}}>
             + Adaugă anunț
-          </button>
+          </a>
         </div>
-      </div>
-
-      <div style={{maxWidth:1100,margin:'0 auto',padding:'24px 16px'}}>
 
         {/* Categorii */}
         <div style={{display:'flex',gap:8,marginBottom:20,overflowX:'auto',paddingBottom:4}}>
@@ -188,8 +188,8 @@ function ListingsContent() {
               const cond = CONDITIONS.find(c=>c.key===l.condition)
               const daysAgo = Math.floor((new Date().getTime()-new Date(l.created_at).getTime())/(1000*60*60*24))
               return (
-                <div key={l.id} onClick={()=>setSelected(l)} className="listing-card"
-                  style={{...card({padding:0}),overflow:'hidden',cursor:'pointer',transition:'all .2s'}}>
+                <a key={l.id} href={`/listing/${l.id}`} className="listing-card"
+                  style={{background:S.white,borderRadius:14,border:`1px solid ${S.border}`,overflow:'hidden',cursor:'pointer',transition:'all .2s',textDecoration:'none',color:'inherit',display:'block',boxShadow:'0 2px 8px rgba(10,31,68,0.04)'}}>
                   {/* Image */}
                   <div style={{height:150,background:'#eaf3ff',position:'relative',display:'flex',alignItems:'center',justifyContent:'center',overflow:'hidden'}}>
                     {coverImg?(
@@ -208,13 +208,13 @@ function ListingsContent() {
                     <div style={{fontFamily:"'Sora',sans-serif",fontWeight:800,fontSize:17,color:S.navy,marginBottom:4}}>
                       {l.price?`${l.price.toLocaleString('ro-RO')} lei`:'Preț negociabil'}
                     </div>
-                    <div style={{fontSize:12,color:S.muted,marginBottom:6,lineHeight:1.4,display:'-webkit-box',WebkitLineClamp:2,WebkitBoxOrient:'vertical',overflow:'hidden'}}>{l.title}</div>
+                    <div style={{fontSize:12,color:S.muted,marginBottom:6,lineHeight:1.4,textDecoration:'none',display:'-webkit-box',WebkitLineClamp:2,WebkitBoxOrient:'vertical',overflow:'hidden'}}>{l.title}</div>
                     <div style={{fontSize:11,color:S.muted,display:'flex',justifyContent:'space-between'}}>
                       <span>📍 {l.city||'Locație'}</span>
                       <span>{daysAgo===0?'Azi':daysAgo===1?'Ieri':`${daysAgo}z`}</span>
                     </div>
                   </div>
-                </div>
+                </a>
               )
             })}
           </div>

@@ -14,7 +14,7 @@ const NAV_TABS = [
   { label: 'Anvelope', href: '/search?category=anvelope' },
   { label: 'Tractări', href: '/search?category=tractari' },
 ]
-const EXCLUDED = ['/auth/login', '/auth/register', '/dashboard/service', '/despre', '/blog', '/cariere', '/contact', '/termeni', '/confidentialitate', '/cookies']
+const EXCLUDED = ['/auth/login', '/auth/register', '/dashboard/service', '/despre', '/blog', '/cariere', '/contact', '/termeni', '/confidentialitate', '/cookies', '/listing/create']
 const CITIES = ['Toate orașele','Alba Iulia','Alexandria','Arad','Bacău','Baia Mare','Bistrița','Botoșani','Brăila','Brașov','București','Buzău','Cluj-Napoca','Constanța','Craiova','Deva','Focșani','Galați','Iași','Miercurea Ciuc','Oradea','Piatra Neamț','Pitești','Ploiești','Râmnicu Vâlcea','Satu Mare','Sibiu','Slatina','Slobozia','Suceava','Târgoviște','Târgu Jiu','Târgu Mureș','Timișoara','Tulcea','Zalău']
 
 export default function GlobalLayout({ children }) {
@@ -128,10 +128,16 @@ export default function GlobalLayout({ children }) {
                   <a href="/auth/register" style={{padding:'8px 16px',borderRadius:50,fontSize:13,fontWeight:600,color:'var(--muted)',textDecoration:'none',border:'1.5px solid var(--border)',fontFamily:"'Sora',sans-serif"}}>Înreg. service</a>
                 </>
               )}
+              <a href="/listing/create"
+                style={{display:'inline-flex',alignItems:'center',gap:5,padding:'10px 18px',borderRadius:50,fontSize:13,fontWeight:600,background:'transparent',color:'var(--blue)',textDecoration:'none',fontFamily:"'Sora',sans-serif",border:'1.5px solid var(--blue)',transition:'all .15s'}}
+                onMouseEnter={e=>{e.currentTarget.style.background='#eaf3ff'}}
+                onMouseLeave={e=>{e.currentTarget.style.background='transparent'}}>
+                + Adaugă anunț
+              </a>
               <a href="/home" onClick={e=>{e.preventDefault();window.dispatchEvent(new CustomEvent('open-quote-modal'))}}
-                style={{display:'inline-flex',alignItems:'center',gap:6,padding:'10px 22px',borderRadius:50,fontSize:13,fontWeight:700,background:'var(--blue)',color:'#fff',textDecoration:'none',fontFamily:"'Sora',sans-serif",boxShadow:'0 4px 16px rgba(26,86,219,0.25)',transition:'background .2s,transform .15s'}}
-                onMouseEnter={e=>{e.currentTarget.style.background='#1741b0';e.currentTarget.style.transform='translateY(-1px)'}}
-                onMouseLeave={e=>{e.currentTarget.style.background='var(--blue)';e.currentTarget.style.transform='none'}}>
+                style={{display:'inline-flex',alignItems:'center',gap:6,padding:'10px 22px',borderRadius:50,fontSize:13,fontWeight:700,background:'var(--yellow)',color:'#fff',textDecoration:'none',fontFamily:"'Sora',sans-serif",boxShadow:'0 4px 16px rgba(245,158,11,0.25)',transition:'background .2s,transform .15s'}}
+                onMouseEnter={e=>{e.currentTarget.style.background='#d97706';e.currentTarget.style.transform='translateY(-1px)'}}
+                onMouseLeave={e=>{e.currentTarget.style.background='var(--yellow)';e.currentTarget.style.transform='none'}}>
                 ✦ Cere ofertă
               </a>
             </div>

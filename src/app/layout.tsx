@@ -1,32 +1,59 @@
-// @ts-nocheck
-import type { Metadata } from 'next'
+import type { Metadata, Viewport } from 'next'
 import './globals.css'
-import { Toaster } from 'react-hot-toast'
-import GlobalLayout from '@/components/layout/GlobalLayout'
 
 export const metadata: Metadata = {
-  title: 'Reparo — Platforma de servicii auto',
-  description: 'Găsește cel mai bun service auto din zona ta. Cere oferte gratuite, compară prețuri și rezervă programarea online.',
-  keywords: 'service auto, reparatii auto, schimb ulei, oferta service, ITP, RCA',
+  title: 'Reparo — Servicii Auto România',
+  description: 'Găsește cel mai bun service auto din zona ta. Cereri de ofertă gratuite, comparare prețuri, programări online.',
+  keywords: 'service auto, reparatii auto, ITP, RCA, piese auto, Romania',
+  authors: [{ name: 'Reparo' }],
+  manifest: '/manifest.json',
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: 'default',
+    title: 'Reparo',
+  },
+  openGraph: {
+    title: 'Reparo — Servicii Auto România',
+    description: 'Găsește cel mai bun service auto din zona ta.',
+    type: 'website',
+    locale: 'ro_RO',
+  },
+}
+
+export const viewport: Viewport = {
+  themeColor: '#0a1f44',
+  width: 'device-width',
+  initialScale: 1,
+  maximumScale: 1,
+  userScalable: false,
 }
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="ro">
       <head>
-        <link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700;800&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet"/>
+        <link rel="manifest" href="/manifest.json"/>
+        <link rel="apple-touch-icon" href="/icons/icon-192.png"/>
+        <meta name="apple-mobile-web-app-capable" content="yes"/>
+        <meta name="apple-mobile-web-app-status-bar-style" content="default"/>
+        <meta name="apple-mobile-web-app-title" content="Reparo"/>
+        <meta name="mobile-web-app-capable" content="yes"/>
+        <meta name="msapplication-TileImage" content="/icons/icon-144.png"/>
+        <meta name="msapplication-TileColor" content="#0a1f44"/>
       </head>
       <body>
-        <GlobalLayout>{children}</GlobalLayout>
-        <Toaster
-          position="top-center"
-          toastOptions={{
-            duration: 4000,
-            style: { background: '#0a1f44', color: '#fff', borderRadius: '50px', fontSize: '14px', fontFamily: "'DM Sans', sans-serif" },
-            success: { iconTheme: { primary: '#34C759', secondary: '#fff' } },
-            error: { iconTheme: { primary: '#FF3B30', secondary: '#fff' } },
-          }}
-        />
+        {children}
+        <script dangerouslySetInnerHTML={{__html: `
+          if ('serviceWorker' in navigator) {
+            window.addEventListener('load', function() {
+              navigator.serviceWorker.register('/sw.js').then(function(reg) {
+                console.log('SW registered');
+              }).catch(function(err) {
+                console.log('SW failed:', err);
+              });
+            });
+          }
+        `}}/>
       </body>
     </html>
   )
