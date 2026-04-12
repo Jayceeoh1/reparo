@@ -14,7 +14,7 @@ const NAV_TABS = [
   { label: 'Anvelope', href: '/search?category=anvelope' },
   { label: 'Tractări', href: '/search?category=tractari' },
 ]
-const EXCLUDED = ['/auth/login', '/auth/register', '/dashboard/service']
+const EXCLUDED = ['/auth/login', '/auth/register', '/dashboard/service', '/despre', '/blog', '/cariere', '/contact', '/termeni', '/confidentialitate', '/cookies']
 const CITIES = ['Toate orașele','Alba Iulia','Alexandria','Arad','Bacău','Baia Mare','Bistrița','Botoșani','Brăila','Brașov','București','Buzău','Cluj-Napoca','Constanța','Craiova','Deva','Focșani','Galați','Iași','Miercurea Ciuc','Oradea','Piatra Neamț','Pitești','Ploiești','Râmnicu Vâlcea','Satu Mare','Sibiu','Slatina','Slobozia','Suceava','Târgoviște','Târgu Jiu','Târgu Mureș','Timișoara','Tulcea','Zalău']
 
 export default function GlobalLayout({ children }) {
@@ -26,7 +26,7 @@ export default function GlobalLayout({ children }) {
   const [searchQuery, setSearchQuery] = useState('')
   const pathname = usePathname()
   const supabase = createClient()
-  const isExcluded = EXCLUDED.some(p => pathname?.startsWith(p))
+  const isExcluded = pathname === '/' || EXCLUDED.some(p => pathname?.startsWith(p))
   const isActive = (href) => pathname === href || (href !== '/home' && pathname?.startsWith(href.split('?')[0]))
 
   useEffect(() => {

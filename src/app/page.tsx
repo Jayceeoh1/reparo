@@ -58,15 +58,7 @@ export default function LandingPage() {
 
   return (
     <div style={{fontFamily:"'DM Sans',sans-serif",background:S.white,overflow:'hidden'}}>
-      <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700;800&family=DM+Sans:wght@400;500;600&display=swap');
-        @keyframes fadeUp{from{opacity:0;transform:translateY(28px)}to{opacity:1;transform:translateY(0)}}
-        .fu{animation:fadeUp .6s ease both}
-        .plan-card:hover{transform:translateY(-4px)!important}
-        .faq-item:hover{background:#f8faff!important}
-        .feat-card:hover{transform:translateY(-2px);box-shadow:0 8px 24px rgba(26,86,219,0.1)!important}
-        * { box-sizing: border-box; }
-      `}</style>
+
 
       {/* NAV */}
       <nav style={{position:'fixed',top:0,left:0,right:0,zIndex:100,background:scrolled?'rgba(255,255,255,0.95)':'transparent',backdropFilter:scrolled?'blur(12px)':'none',borderBottom:scrolled?`1px solid ${S.border}`:'none',transition:'all .3s',padding:'0 24px',height:68,display:'flex',alignItems:'center',justifyContent:'space-between',maxWidth:1200,margin:'0 auto',width:'100%'}}>
@@ -76,8 +68,8 @@ export default function LandingPage() {
             <span style={{fontFamily:"'Sora',sans-serif",fontWeight:800,fontSize:20,color:scrolled?S.navy:'#fff',letterSpacing:-0.5}}>Reparo</span>
           </a>
           <div style={{display:'flex',alignItems:'center',gap:24}}>
-            {['Funcții','Cum funcționează','Prețuri','FAQ'].map(item=>(
-              <a key={item} href={`#${item.toLowerCase().replace(' ','-')}`} style={{fontSize:14,fontWeight:500,color:scrolled?S.muted:'rgba(255,255,255,0.8)',textDecoration:'none',transition:'color .2s'}}>
+            {[['Funcții','#funcții'],['Cum funcționează','#cum-functioneaza'],['Prețuri','#prețuri'],['FAQ','#faq'],['Contact','/contact']].map(([item,href])=>(
+              <a key={item} href={href} style={{fontSize:14,fontWeight:500,color:scrolled?S.muted:'rgba(255,255,255,0.8)',textDecoration:'none',transition:'color .2s'}}>
                 {item}
               </a>
             ))}
@@ -289,8 +281,8 @@ export default function LandingPage() {
           <span style={{fontFamily:"'Sora',sans-serif",fontWeight:800,fontSize:18,color:'#fff'}}>Reparo</span>
         </div>
         <div style={{display:'flex',gap:24}}>
-          {['Termeni și condiții','Confidențialitate','Contact'].map(l=>(
-            <a key={l} href="#" style={{fontSize:13,color:'rgba(255,255,255,0.4)',textDecoration:'none'}}>{l}</a>
+          {[['Termeni și condiții','/termeni'],['Confidențialitate','/confidentialitate'],['Contact','/contact']].map(([l,h])=>(
+            <a key={l} href={h} style={{fontSize:13,color:'rgba(255,255,255,0.4)',textDecoration:'none'}}>{l}</a>
           ))}
         </div>
         <div style={{fontSize:12,color:'rgba(255,255,255,0.3)'}}>© 2026 Reparo. Toate drepturile rezervate.</div>

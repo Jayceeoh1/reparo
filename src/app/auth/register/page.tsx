@@ -190,7 +190,7 @@ export default function RegisterPage() {
 
                 <p style={{textAlign:'center',fontSize:12,color:S.muted,lineHeight:1.5}}>
                   Prin înregistrare, ești de acord cu{' '}
-                  <a href="#" style={{color:S.blue,textDecoration:'none',fontWeight:600}}>Termenii și Condițiile</a>
+                  <a href="/termeni" style={{color:S.blue,textDecoration:'none',fontWeight:600}}>Termenii și Condițiile</a>
                 </p>
               </form>
             </>

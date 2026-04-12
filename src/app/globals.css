@@ -70,3 +70,10 @@ body {
 @media (max-width: 400px) {
   .cat-grid { grid-template-columns: repeat(3, 1fr) !important; }
 }
+
+/* Landing page */
+.plan-card:hover { transform: translateY(-4px) !important; }
+.faq-item:hover { background: #f8faff !important; }
+.feat-card:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(26,86,219,0.1) !important; }
+.feat-card { transition: all .2s; }
+.plan-card { transition: all .25s; }
