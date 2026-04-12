@@ -90,6 +90,24 @@ export default function HomeClient() {
         .fu4{animation:fadeUp .5s .35s ease both}
         @keyframes pulse{0%,100%{opacity:1}50%{opacity:.5}}
         .cat-item:hover{background:#eaf3ff!important;border-color:#1a56db!important}
+        @media(max-width:768px){
+          .home-hero{padding:28px 12px 20px!important}
+          .hero-title{font-size:clamp(22px,6vw,36px)!important}
+          .stats-card{display:grid!important;grid-template-columns:1fr 1fr!important;gap:8px!important;padding:14px!important;width:100%!important}
+          .footer-grid{grid-template-columns:1fr 1fr!important;gap:16px!important}
+          .cat-grid{grid-template-columns:repeat(4,1fr)!important}
+          .listings-grid{grid-template-columns:repeat(2,1fr)!important}
+          .features-grid{grid-template-columns:repeat(2,1fr)!important}
+          .svc-grid{grid-template-columns:1fr!important}
+          .cta-section{padding:24px 16px!important}
+          .cta-btns{flex-direction:column!important;gap:10px!important}
+          .promo-row{flex-direction:column!important}
+        }
+        @media(max-width:400px){
+          .cat-grid{grid-template-columns:repeat(3,1fr)!important}
+          .listings-grid{grid-template-columns:1fr 1fr!important}
+          .stats-card{grid-template-columns:1fr 1fr!important}
+        }
         .svc-card:hover{border-color:#1a56db!important;box-shadow:0 4px 20px rgba(26,86,219,0.1)!important}
         .listing-card:hover{border-color:#1a56db!important}
         .footer-link:hover{color:#fff!important}
@@ -298,7 +316,7 @@ export default function HomeClient() {
       {/* ══ FOOTER ══ */}
       <footer style={{ background: S.navy, padding: '48px 24px 24px' }}>
         <div style={{ maxWidth: 1200, margin: '0 auto' }}>
-          <div className="footer-grid" style={{ display: 'grid', gridTemplateColumns: '2fr 1fr 1fr 1fr', gap: 40, marginBottom: 40 }}>
+          <div className="footer-grid" style={{ display: 'grid', gridTemplateColumns: '2fr 1fr 1fr 1fr', gap: 24, marginBottom: 40 }}>
             <div>
               <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12 }}>
                 <div style={{ width: 32, height: 32, background: '#1a56db', borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 800, fontSize: 15, color: '#fff', fontFamily: "'Sora',sans-serif" }}>R</div>

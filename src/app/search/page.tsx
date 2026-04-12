@@ -70,19 +70,40 @@ function SearchContent() {
         </div>
       </div>
 
-      <div style={{maxWidth:1100,margin:'0 auto',padding:'24px 16px',display:'flex',gap:20}}>
+      <style>{`
+        @media(max-width:768px){
+          .search-layout{flex-direction:column!important}
+          .search-sidebar{width:100%!important;display:flex!important;overflow-x:auto!important;gap:10px!important;padding-bottom:4px!important;scrollbar-width:none!important}
+          .search-sidebar::-webkit-scrollbar{display:none}
+          .search-sidebar>div{flex-shrink:0!important;min-width:220px!important;margin-bottom:0!important}
+        }
+      `}</style>
+      <div className="search-layout" style={{maxWidth:1100,margin:'0 auto',padding:'16px',display:'flex',gap:16}}>
 
         {/* Sidebar filtre */}
-        <div style={{width:240,flexShrink:0}}>
+        <div className="search-sidebar" style={{width:240,flexShrink:0,display:'flex',flexDirection:'column',gap:12}}>
 
-          <div style={card({marginBottom:12})}>
+          <style>{`
+            @media(max-width:768px){
+              .search-sidebar{display:block!important}
+              .search-sidebar-inner{display:flex;gap:8px;overflow-x:auto;padding-bottom:4px;scrollbar-width:none}
+              .search-sidebar-inner::-webkit-scrollbar{display:none}
+              .search-sidebar-inner>div{flex-shrink:0;min-width:200px}
+            }
+            @media(min-width:769px){
+              .search-sidebar-inner{display:block}
+              .search-sidebar-inner>div{margin-bottom:12px}
+            }
+          `}</style>
+          <div className="search-sidebar-inner">
+          <div style={card({})}>
             <div style={{fontSize:11,fontWeight:700,color:S.muted,textTransform:'uppercase',letterSpacing:1,marginBottom:10,fontFamily:"'Sora',sans-serif"}}>Oraș</div>
             <select value={city} onChange={e=>setCity(e.target.value)} style={{...inp,borderRadius:10}}>
               {CITIES.map(c=><option key={c}>{c}</option>)}
             </select>
           </div>
 
-          <div style={card({marginBottom:12})}>
+          <div style={card()}>
             <div style={{fontSize:11,fontWeight:700,color:S.muted,textTransform:'uppercase',letterSpacing:1,marginBottom:10,fontFamily:"'Sora',sans-serif"}}>Sortare</div>
             {[['rating','Rating (cel mai bun)'],['reviews','Cele mai multe recenzii'],['name','Nume (A-Z)']].map(([val,label])=>(
               <label key={val} style={{display:'flex',alignItems:'center',gap:8,padding:'7px 0',cursor:'pointer'}}>
@@ -92,7 +113,7 @@ function SearchContent() {
             ))}
           </div>
 
-          <div style={card({marginBottom:12})}>
+          <div style={card()}>
             <div style={{fontSize:11,fontWeight:700,color:S.muted,textTransform:'uppercase',letterSpacing:1,marginBottom:10,fontFamily:"'Sora',sans-serif"}}>Filtre</div>
             {[['Verificat Reparo',filterVerified,setFilterVerified],['ITP pe loc',filterITP,setFilterITP],['Autorizat RAR',filterRAR,setFilterRAR]].map(([label,val,set])=>(
               <label key={label} className="filter-check" style={{display:'flex',alignItems:'center',gap:8,padding:'8px 10px',borderRadius:10,cursor:'pointer',marginBottom:4,transition:'background .15s'}}>
@@ -118,6 +139,7 @@ function SearchContent() {
               </button>
             ))}
           </div>
+          </div>{/* end sidebar-inner */}
         </div>
 
         {/* Rezultate */}
@@ -145,7 +167,7 @@ function SearchContent() {
             <div style={{display:'flex',flexDirection:'column',gap:12}}>
               {services.map(s=>(
                 <a key={s.id} href={`/service/${s.id}`} className="svc-card"
-                  style={{...card({padding:18}),display:'flex',gap:16,alignItems:'flex-start',textDecoration:'none',transition:'all .2s',cursor:'pointer'}}>
+                  style={{...card({padding:14}),display:'flex',gap:12,alignItems:'flex-start',textDecoration:'none',transition:'all .2s',cursor:'pointer',flexWrap:'wrap'}}>
                   <div style={{width:56,height:56,background:'#eaf3ff',borderRadius:14,display:'flex',alignItems:'center',justifyContent:'center',fontSize:26,flexShrink:0}}>🔧</div>
                   <div style={{flex:1,minWidth:0}}>
                     <div style={{display:'flex',alignItems:'flex-start',justifyContent:'space-between',marginBottom:6,flexWrap:'wrap',gap:6}}>
@@ -167,8 +189,8 @@ function SearchContent() {
                     </div>
                     <div style={{fontSize:12,color:S.blue,fontWeight:500}}>📍 {s.city}{s.address?` · ${s.address}`:''}</div>
                   </div>
-                  <div style={{flexShrink:0}}>
-                    <span style={{...pill('#eaf3ff',S.blue,''),padding:'8px 16px',fontSize:13}}>Vezi profil →</span>
+                  <div style={{flexShrink:0,marginLeft:'auto'}}>
+                    <span style={{display:'inline-flex',padding:'7px 14px',borderRadius:50,background:'#eaf3ff',color:S.blue,fontSize:12,fontWeight:700}}>Vezi profil →</span>
                   </div>
                 </a>
               ))}
