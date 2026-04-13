@@ -17,6 +17,52 @@ const NAV_TABS = [
 const EXCLUDED = ['/auth/login', '/auth/register', '/dashboard/service', '/despre', '/blog', '/cariere', '/contact', '/termeni', '/confidentialitate', '/cookies']
 const CITIES = ['Toate orașele','Alba Iulia','Alexandria','Arad','Bacău','Baia Mare','Bistrița','Botoșani','Brăila','Brașov','București','Buzău','Cluj-Napoca','Constanța','Craiova','Deva','Focșani','Galați','Iași','Miercurea Ciuc','Oradea','Piatra Neamț','Pitești','Ploiești','Râmnicu Vâlcea','Satu Mare','Sibiu','Slatina','Slobozia','Suceava','Târgoviște','Târgu Jiu','Târgu Mureș','Timișoara','Tulcea','Zalău']
 
+const CAR_BRANDS = [
+  'Alfa Romeo','Audi','BMW','Chevrolet','Chrysler','Citroen','Dacia','Daewoo',
+  'Dodge','Fiat','Ford','Honda','Hyundai','Infiniti','Jaguar','Jeep','Kia',
+  'Lada','Lamborghini','Land Rover','Lexus','Maserati','Mazda','Mercedes-Benz',
+  'Mini','Mitsubishi','Nissan','Opel','Peugeot','Porsche','Renault','Seat',
+  'Skoda','Smart','Ssangyong','Subaru','Suzuki','Tesla','Toyota','Volkswagen','Volvo'
+]
+
+const CAR_MODELS: Record<string, string[]> = {
+  'Alfa Romeo': ['147','156','159','166','Giulia','Giulietta','Mito','Stelvio','Tonale'],
+  'Audi': ['A1','A2','A3','A4','A5','A6','A7','A8','Q2','Q3','Q5','Q7','Q8','TT','R8','e-tron'],
+  'BMW': ['Seria 1','Seria 2','Seria 3','Seria 4','Seria 5','Seria 6','Seria 7','Seria 8','X1','X2','X3','X4','X5','X6','X7','Z4','M3','M5'],
+  'Chevrolet': ['Aveo','Captiva','Cruze','Epica','Lacetti','Malibu','Spark','Trax'],
+  'Citroen': ['Berlingo','C1','C2','C3','C4','C5','C6','Jumper','Jumpy','Picasso','Spacetourer','Xsara'],
+  'Dacia': ['Dokker','Duster','Jogger','Logan','Lodgy','Sandero','Spring'],
+  'Daewoo': ['Cielo','Espero','Kalos','Lacetti','Matiz','Nubira'],
+  'Fiat': ['500','Bravo','Doblo','Ducato','Grande Punto','Linea','Panda','Punto','Scudo','Stilo','Tipo'],
+  'Ford': ['B-Max','C-Max','EcoSport','Edge','Explorer','Fiesta','Focus','Galaxy','Ka','Kuga','Mondeo','Mustang','Puma','Ranger','S-Max','Transit'],
+  'Honda': ['Accord','City','Civic','CR-V','HR-V','Jazz','Legend'],
+  'Hyundai': ['Accent','Elantra','i10','i20','i30','i40','ix20','ix35','Kona','Santa Fe','Sonata','Tucson','Ioniq'],
+  'Jaguar': ['E-Pace','F-Pace','F-Type','S-Type','X-Type','XE','XF','XJ'],
+  'Jeep': ['Cherokee','Commander','Compass','Grand Cherokee','Renegade','Wrangler'],
+  'Kia': ['Ceed','EV6','Niro','Optima','Picanto','Rio','Sorento','Soul','Sportage','Stinger','Stonic','Xceed'],
+  'Lada': ['Granta','Kalina','Niva','Priora','Vesta'],
+  'Land Rover': ['Defender','Discovery','Discovery Sport','Freelander','Range Rover','Range Rover Evoque','Range Rover Sport','Range Rover Velar'],
+  'Lexus': ['CT','ES','GS','IS','LC','LS','LX','NX','RX','UX'],
+  'Mazda': ['2','3','5','6','CX-3','CX-5','CX-30','MX-5','RX-8'],
+  'Mercedes-Benz': ['A-Class','B-Class','C-Class','CLA','CLS','E-Class','G-Class','GLA','GLB','GLC','GLE','GLK','GLS','ML','S-Class','SL','SLK','Sprinter','Vito','EQC'],
+  'Mini': ['Clubman','Cooper','Countryman','Paceman'],
+  'Mitsubishi': ['ASX','Colt','Eclipse Cross','Galant','L200','Lancer','Outlander','Pajero','Space Star'],
+  'Nissan': ['350Z','370Z','Ariya','Juke','Leaf','Micra','Murano','Navara','Note','Pathfinder','Patrol','Pulsar','Qashqai','Sentra','Terrano','Tiida','X-Trail'],
+  'Opel': ['Adam','Agila','Astra','Cascada','Corsa','Crossland','Grandland','Insignia','Meriva','Mokka','Omega','Signum','Vectra','Vivaro','Zafira'],
+  'Peugeot': ['107','108','2008','206','207','208','3008','306','307','308','4008','406','407','408','5008','508','Boxer','Expert','Partner','Rifter'],
+  'Porsche': ['718','911','Cayenne','Macan','Panamera','Taycan'],
+  'Renault': ['Arkana','Captur','Clio','Duster','Espace','Fluence','Kadjar','Kangoo','Koleos','Laguna','Latitude','Logan','Master','Megane','Modus','Sandero','Scenic','Symbol','Trafic','Twingo','Zoe'],
+  'Seat': ['Alhambra','Altea','Arona','Ateca','Cordoba','Exeo','Ibiza','Leon','Mii','Tarraco','Toledo'],
+  'Skoda': ['Citigo','Fabia','Kamiq','Karoq','Kodiaq','Octavia','Rapid','Roomster','Scala','Superb','Yeti'],
+  'Smart': ['Forfour','Fortwo'],
+  'Subaru': ['Forester','Impreza','Legacy','Outback','XV'],
+  'Suzuki': ['Alto','Baleno','Grand Vitara','Ignis','Jimny','Splash','Swift','SX4','Vitara'],
+  'Tesla': ['Model 3','Model S','Model X','Model Y'],
+  'Toyota': ['Auris','Avensis','Aygo','C-HR','Camry','Corolla','Hilux','Land Cruiser','Prius','ProAce','RAV4','Supra','Urban Cruiser','Verso','Yaris'],
+  'Volkswagen': ['Amarok','Arteon','Caddy','Caravelle','CC','Crafter','Golf','ID.3','ID.4','Jetta','Multivan','Passat','Phaeton','Polo','Scirocco','Sharan','T-Cross','T-Roc','Tiguan','Touareg','Touran','Transporter','Up'],
+  'Volvo': ['C30','S40','S60','S80','S90','V40','V50','V60','V70','V90','XC40','XC60','XC70','XC90'],
+}
+
 export default function GlobalLayout({ children }) {
   const [user, setUser] = useState(null)
   const [profile, setProfile] = useState(null)
@@ -286,8 +332,54 @@ export default function GlobalLayout({ children }) {
                 </div>
               ):quoteStep===0?(
                 <div>
+                  {/* Brand autocomplete */}
+                  <div style={{marginBottom:10,position:'relative'}}>
+                    <label style={{display:'block',fontSize:11,fontWeight:600,color:'rgba(255,255,255,0.5)',textTransform:'uppercase',letterSpacing:0.5,marginBottom:5}}>Marcă mașină *</label>
+                    <input value={qForm.car_brand}
+                      onChange={e=>setQForm(p=>({...p,car_brand:e.target.value,car_model:''}))}
+                      placeholder="Scrie marca (ex: Volkswagen, BMW...)"
+                      style={{width:'100%',padding:'10px 12px',background:'rgba(255,255,255,0.08)',border:'1px solid rgba(255,255,255,0.15)',borderRadius:10,fontSize:13,color:'#fff',outline:'none',fontFamily:"'DM Sans',sans-serif",boxSizing:'border-box'}}/>
+                    {qForm.car_brand.length>=2&&!CAR_BRANDS.includes(qForm.car_brand)&&(
+                      <div style={{position:'absolute',top:'100%',left:0,right:0,background:'#1a2f5e',borderRadius:10,zIndex:10,maxHeight:160,overflowY:'auto',border:'1px solid rgba(255,255,255,0.15)',marginTop:4}}>
+                        {CAR_BRANDS.filter(b=>b.toLowerCase().includes(qForm.car_brand.toLowerCase())).map(b=>(
+                          <div key={b} onClick={()=>setQForm(p=>({...p,car_brand:b,car_model:''}))}
+                            style={{padding:'9px 14px',cursor:'pointer',fontSize:13,color:'#fff',borderBottom:'1px solid rgba(255,255,255,0.08)'}}
+                            onMouseEnter={e=>e.currentTarget.style.background='rgba(59,130,246,0.3)'}
+                            onMouseLeave={e=>e.currentTarget.style.background='transparent'}>
+                            {b}
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Model autocomplete */}
+                  <div style={{marginBottom:10,position:'relative'}}>
+                    <label style={{display:'block',fontSize:11,fontWeight:600,color:'rgba(255,255,255,0.5)',textTransform:'uppercase',letterSpacing:0.5,marginBottom:5}}>Model *</label>
+                    <input value={qForm.car_model}
+                      onChange={e=>setQForm(p=>({...p,car_model:e.target.value}))}
+                      placeholder={qForm.car_brand&&CAR_MODELS[qForm.car_brand]?`ex: ${CAR_MODELS[qForm.car_brand][0]}`:'Selectează mai întâi marca'}
+                      disabled={!qForm.car_brand}
+                      style={{width:'100%',padding:'10px 12px',background:qForm.car_brand?'rgba(255,255,255,0.08)':'rgba(255,255,255,0.04)',border:'1px solid rgba(255,255,255,0.15)',borderRadius:10,fontSize:13,color:'#fff',outline:'none',fontFamily:"'DM Sans',sans-serif",boxSizing:'border-box',opacity:qForm.car_brand?1:0.5}}/>
+                    {qForm.car_brand&&qForm.car_model.length>=1&&CAR_MODELS[qForm.car_brand]&&(
+                      <div style={{position:'absolute',top:'100%',left:0,right:0,background:'#1a2f5e',borderRadius:10,zIndex:10,maxHeight:160,overflowY:'auto',border:'1px solid rgba(255,255,255,0.15)',marginTop:4}}>
+                        {(CAR_MODELS[qForm.car_brand]||[]).filter(m=>m.toLowerCase().includes(qForm.car_model.toLowerCase())).map(m=>(
+                          <div key={m} onClick={()=>setQForm(p=>({...p,car_model:m}))}
+                            style={{padding:'9px 14px',cursor:'pointer',fontSize:13,color:'#fff',borderBottom:'1px solid rgba(255,255,255,0.08)'}}
+                            onMouseEnter={e=>e.currentTarget.style.background='rgba(59,130,246,0.3)'}
+                            onMouseLeave={e=>e.currentTarget.style.background='transparent'}>
+                            {m}
+                          </div>
+                        ))}
+                        <div onClick={()=>{}} style={{padding:'9px 14px',fontSize:12,color:'rgba(255,255,255,0.4)',fontStyle:'italic'}}>
+                          sau scrie manual și apasă Enter
+                        </div>
+                      </div>
+                    )}
+                  </div>
+
                   <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:10,marginBottom:10}}>
-                    {[['car_brand','Marcă mașină','BMW, Dacia...'],['car_model','Model','Seria 3, Logan...'],['car_year','An fabricație','2019'],['car_fuel','Combustibil','Diesel / Benzină'],['car_km','Kilometraj','87000'],['city','Orașul tău','București']].map(([key,label,ph])=>(
+                    {[['car_year','An fabricație','2019'],['car_fuel','Combustibil','Diesel / Benzină'],['car_km','Kilometraj','87000'],['city','Orașul tău','București']].map(([key,label,ph])=>(
                       <div key={key}>
                         <label style={{display:'block',fontSize:11,fontWeight:600,color:'rgba(255,255,255,0.5)',textTransform:'uppercase',letterSpacing:0.5,marginBottom:5}}>{label}</label>
                         <input value={qForm[key]} onChange={e=>setQForm(p=>({...p,[key]:e.target.value}))} placeholder={ph}
@@ -445,8 +537,54 @@ export default function GlobalLayout({ children }) {
                 </div>
               ):quoteStep===0?(
                 <div>
+                  {/* Brand autocomplete */}
+                  <div style={{marginBottom:10,position:'relative'}}>
+                    <label style={{display:'block',fontSize:11,fontWeight:600,color:'rgba(255,255,255,0.5)',textTransform:'uppercase',letterSpacing:0.5,marginBottom:5}}>Marcă mașină *</label>
+                    <input value={qForm.car_brand}
+                      onChange={e=>setQForm(p=>({...p,car_brand:e.target.value,car_model:''}))}
+                      placeholder="Scrie marca (ex: Volkswagen, BMW...)"
+                      style={{width:'100%',padding:'10px 12px',background:'rgba(255,255,255,0.08)',border:'1px solid rgba(255,255,255,0.15)',borderRadius:10,fontSize:13,color:'#fff',outline:'none',fontFamily:"'DM Sans',sans-serif",boxSizing:'border-box'}}/>
+                    {qForm.car_brand.length>=2&&!CAR_BRANDS.includes(qForm.car_brand)&&(
+                      <div style={{position:'absolute',top:'100%',left:0,right:0,background:'#1a2f5e',borderRadius:10,zIndex:10,maxHeight:160,overflowY:'auto',border:'1px solid rgba(255,255,255,0.15)',marginTop:4}}>
+                        {CAR_BRANDS.filter(b=>b.toLowerCase().includes(qForm.car_brand.toLowerCase())).map(b=>(
+                          <div key={b} onClick={()=>setQForm(p=>({...p,car_brand:b,car_model:''}))}
+                            style={{padding:'9px 14px',cursor:'pointer',fontSize:13,color:'#fff',borderBottom:'1px solid rgba(255,255,255,0.08)'}}
+                            onMouseEnter={e=>e.currentTarget.style.background='rgba(59,130,246,0.3)'}
+                            onMouseLeave={e=>e.currentTarget.style.background='transparent'}>
+                            {b}
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Model autocomplete */}
+                  <div style={{marginBottom:10,position:'relative'}}>
+                    <label style={{display:'block',fontSize:11,fontWeight:600,color:'rgba(255,255,255,0.5)',textTransform:'uppercase',letterSpacing:0.5,marginBottom:5}}>Model *</label>
+                    <input value={qForm.car_model}
+                      onChange={e=>setQForm(p=>({...p,car_model:e.target.value}))}
+                      placeholder={qForm.car_brand&&CAR_MODELS[qForm.car_brand]?`ex: ${CAR_MODELS[qForm.car_brand][0]}`:'Selectează mai întâi marca'}
+                      disabled={!qForm.car_brand}
+                      style={{width:'100%',padding:'10px 12px',background:qForm.car_brand?'rgba(255,255,255,0.08)':'rgba(255,255,255,0.04)',border:'1px solid rgba(255,255,255,0.15)',borderRadius:10,fontSize:13,color:'#fff',outline:'none',fontFamily:"'DM Sans',sans-serif",boxSizing:'border-box',opacity:qForm.car_brand?1:0.5}}/>
+                    {qForm.car_brand&&qForm.car_model.length>=1&&CAR_MODELS[qForm.car_brand]&&(
+                      <div style={{position:'absolute',top:'100%',left:0,right:0,background:'#1a2f5e',borderRadius:10,zIndex:10,maxHeight:160,overflowY:'auto',border:'1px solid rgba(255,255,255,0.15)',marginTop:4}}>
+                        {(CAR_MODELS[qForm.car_brand]||[]).filter(m=>m.toLowerCase().includes(qForm.car_model.toLowerCase())).map(m=>(
+                          <div key={m} onClick={()=>setQForm(p=>({...p,car_model:m}))}
+                            style={{padding:'9px 14px',cursor:'pointer',fontSize:13,color:'#fff',borderBottom:'1px solid rgba(255,255,255,0.08)'}}
+                            onMouseEnter={e=>e.currentTarget.style.background='rgba(59,130,246,0.3)'}
+                            onMouseLeave={e=>e.currentTarget.style.background='transparent'}>
+                            {m}
+                          </div>
+                        ))}
+                        <div onClick={()=>{}} style={{padding:'9px 14px',fontSize:12,color:'rgba(255,255,255,0.4)',fontStyle:'italic'}}>
+                          sau scrie manual și apasă Enter
+                        </div>
+                      </div>
+                    )}
+                  </div>
+
                   <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:10,marginBottom:10}}>
-                    {[['car_brand','Marcă mașină','BMW, Dacia...'],['car_model','Model','Seria 3, Logan...'],['car_year','An fabricație','2019'],['car_fuel','Combustibil','Diesel / Benzină'],['car_km','Kilometraj','87000'],['city','Orașul tău','București']].map(([key,label,ph])=>(
+                    {[['car_year','An fabricație','2019'],['car_fuel','Combustibil','Diesel / Benzină'],['car_km','Kilometraj','87000'],['city','Orașul tău','București']].map(([key,label,ph])=>(
                       <div key={key}>
                         <label style={{display:'block',fontSize:11,fontWeight:600,color:'rgba(255,255,255,0.5)',textTransform:'uppercase',letterSpacing:0.5,marginBottom:5}}>{label}</label>
                         <input value={qForm[key]} onChange={e=>setQForm(p=>({...p,[key]:e.target.value}))} placeholder={ph}
