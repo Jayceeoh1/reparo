@@ -48,22 +48,6 @@ function EditModal({ listing, onClose, onSave }) {
   }
 
   return (
-    <style>{`
-      @media(max-width:768px){
-        .my-listings-header{flex-direction:column!important;align-items:flex-start!important;gap:10px!important}
-        .my-listings-header a{width:100%!important;justify-content:center!important}
-        .my-listings-stats{grid-template-columns:repeat(2,1fr)!important;gap:8px!important}
-        .listing-row{flex-direction:row!important}
-        .listing-row-photo{width:100px!important;height:90px!important;flex-shrink:0!important}
-        .listing-row-info{flex:1!important;min-width:0!important}
-        .listing-row-title{font-size:13px!important}
-        .listing-row-actions{flex-wrap:wrap!important;gap:6px!important}
-        .listing-row-action-btn{padding:5px 10px!important;font-size:11px!important}
-      }
-      @media(max-width:420px){
-        .listing-row{flex-direction:column!important}
-        .listing-row-photo{width:100%!important;height:140px!important}
-      }`}</style>
     <div onClick={e => { if (e.target === e.currentTarget) onClose() }}
       style={{position:'fixed',inset:0,background:'rgba(10,31,68,0.5)',zIndex:1000,display:'flex',alignItems:'center',justifyContent:'center',padding:16}}>
       <div style={{background:S.white,borderRadius:20,width:'100%',maxWidth:560,padding:28,maxHeight:'90vh',overflowY:'auto'}}>
@@ -194,6 +178,20 @@ export default function MyListingsPage() {
   }
 
   return (
+    <>
+    <style>{`
+      @media(max-width:768px){
+        .my-listings-header{flex-direction:column!important;align-items:flex-start!important;gap:10px!important}
+        .my-listings-header a{width:100%!important;justify-content:center!important}
+        .my-listings-stats{grid-template-columns:repeat(2,1fr)!important;gap:8px!important}
+        .listing-row-photo{width:100px!important;height:90px!important;flex-shrink:0!important}
+        .listing-row-actions{flex-wrap:wrap!important;gap:6px!important}
+      }
+      @media(max-width:420px){
+        .listing-row{flex-direction:column!important}
+        .listing-row-photo{width:100%!important;height:140px!important}
+      }
+    `}</style>
     <div style={{minHeight:'100vh',background:S.bg,fontFamily:"'DM Sans',sans-serif"}}>
       <style>{`.edit-inp:focus{border-color:#1a56db!important;box-shadow:0 0 0 3px rgba(26,86,219,0.1)!important}.lst-row:hover{border-color:#1a56db!important}`}</style>
 
@@ -337,5 +335,6 @@ export default function MyListingsPage() {
         <EditModal listing={editingListing} onClose={()=>setEditingListing(null)} onSave={onSaved}/>
       )}
     </div>
+    </>
   )
 }
