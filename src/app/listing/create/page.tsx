@@ -141,7 +141,7 @@ export default function CreateListingPage() {
   const STEPS = ['Categorie','Detalii','Fotografii','Publicare']
 
   return (
-    <div style={{minHeight:'100vh',background:S.bg,fontFamily:"'DM Sans',sans-serif"}}>
+    <div style={{minHeight:'calc(100vh - 68px)',background:S.bg,fontFamily:"'DM Sans',sans-serif"}}>
       <style>{`.lst-inp:focus{border-color:#1a56db!important;box-shadow:0 0 0 3px rgba(26,86,219,0.1)!important}
         @media(max-width:768px){
           .create-header{flex-direction:column!important;gap:8px!important;padding:10px 14px!important}
@@ -158,20 +158,20 @@ export default function CreateListingPage() {
         }`}</style>
 
       {/* Header */}
-      <div style={{background:S.white,borderBottom:`1px solid ${S.border}`,padding:'14px 24px',display:'flex',alignItems:'center',gap:16,position:'sticky',top:64,zIndex:50}}>
-        <a href="/listing" style={{color:S.muted,textDecoration:'none',fontSize:13}}>← Înapoi</a>
+      <div style={{background:S.white,borderBottom:`1px solid ${S.border}`,padding:'12px 24px',display:'flex',alignItems:'center',gap:16,position:'sticky',top:68,zIndex:50}}>
+        <a href="/listing" style={{color:S.muted,textDecoration:'none',fontSize:13,display:'flex',alignItems:'center',gap:4}}>← Înapoi</a>
         <div style={{flex:1}}>
-          <h1 style={{fontFamily:"'Sora',sans-serif",fontWeight:700,fontSize:16,color:S.navy,margin:0}}>Adaugă anunț nou</h1>
+          <h1 style={{fontFamily:"'Sora',sans-serif",fontWeight:700,fontSize:15,color:S.navy,margin:0}}>Adaugă anunț nou</h1>
         </div>
-        {/* Progress */}
-        <div style={{display:'flex',alignItems:'center',gap:6}}>
+        {/* Progress steps */}
+        <div style={{display:'flex',alignItems:'center',gap:4}}>
           {STEPS.map((s,i) => (
-            <div key={s} style={{display:'flex',alignItems:'center',gap:6}}>
-              <div style={{width:28,height:28,borderRadius:'50%',display:'flex',alignItems:'center',justifyContent:'center',fontSize:12,fontWeight:700,fontFamily:"'Sora',sans-serif",background:i+1<step?S.green:i+1===step?S.blue:'#e5e7eb',color:i+1<=step?'#fff':S.muted,transition:'all .2s'}}>
+            <div key={s} style={{display:'flex',alignItems:'center',gap:4}}>
+              <div style={{width:26,height:26,borderRadius:'50%',display:'flex',alignItems:'center',justifyContent:'center',fontSize:11,fontWeight:700,fontFamily:"'Sora',sans-serif",background:i+1<step?S.green:i+1===step?S.blue:'#e5e7eb',color:i+1<=step?'#fff':S.muted,transition:'all .2s',flexShrink:0}}>
                 {i+1<step?'✓':i+1}
               </div>
-              <span style={{fontSize:11,color:i+1===step?S.navy:S.muted,fontWeight:i+1===step?600:400}}>{s}</span>
-              {i<3&&<div style={{width:20,height:1,background:i+1<step?S.green:'#e5e7eb'}}/>}
+              <span className="hide-mob" style={{fontSize:11,color:i+1===step?S.navy:S.muted,fontWeight:i+1===step?600:400}}>{s}</span>
+              {i<3&&<div style={{width:16,height:1,background:i+1<step?S.green:'#e5e7eb'}}/>}
             </div>
           ))}
         </div>
