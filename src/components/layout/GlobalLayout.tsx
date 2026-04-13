@@ -49,21 +49,21 @@ export default function GlobalLayout({ children }) {
 
   return (
     <>
-      <style>{`
-        .mob-only { display: none !important; }
-        .hide-mob { display: flex; }
-        .mob-bottom { display: none !important; }
-        @media (max-width: 768px) {
-          .mob-only { display: flex !important; }
-          .mob-bottom { display: flex !important; }
-          .hide-mob { display: none !important; }
-          body { padding-bottom: 70px; }
-        }
-      `}</style>
 
       <div style={{minHeight:'100vh',display:'flex',flexDirection:'column'}}>
 
         {/* NAV */}
+        <style>{`
+          .mob-only { display: none !important; }
+          .hide-mob { display: flex; }
+          .mob-bottom { display: none !important; }
+          @media (max-width: 768px) {
+            .mob-only { display: flex !important; }
+            .mob-bottom { display: flex !important; }
+            .hide-mob { display: none !important; }
+            body { padding-bottom: 70px; }
+          }
+        `}</style>
         <nav style={{position:'sticky',top:0,zIndex:100,background:'rgba(255,255,255,0.92)',backdropFilter:'blur(12px)',borderBottom:'1px solid var(--border)'}}>
           
           {/* Main row */}
