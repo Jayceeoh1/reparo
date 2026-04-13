@@ -80,12 +80,31 @@ export default function AccountPage() {
   }, [])
 
   async function addCar() {
+    if (!carForm.brand || !carForm.model) return
     setSaving(true)
     const isFirst = cars.length === 0
-    const { data } = await supabase.from('cars').insert({...carForm,user_id:user.id,year:carForm.year?parseInt(carForm.year):null,horsepower:carForm.horsepower?parseInt(carForm.horsepower):null,current_km:carForm.current_km?parseInt(carForm.current_km):null,is_default:isFirst}).select().single()
+    const { data, error } = await supabase.from('cars').insert({
+      brand: carForm.brand,
+      model: carForm.model,
+      year: carForm.year ? parseInt(carForm.year) : null,
+      fuel_type: carForm.fuel_type || null,
+      engine_cc: carForm.engine_cc || null,
+      horsepower: carForm.horsepower ? parseInt(carForm.horsepower) : null,
+      plate_number: carForm.plate_number || null,
+      color: carForm.color || null,
+      current_km: carForm.current_km ? parseInt(carForm.current_km) : null,
+      is_default: isFirst,
+      user_id: user.id
+    }).select().single()
+    if (error) {
+      alert('Eroare la salvare: ' + error.message + '\nAsigurați-vă că ați rulat cars_sql.sql în Supabase!')
+      setSaving(false)
+      return
+    }
     if (data) setCars(prev=>[...prev,data])
     setCarForm({brand:'',model:'',year:'',fuel_type:'',engine_cc:'',horsepower:'',plate_number:'',color:'',current_km:''})
-    setShowAddCar(false); setSaving(false)
+    setShowAddCar(false)
+    setSaving(false)
   }
 
   async function deleteCar(id) {
@@ -126,19 +145,7 @@ export default function AccountPage() {
     <div style={{minHeight:'100vh',display:'flex',alignItems:'center',justifyContent:'center',background:S.bg}}>
       <div style={{textAlign:'center'}}>
         <div style={{width:36,height:36,border:`3px solid ${S.blue}`,borderTopColor:'transparent',borderRadius:'50%',animation:'spin 1s linear infinite',margin:'0 auto 12px'}}/>
-        <style>{`@keyframes spin{to{transform:rotate(360deg)}}
-  @media(max-width:768px){
-    .acc-tabs{overflow-x:auto!important;flex-wrap:nowrap!important;border-radius:12px!important;padding:3px!important;scrollbar-width:none}
-    .acc-tabs::-webkit-scrollbar{display:none}
-    .acc-tabs button{flex-shrink:0!important;padding:7px 10px!important;font-size:11px!important;white-space:nowrap!important;border-radius:20px!important}
-    .acc-hero{flex-direction:column!important;align-items:flex-start!important;gap:12px!important}
-    .acc-hero-actions{width:100%!important}
-    .cars-grid{grid-template-columns:1fr!important}
-    .card-grid-2{grid-template-columns:1fr!important}
-    .settings-grid{grid-template-columns:1fr!important}
-    .appt-row{flex-direction:column!important;gap:8px!important}
-    .offer-row{flex-direction:column!important;gap:8px!important}
-  }`}</style>
+        <style>{`@keyframes spin{to{transform:rotate(360deg)}}`}</style>
       </div>
     </div>
   )
@@ -188,7 +195,7 @@ export default function AccountPage() {
         </div>
 
         {/* Tabs */}
-        <div className="acc-tabs" style={{display:'flex',background:S.white,borderRadius:50,border:`1px solid ${S.border}`,padding:4,marginBottom:20,overflowX:'auto',gap:2}}>
+        <div style={{display:'flex',background:S.white,borderRadius:50,border:`1px solid ${S.border}`,padding:4,marginBottom:20,overflowX:'auto',gap:2,scrollbarWidth:'none',WebkitOverflowScrolling:'touch'}}>
           {TABS.map(t=>(
             <button key={t} onClick={()=>setTab(t)} className={tab===t?'':'tab-acc'}
               style={{flexShrink:0,padding:'8px 16px',borderRadius:50,fontSize:13,fontWeight:600,cursor:'pointer',border:'none',background:tab===t?S.blue:'transparent',color:tab===t?'#fff':S.muted,fontFamily:"'DM Sans',sans-serif",transition:'all .15s',whiteSpace:'nowrap'}}>
@@ -212,7 +219,7 @@ export default function AccountPage() {
                 <button onClick={()=>setShowAddCar(true)} style={btn(true)}>Adaugă prima mașină</button>
               </div>
             ):(
-              <div className="cars-grid" style={{display:'grid',gridTemplateColumns:'repeat(auto-fill,minmax(min(280px,100%),1fr))',gap:12}}>
+              <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fill,minmax(min(300px,100%),1fr))',gap:14}}>
                 {cars.map(car=>(
                   <div key={car.id} style={{...card(),border:`1.5px solid ${car.is_default?S.blue:S.border}`}}>
                     <div style={{display:'flex',alignItems:'center',gap:12,marginBottom:14}}>
