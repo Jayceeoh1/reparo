@@ -345,8 +345,10 @@ export default function ServiceDashboard() {
 
   async function sendOffer() {
     if (!service||!selectedReq) return
-    await supabase.from('offers').insert({request_id:selectedReq.id,service_id:service.id,price_total:offerForm.price_total?parseFloat(offerForm.price_total):null,price_parts:offerForm.price_parts?parseFloat(offerForm.price_parts):null,price_labor:offerForm.price_labor?parseFloat(offerForm.price_labor):null,description:offerForm.description,available_date:offerForm.available_date||null,available_time:offerForm.available_time,warranty_months:parseInt(offerForm.warranty_months),status:'trimisa'})
+    const {data} = await supabase.from('offers').insert({request_id:selectedReq.id,service_id:service.id,price_total:offerForm.price_total?parseFloat(offerForm.price_total):null,price_parts:offerForm.price_parts?parseFloat(offerForm.price_parts):null,price_labor:offerForm.price_labor?parseFloat(offerForm.price_labor):null,description:offerForm.description,available_date:offerForm.available_date||null,available_time:offerForm.available_time,warranty_months:parseInt(offerForm.warranty_months),status:'trimisa'}).select().single()
     setOfferSent(true)
+    // Add to offers list immediately
+    if (data) setOffers(prev=>[data,...prev])
     setRequests(prev=>prev.filter(r=>r.id!==selectedReq.id))
     setTimeout(()=>{setSelectedReq(null);setOfferSent(false);setOfferForm({price_total:'',price_parts:'',price_labor:'',description:'',available_date:'',available_time:'09:00-12:00',warranty_months:'6'})},1800)
   }
@@ -1057,15 +1059,43 @@ export default function ServiceDashboard() {
               </div>:
                 <div style={{display:'flex',flexDirection:'column',gap:8}}>
                   {offers.map(o=>(
-                    <div key={o.id} style={{...card({padding:'14px 16px'}),display:'flex',alignItems:'center',justifyContent:'space-between'}}>
-                      <div>
-                        <div style={{fontWeight:700,fontSize:15,color:S.navy,marginBottom:3}}>{o.price_total?`${o.price_total.toLocaleString()} RON`:'Preț negociabil'}</div>
-                        <div style={{fontSize:12,color:S.muted}}>{new Date(o.created_at).toLocaleDateString('ro-RO',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'})}</div>
-                        {o.description&&<div style={{fontSize:12,color:S.muted,marginTop:3}}>{o.description.substring(0,60)}{o.description.length>60?'...':''}</div>}
+                    <div key={o.id} style={{...card({padding:16})}}>
+                      <div style={{display:'flex',alignItems:'flex-start',justifyContent:'space-between',marginBottom:12,gap:12}}>
+                        <div style={{flex:1}}>
+                          {/* Status badge */}
+                          <div style={{marginBottom:8}}>
+                            <span style={{...pill(o.status==='acceptata'?S.greenBg:o.status==='refuzata'?S.redBg:o.status==='trimisa'?'#eaf3ff':S.bg,o.status==='acceptata'?S.green:o.status==='refuzata'?S.red:o.status==='trimisa'?S.blue:S.muted,''),fontSize:12,padding:'4px 12px'}}>
+                              {o.status==='trimisa'?'🆕 Trimisă — Așteptăm răspuns':o.status==='acceptata'?'✅ Acceptată de client':o.status==='refuzata'?'❌ Refuzată de client':'⏰ Expirată'}
+                            </span>
+                          </div>
+                          {/* Pret */}
+                          <div style={{fontFamily:"'Sora',sans-serif",fontWeight:800,fontSize:20,color:o.status==='acceptata'?S.green:S.navy,marginBottom:4}}>
+                            {o.price_total?`${o.price_total.toLocaleString()} RON`:'Preț negociabil'}
+                          </div>
+                          {/* Detalii pret */}
+                          {(o.price_parts||o.price_labor)&&(
+                            <div style={{fontSize:12,color:S.muted,marginBottom:4}}>
+                              {o.price_parts&&`Piese: ${o.price_parts} RON`}{o.price_parts&&o.price_labor&&' · '}{o.price_labor&&`Manoperă: ${o.price_labor} RON`}
+                            </div>
+                          )}
+                          {o.description&&<p style={{fontSize:13,color:S.muted,marginBottom:6,lineHeight:1.5}}>{o.description}</p>}
+                        </div>
+                        <div style={{fontSize:12,color:S.muted,flexShrink:0,textAlign:'right'}}>
+                          {new Date(o.created_at).toLocaleDateString('ro-RO',{day:'numeric',month:'short'})}
+                          <br/>{new Date(o.created_at).toLocaleTimeString('ro-RO',{hour:'2-digit',minute:'2-digit'})}
+                        </div>
                       </div>
-                      <span style={pill(o.status==='acceptata'?S.greenBg:o.status==='refuzata'?S.redBg:o.status==='trimisa'?'#eaf3ff':S.bg,o.status==='acceptata'?S.green:o.status==='refuzata'?S.red:o.status==='trimisa'?S.blue:S.muted,'')}>
-                        {o.status==='trimisa'?'🆕 Trimisă':o.status==='acceptata'?'✅ Acceptată':o.status==='refuzata'?'❌ Refuzată':'⏰ Expirată'}
-                      </span>
+                      {/* Detalii extra */}
+                      <div style={{display:'flex',gap:8,flexWrap:'wrap',paddingTop:10,borderTop:`1px solid ${S.border}`}}>
+                        {o.available_date&&<span style={{fontSize:11,color:S.muted,background:S.bg,borderRadius:6,padding:'3px 8px'}}>📅 {new Date(o.available_date).toLocaleDateString('ro-RO')}</span>}
+                        {o.available_time&&<span style={{fontSize:11,color:S.muted,background:S.bg,borderRadius:6,padding:'3px 8px'}}>⏰ {o.available_time}</span>}
+                        {o.warranty_months>0&&<span style={{fontSize:11,color:S.muted,background:S.bg,borderRadius:6,padding:'3px 8px'}}>🛡️ Garanție {o.warranty_months} luni</span>}
+                        {o.status==='acceptata'&&(
+                          <span style={{fontSize:11,color:S.green,fontWeight:700,marginLeft:'auto'}}>
+                            🎉 Clientul a acceptat oferta ta!
+                          </span>
+                        )}
+                      </div>
                     </div>
                   ))}
                 </div>
