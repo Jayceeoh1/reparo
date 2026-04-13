@@ -1,6 +1,6 @@
 // @ts-nocheck
 'use client'
-import { useEffect, useState, useCallback } from 'react'
+import { useEffect, useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { usePathname } from 'next/navigation'
 
@@ -21,14 +21,6 @@ export default function GlobalLayout({ children }) {
   const [user, setUser] = useState(null)
   const [profile, setProfile] = useState(null)
   const [drawerOpen, setDrawerOpen] = useState(false)
-  const [isMobile, setIsMobile] = useState(false)
-
-  useEffect(() => {
-    const check = () => setIsMobile(window.innerWidth <= 768)
-    check()
-    window.addEventListener('resize', check)
-    return () => window.removeEventListener('resize', check)
-  }, [])
   const [cityDropdown, setCityDropdown] = useState(false)
   const [city, setCity] = useState('București')
   const [searchQuery, setSearchQuery] = useState('')
@@ -58,20 +50,21 @@ export default function GlobalLayout({ children }) {
   return (
     <>
 
+
       <div style={{minHeight:'100vh',display:'flex',flexDirection:'column'}}>
 
         {/* NAV */}
-        <style>{`
+        <style dangerouslySetInnerHTML={{__html:`
+          .hide-mob { display: flex !important; }
           .mob-only { display: none !important; }
-          .hide-mob { display: flex; }
           .mob-bottom { display: none !important; }
           @media (max-width: 768px) {
+            .hide-mob { display: none !important; }
             .mob-only { display: flex !important; }
             .mob-bottom { display: flex !important; }
-            .hide-mob { display: none !important; }
             body { padding-bottom: 70px; }
           }
-        `}</style>
+        `}}/>
         <nav style={{position:'sticky',top:0,zIndex:100,background:'rgba(255,255,255,0.92)',backdropFilter:'blur(12px)',borderBottom:'1px solid var(--border)'}}>
           
           {/* Main row */}
@@ -84,13 +77,13 @@ export default function GlobalLayout({ children }) {
             </a>
 
             {/* Nav divider + tag — desktop */}
-            <div style={{display:isMobile?'none':'flex',alignItems:'center',gap:12}}>
+            <div className="hide-mob" style={{display:'flex',alignItems:'center',gap:12}}>
               <div style={{width:1,height:24,background:'var(--border)'}}/>
               <span style={{fontFamily:"'Sora',sans-serif",fontSize:10,fontWeight:700,letterSpacing:2,textTransform:'uppercase',color:'var(--muted)'}}>SERVICII <span style={{color:'var(--blue)'}}>AUTO</span></span>
             </div>
 
             {/* Search — desktop */}
-            <div style={{flex:1,display:isMobile?'none':'flex',maxWidth:580,marginLeft:8}}>
+            <div className="hide-mob" style={{flex:1,display:'flex',maxWidth:580,marginLeft:8}}>
               <div id="city-dd" style={{position:'relative'}}>
                 <button onClick={()=>setCityDropdown(o=>!o)}
                   style={{height:44,padding:'0 14px',background:'var(--bg)',border:'1.5px solid var(--border)',borderRight:'none',borderRadius:'50px 0 0 50px',fontSize:13,color:'var(--text)',cursor:'pointer',display:'flex',alignItems:'center',gap:6,whiteSpace:'nowrap',fontFamily:"'DM Sans',sans-serif",minWidth:128,fontWeight:500}}>
@@ -123,7 +116,7 @@ export default function GlobalLayout({ children }) {
             </div>
 
             {/* Desktop auth buttons */}
-            <div style={{display:isMobile?'none':'flex',alignItems:'center',gap:8,marginLeft:'auto',flexShrink:0}}>
+            <div className="hide-mob" style={{display:'flex',alignItems:'center',gap:8,marginLeft:'auto',flexShrink:0}}>
               {user?(
                 <>
                   <a href="/account" style={{padding:'8px 14px',borderRadius:50,fontSize:13,fontWeight:600,color:'var(--navy)',textDecoration:'none',fontFamily:"'Sora',sans-serif",transition:'color .15s'}}
@@ -163,7 +156,7 @@ export default function GlobalLayout({ children }) {
             </div>
 
             {/* Mobile: oferta + hamburger */}
-            <div style={{display:isMobile?'flex':'none',alignItems:'center',gap:8,marginLeft:'auto'}}>
+            <div className="mob-only" style={{alignItems:'center',gap:8,marginLeft:'auto'}}>
               {!user&&(
                 <>
                   <a href="/auth/login" style={{padding:'7px 14px',borderRadius:8,fontSize:12,fontWeight:600,color:'var(--navy)',textDecoration:'none',fontFamily:"'DM Sans',sans-serif"}}>Intră</a>
@@ -188,7 +181,7 @@ export default function GlobalLayout({ children }) {
           </div>
 
           {/* Mobile search bar */}
-          <div style={{display:isMobile?'flex':'none',flexDirection:'column',padding:'0 16px 12px'}}>
+          <div className="mob-only" style={{padding:'0 16px 12px'}}>
             <div style={{display:'flex',borderRadius:50,overflow:'hidden',border:'1.5px solid var(--border)',background:'#fff'}}>
               <input value={searchQuery} onChange={e=>setSearchQuery(e.target.value)}
                 placeholder="Caută service, piesă..."
@@ -247,7 +240,7 @@ export default function GlobalLayout({ children }) {
         <div style={{flex:1}}>{children}</div>
 
         {/* Mobile bottom nav */}
-        <div style={{display:isMobile?'flex':'none',position:'fixed',bottom:0,left:0,right:0,background:'rgba(255,255,255,0.95)',backdropFilter:'blur(12px)',borderTop:'1px solid var(--border)',zIndex:99,paddingBottom:'env(safe-area-inset-bottom,0px)'}}>
+        <div className="mob-bottom" style={{position:'fixed',bottom:0,left:0,right:0,background:'rgba(255,255,255,0.95)',backdropFilter:'blur(12px)',borderTop:'1px solid var(--border)',zIndex:99,paddingBottom:'env(safe-area-inset-bottom,0px)'}}>
           <div style={{display:'flex',maxWidth:500,margin:'0 auto'}}>
             {[
               {href:'/home',icon:'🏠',label:'Acasă'},
@@ -268,7 +261,7 @@ export default function GlobalLayout({ children }) {
       </div>
 
       {/* Mobile bottom nav */}
-      <div style={{display:isMobile?'flex':'none',position:'fixed',bottom:0,left:0,right:0,background:'rgba(255,255,255,0.97)',backdropFilter:'blur(12px)',borderTop:'1px solid #e5e7eb',zIndex:90,padding:'8px 0',justifyContent:'space-around',alignItems:'center'}}>
+      <div className="mob-bottom" style={{position:'fixed',bottom:0,left:0,right:0,background:'rgba(255,255,255,0.97)',backdropFilter:'blur(12px)',borderTop:'1px solid #e5e7eb',zIndex:90,padding:'8px 0',justifyContent:'space-around',alignItems:'center'}}>
         {[
           {href:'/home',icon:'🏠',label:'Acasă'},
           {href:'/search',icon:'🔍',label:'Service-uri'},
