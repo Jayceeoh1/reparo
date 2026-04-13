@@ -37,14 +37,15 @@ body {
 .mob-bottom { display: none; }
 
 /* Mobile responsive */
+/* Default: mob-only hidden, show on mobile */
+.mob-only { display: none; }
+.mob-bottom { display: none; }
+
 @media (max-width: 768px) {
   .hide-mob { display: none !important; }
   .mob-only { display: flex !important; }
   .mob-bottom { display: flex !important; }
   body { padding-bottom: 64px; }
-}
-@media (min-width: 769px) {
-  .mob-only { display: none !important; }
 }
 
 /* Homepage responsive */

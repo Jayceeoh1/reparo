@@ -145,7 +145,7 @@ export default function GlobalLayout({ children }) {
             </div>
 
             {/* Mobile: oferta + hamburger */}
-            <div className="mob-only" style={{display:'none',alignItems:'center',gap:8,marginLeft:'auto'}}>
+            <div className="mob-only" style={{alignItems:'center',gap:8,marginLeft:'auto'}}>
               {!user&&(
                 <>
                   <a href="/auth/login" style={{padding:'7px 14px',borderRadius:8,fontSize:12,fontWeight:600,color:'var(--navy)',textDecoration:'none',fontFamily:"'DM Sans',sans-serif"}}>Intră</a>
@@ -170,7 +170,7 @@ export default function GlobalLayout({ children }) {
           </div>
 
           {/* Mobile search bar */}
-          <div className="mob-only" style={{display:'none',padding:'0 16px 12px'}}>
+          <div className="mob-only" style={{padding:'0 16px 12px'}}>
             <div style={{display:'flex',borderRadius:50,overflow:'hidden',border:'1.5px solid var(--border)',background:'#fff'}}>
               <input value={searchQuery} onChange={e=>setSearchQuery(e.target.value)}
                 placeholder="Caută service, piesă..."
@@ -250,7 +250,7 @@ export default function GlobalLayout({ children }) {
       </div>
 
       {/* Mobile bottom nav */}
-      <div className="mob-bottom" style={{display:'none',position:'fixed',bottom:0,left:0,right:0,background:'rgba(255,255,255,0.97)',backdropFilter:'blur(12px)',borderTop:'1px solid #e5e7eb',zIndex:90,padding:'8px 0',justifyContent:'space-around',alignItems:'center'}}>
+      <div className="mob-bottom" style={{position:'fixed',bottom:0,left:0,right:0,background:'rgba(255,255,255,0.97)',backdropFilter:'blur(12px)',borderTop:'1px solid #e5e7eb',zIndex:90,padding:'8px 0',justifyContent:'space-around',alignItems:'center'}}>
         {[
           {href:'/home',icon:'🏠',label:'Acasă'},
           {href:'/search',icon:'🔍',label:'Service-uri'},
