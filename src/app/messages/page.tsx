@@ -95,16 +95,15 @@ export default function MessagesPage() {
   )
 
   return (
-    <>
-    <style>{`
-      @media(max-width:768px){
-        .messages-layout{flex-direction:column!important;height:auto!important}
-        .messages-sidebar{width:100%!important;height:180px!important;flex-shrink:0!important;border-right:none!important;border-bottom:1px solid #e5e7eb!important;overflow-y:auto!important}
-        .messages-chat{min-height:60vh!important;display:flex!important;flex-direction:column!important}
-      }
-    `}</style>
     <div style={{height:'calc(100vh - 120px)',display:'flex',fontFamily:"'DM Sans',sans-serif",background:S.bg}}>
-      <style>{`.msg-hover:hover{background:#f0f6ff!important}`}</style>
+      <style>{`
+        .msg-hover:hover{background:#f0f6ff!important}
+        @media(max-width:768px){
+          .messages-layout{flex-direction:column!important;height:auto!important}
+          .messages-sidebar{width:100%!important;height:180px!important;flex-shrink:0!important;border-right:none!important;border-bottom:1px solid #e5e7eb!important;overflow-y:auto!important}
+          .messages-chat{min-height:60vh!important;display:flex!important;flex-direction:column!important}
+        }
+      `}</style>
 
       {/* Sidebar */}
       <div style={{width:300,flexShrink:0,background:S.white,borderRight:`1px solid ${S.border}`,display:'flex',flexDirection:'column',borderRadius:'16px 0 0 16px',overflow:'hidden'}}>
