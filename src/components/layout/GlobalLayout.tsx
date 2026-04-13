@@ -21,6 +21,11 @@ export default function GlobalLayout({ children }) {
   const [user, setUser] = useState(null)
   const [profile, setProfile] = useState(null)
   const [drawerOpen, setDrawerOpen] = useState(false)
+  const [quoteOpen, setQuoteOpen] = useState(false)
+  const [quoteStep, setQuoteStep] = useState(0)
+  const [quoteDone, setQuoteDone] = useState(false)
+  const [submitting, setSubmitting] = useState(false)
+  const [qForm, setQForm] = useState({car_brand:'',car_model:'',car_year:'',car_fuel:'',car_km:'',city:'',services:[],urgency:'',description:'',contact_name:'',contact_phone:''})
   const [cityDropdown, setCityDropdown] = useState(false)
   const [city, setCity] = useState('București')
   const [searchQuery, setSearchQuery] = useState('')
@@ -28,6 +33,12 @@ export default function GlobalLayout({ children }) {
   const supabase = createClient()
   const isExcluded = pathname === '/' || EXCLUDED.some(p => pathname?.startsWith(p))
   const isActive = (href) => pathname === href || (href !== '/home' && pathname?.startsWith(href.split('?')[0]))
+
+  useEffect(() => {
+    const handler = () => { setQuoteOpen(true); setQuoteStep(0); setQuoteDone(false) }
+    window.addEventListener('open-quote-modal', handler)
+    return () => window.removeEventListener('open-quote-modal', handler)
+  }, [])
 
   useEffect(() => {
     supabase.auth.getUser().then(({ data: { user } }) => {
@@ -239,7 +250,145 @@ export default function GlobalLayout({ children }) {
         {/* CONTENT */}
         <div style={{flex:1}}>{children}</div>
 
-        {/* Mobile bottom nav */}
+        {/* Quote Modal — disponibil pe toate paginile */}
+      {quoteOpen&&(
+        <div onClick={e=>{if(e.target===e.currentTarget)setQuoteOpen(false)}}
+          style={{position:'fixed',inset:0,background:'rgba(10,18,30,0.7)',zIndex:2000,display:'flex',alignItems:'center',justifyContent:'center',padding:16}}>
+          <div style={{background:'#0a1f44',borderRadius:20,width:'100%',maxWidth:540,maxHeight:'90vh',overflowY:'auto',position:'relative'}}>
+            <div style={{padding:'20px 24px 0',display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:16}}>
+              <div>
+                <div style={{display:'flex',gap:6,marginBottom:6}}>
+                  {['Mașina ta','Servicii','Detalii','Contact'].map((l,i)=>(
+                    <div key={l} style={{display:'flex',alignItems:'center',gap:4}}>
+                      <div style={{width:22,height:22,borderRadius:'50%',background:i<=quoteStep?'#3b82f6':'rgba(255,255,255,0.15)',display:'flex',alignItems:'center',justifyContent:'center',fontSize:11,fontWeight:700,color:'#fff'}}>
+                        {i<quoteStep?'✓':i+1}
+                      </div>
+                      {i<3&&<div style={{width:16,height:1,background:i<quoteStep?'#3b82f6':'rgba(255,255,255,0.15)'}}/>}
+                    </div>
+                  ))}
+                </div>
+                <div style={{fontFamily:"'Sora',sans-serif",fontWeight:700,fontSize:16,color:'#fff'}}>
+                  {quoteDone?'🎉 Cerere trimisă!':['Mașina ta','Servicii dorite','Detalii suplimentare','Date de contact'][quoteStep]}
+                </div>
+              </div>
+              <button onClick={()=>setQuoteOpen(false)} style={{width:30,height:30,borderRadius:'50%',background:'rgba(255,255,255,0.15)',border:'none',cursor:'pointer',color:'#fff',fontSize:16,display:'flex',alignItems:'center',justifyContent:'center'}}>✕</button>
+            </div>
+            <div style={{padding:'0 24px 24px'}}>
+              {quoteDone?(
+                <div style={{textAlign:'center',padding:'32px 0'}}>
+                  <div style={{fontSize:56,marginBottom:14}}>🎉</div>
+                  <div style={{fontFamily:"'Sora',sans-serif",fontWeight:700,fontSize:18,color:'#fff',marginBottom:8}}>Cererea ta a fost trimisă!</div>
+                  <p style={{color:'rgba(255,255,255,0.55)',fontSize:14,marginBottom:24}}>Service-urile din zona ta vor răspunde în maxim 24h.</p>
+                  <button onClick={()=>{setQuoteOpen(false);window.location.href='/oferte'}}
+                    style={{padding:'12px 28px',background:'#3b82f6',color:'#fff',border:'none',borderRadius:50,fontSize:14,fontWeight:700,cursor:'pointer'}}>
+                    Vezi ofertele mele →
+                  </button>
+                </div>
+              ):quoteStep===0?(
+                <div>
+                  <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:10,marginBottom:10}}>
+                    {[['car_brand','Marcă mașină','BMW, Dacia...'],['car_model','Model','Seria 3, Logan...'],['car_year','An fabricație','2019'],['car_fuel','Combustibil','Diesel / Benzină'],['car_km','Kilometraj','87000'],['city','Orașul tău','București']].map(([key,label,ph])=>(
+                      <div key={key}>
+                        <label style={{display:'block',fontSize:11,fontWeight:600,color:'rgba(255,255,255,0.5)',textTransform:'uppercase',letterSpacing:0.5,marginBottom:5}}>{label}</label>
+                        <input value={qForm[key]} onChange={e=>setQForm(p=>({...p,[key]:e.target.value}))} placeholder={ph}
+                          style={{width:'100%',padding:'10px 12px',background:'rgba(255,255,255,0.08)',border:'1px solid rgba(255,255,255,0.15)',borderRadius:10,fontSize:13,color:'#fff',outline:'none',fontFamily:"'DM Sans',sans-serif",boxSizing:'border-box'}}/>
+                      </div>
+                    ))}
+                  </div>
+                  <button onClick={()=>setQuoteStep(1)} disabled={!qForm.car_brand||!qForm.car_model}
+                    style={{width:'100%',padding:'12px',background:qForm.car_brand&&qForm.car_model?'#3b82f6':'rgba(255,255,255,0.1)',color:'#fff',border:'none',borderRadius:50,fontSize:14,fontWeight:700,cursor:'pointer',marginTop:6}}>
+                    Continuă →
+                  </button>
+                </div>
+              ):quoteStep===1?(
+                <div>
+                  <p style={{fontSize:13,color:'rgba(255,255,255,0.5)',marginBottom:12}}>Selectează serviciile de care ai nevoie:</p>
+                  <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:8,marginBottom:14}}>
+                    {['Schimb ulei','Frâne','Geometrie','Diagnoză','Revizie','Distribuție','Vopsitorie','Climatizare','ITP','Suspensie','Ambreiaj','Alte lucrări'].map(svc=>(
+                      <button key={svc} onClick={()=>setQForm(p=>({...p,services:p.services.includes(svc)?p.services.filter(s=>s!==svc):[...p.services,svc]}))}
+                        style={{padding:'10px 12px',background:qForm.services.includes(svc)?'#3b82f6':'rgba(255,255,255,0.06)',border:`1px solid ${qForm.services.includes(svc)?'#3b82f6':'rgba(255,255,255,0.12)'}`,borderRadius:10,fontSize:12,color:'#fff',cursor:'pointer',textAlign:'left',fontFamily:"'DM Sans',sans-serif",fontWeight:qForm.services.includes(svc)?600:400}}>
+                        {qForm.services.includes(svc)?'✓ ':''}{svc}
+                      </button>
+                    ))}
+                  </div>
+                  <div style={{display:'flex',gap:10}}>
+                    <button onClick={()=>setQuoteStep(0)} style={{padding:'11px 20px',background:'rgba(255,255,255,0.08)',color:'#fff',border:'none',borderRadius:50,fontSize:13,cursor:'pointer'}}>← Înapoi</button>
+                    <button onClick={()=>setQuoteStep(2)} disabled={qForm.services.length===0}
+                      style={{flex:1,padding:'11px',background:qForm.services.length>0?'#3b82f6':'rgba(255,255,255,0.1)',color:'#fff',border:'none',borderRadius:50,fontSize:14,fontWeight:700,cursor:'pointer'}}>
+                      Continuă ({qForm.services.length} selectate) →
+                    </button>
+                  </div>
+                </div>
+              ):quoteStep===2?(
+                <div>
+                  <div style={{marginBottom:10}}>
+                    <label style={{display:'block',fontSize:11,fontWeight:600,color:'rgba(255,255,255,0.5)',textTransform:'uppercase',letterSpacing:0.5,marginBottom:5}}>Urgență</label>
+                    <div style={{display:'flex',gap:8}}>
+                      {[['flexibil','😌 Flexibil'],['saptamana','📅 Săptămâna asta'],['urgent','🚨 Urgent']].map(([val,label])=>(
+                        <button key={val} onClick={()=>setQForm(p=>({...p,urgency:val}))}
+                          style={{flex:1,padding:'10px 6px',background:qForm.urgency===val?'#3b82f6':'rgba(255,255,255,0.06)',border:`1px solid ${qForm.urgency===val?'#3b82f6':'rgba(255,255,255,0.12)'}`,borderRadius:10,fontSize:11,color:'#fff',cursor:'pointer',fontWeight:qForm.urgency===val?700:400}}>
+                          {label}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                  <div style={{marginBottom:10}}>
+                    <label style={{display:'block',fontSize:11,fontWeight:600,color:'rgba(255,255,255,0.5)',textTransform:'uppercase',letterSpacing:0.5,marginBottom:5}}>Descrie problema (opțional)</label>
+                    <textarea value={qForm.description} onChange={e=>setQForm(p=>({...p,description:e.target.value}))} rows={3}
+                      placeholder="Ex: Zgomot la frânare față, suspectez plăcuțe uzate..."
+                      style={{width:'100%',padding:'10px 12px',background:'rgba(255,255,255,0.08)',border:'1px solid rgba(255,255,255,0.15)',borderRadius:10,fontSize:13,color:'#fff',outline:'none',resize:'none',fontFamily:"'DM Sans',sans-serif",boxSizing:'border-box'}}/>
+                  </div>
+                  <div style={{display:'flex',gap:10}}>
+                    <button onClick={()=>setQuoteStep(1)} style={{padding:'11px 20px',background:'rgba(255,255,255,0.08)',color:'#fff',border:'none',borderRadius:50,fontSize:13,cursor:'pointer'}}>← Înapoi</button>
+                    <button onClick={()=>setQuoteStep(3)} style={{flex:1,padding:'11px',background:'#3b82f6',color:'#fff',border:'none',borderRadius:50,fontSize:14,fontWeight:700,cursor:'pointer'}}>Continuă →</button>
+                  </div>
+                </div>
+              ):(
+                <div>
+                  <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:10,marginBottom:14}}>
+                    {[['contact_name','Numele tău','Ion Popescu'],['contact_phone','Telefon','07xx xxx xxx']].map(([key,label,ph])=>(
+                      <div key={key}>
+                        <label style={{display:'block',fontSize:11,fontWeight:600,color:'rgba(255,255,255,0.5)',textTransform:'uppercase',letterSpacing:0.5,marginBottom:5}}>{label}</label>
+                        <input value={qForm[key]} onChange={e=>setQForm(p=>({...p,[key]:e.target.value}))} placeholder={ph}
+                          style={{width:'100%',padding:'10px 12px',background:'rgba(255,255,255,0.08)',border:'1px solid rgba(255,255,255,0.15)',borderRadius:10,fontSize:13,color:'#fff',outline:'none',fontFamily:"'DM Sans',sans-serif",boxSizing:'border-box'}}/>
+                      </div>
+                    ))}
+                  </div>
+                  <div style={{background:'rgba(255,255,255,0.06)',borderRadius:12,padding:'14px 16px',marginBottom:14}}>
+                    <div style={{fontSize:11,fontWeight:700,color:'rgba(255,255,255,0.4)',textTransform:'uppercase',letterSpacing:0.5,marginBottom:8}}>Sumar cerere</div>
+                    <div style={{fontSize:13,color:'rgba(255,255,255,0.75)',marginBottom:4}}>🚗 {qForm.car_brand} {qForm.car_model} {qForm.car_year}</div>
+                    <div style={{fontSize:13,color:'rgba(255,255,255,0.75)',marginBottom:4}}>🔧 {qForm.services.slice(0,3).join(', ')}{qForm.services.length>3?` +${qForm.services.length-3}`:''}</div>
+                    <div style={{fontSize:13,color:'rgba(255,255,255,0.75)'}}>📍 {qForm.city}</div>
+                  </div>
+                  <div style={{display:'flex',gap:10}}>
+                    <button onClick={()=>setQuoteStep(2)} style={{padding:'11px 20px',background:'rgba(255,255,255,0.08)',color:'#fff',border:'none',borderRadius:50,fontSize:13,cursor:'pointer'}}>← Înapoi</button>
+                    <button onClick={async()=>{
+                      if(!qForm.contact_name||!qForm.contact_phone) return
+                      setSubmitting(true)
+                      try {
+                        await supabase.from('quote_requests').insert({
+                          car_brand:qForm.car_brand,car_model:qForm.car_model,car_year:qForm.car_year,
+                          car_fuel:qForm.car_fuel,car_km:qForm.car_km,city:qForm.city,
+                          services:qForm.services,urgency:qForm.urgency,description:qForm.description,
+                          contact_name:qForm.contact_name,contact_phone:qForm.contact_phone,
+                          status:'activa'
+                        })
+                        setQuoteDone(true)
+                      } catch(e){ console.error(e) }
+                      setSubmitting(false)
+                    }} disabled={submitting||!qForm.contact_name||!qForm.contact_phone}
+                      style={{flex:1,padding:'11px',background:submitting?'rgba(255,255,255,0.1)':'#3b82f6',color:'#fff',border:'none',borderRadius:50,fontSize:14,fontWeight:700,cursor:'pointer'}}>
+                      {submitting?'Se trimite...':'✦ Trimite cererea gratuit →'}
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Mobile bottom nav */}
         <div className="mob-bottom" style={{position:'fixed',bottom:0,left:0,right:0,background:'rgba(255,255,255,0.95)',backdropFilter:'blur(12px)',borderTop:'1px solid var(--border)',zIndex:99,paddingBottom:'env(safe-area-inset-bottom,0px)'}}>
           <div style={{display:'flex',maxWidth:500,margin:'0 auto'}}>
             {[
@@ -259,6 +408,144 @@ export default function GlobalLayout({ children }) {
         </div>
 
       </div>
+
+      {/* Quote Modal — disponibil pe toate paginile */}
+      {quoteOpen&&(
+        <div onClick={e=>{if(e.target===e.currentTarget)setQuoteOpen(false)}}
+          style={{position:'fixed',inset:0,background:'rgba(10,18,30,0.7)',zIndex:2000,display:'flex',alignItems:'center',justifyContent:'center',padding:16}}>
+          <div style={{background:'#0a1f44',borderRadius:20,width:'100%',maxWidth:540,maxHeight:'90vh',overflowY:'auto',position:'relative'}}>
+            <div style={{padding:'20px 24px 0',display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:16}}>
+              <div>
+                <div style={{display:'flex',gap:6,marginBottom:6}}>
+                  {['Mașina ta','Servicii','Detalii','Contact'].map((l,i)=>(
+                    <div key={l} style={{display:'flex',alignItems:'center',gap:4}}>
+                      <div style={{width:22,height:22,borderRadius:'50%',background:i<=quoteStep?'#3b82f6':'rgba(255,255,255,0.15)',display:'flex',alignItems:'center',justifyContent:'center',fontSize:11,fontWeight:700,color:'#fff'}}>
+                        {i<quoteStep?'✓':i+1}
+                      </div>
+                      {i<3&&<div style={{width:16,height:1,background:i<quoteStep?'#3b82f6':'rgba(255,255,255,0.15)'}}/>}
+                    </div>
+                  ))}
+                </div>
+                <div style={{fontFamily:"'Sora',sans-serif",fontWeight:700,fontSize:16,color:'#fff'}}>
+                  {quoteDone?'🎉 Cerere trimisă!':['Mașina ta','Servicii dorite','Detalii suplimentare','Date de contact'][quoteStep]}
+                </div>
+              </div>
+              <button onClick={()=>setQuoteOpen(false)} style={{width:30,height:30,borderRadius:'50%',background:'rgba(255,255,255,0.15)',border:'none',cursor:'pointer',color:'#fff',fontSize:16,display:'flex',alignItems:'center',justifyContent:'center'}}>✕</button>
+            </div>
+            <div style={{padding:'0 24px 24px'}}>
+              {quoteDone?(
+                <div style={{textAlign:'center',padding:'32px 0'}}>
+                  <div style={{fontSize:56,marginBottom:14}}>🎉</div>
+                  <div style={{fontFamily:"'Sora',sans-serif",fontWeight:700,fontSize:18,color:'#fff',marginBottom:8}}>Cererea ta a fost trimisă!</div>
+                  <p style={{color:'rgba(255,255,255,0.55)',fontSize:14,marginBottom:24}}>Service-urile din zona ta vor răspunde în maxim 24h.</p>
+                  <button onClick={()=>{setQuoteOpen(false);window.location.href='/oferte'}}
+                    style={{padding:'12px 28px',background:'#3b82f6',color:'#fff',border:'none',borderRadius:50,fontSize:14,fontWeight:700,cursor:'pointer'}}>
+                    Vezi ofertele mele →
+                  </button>
+                </div>
+              ):quoteStep===0?(
+                <div>
+                  <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:10,marginBottom:10}}>
+                    {[['car_brand','Marcă mașină','BMW, Dacia...'],['car_model','Model','Seria 3, Logan...'],['car_year','An fabricație','2019'],['car_fuel','Combustibil','Diesel / Benzină'],['car_km','Kilometraj','87000'],['city','Orașul tău','București']].map(([key,label,ph])=>(
+                      <div key={key}>
+                        <label style={{display:'block',fontSize:11,fontWeight:600,color:'rgba(255,255,255,0.5)',textTransform:'uppercase',letterSpacing:0.5,marginBottom:5}}>{label}</label>
+                        <input value={qForm[key]} onChange={e=>setQForm(p=>({...p,[key]:e.target.value}))} placeholder={ph}
+                          style={{width:'100%',padding:'10px 12px',background:'rgba(255,255,255,0.08)',border:'1px solid rgba(255,255,255,0.15)',borderRadius:10,fontSize:13,color:'#fff',outline:'none',fontFamily:"'DM Sans',sans-serif",boxSizing:'border-box'}}/>
+                      </div>
+                    ))}
+                  </div>
+                  <button onClick={()=>setQuoteStep(1)} disabled={!qForm.car_brand||!qForm.car_model}
+                    style={{width:'100%',padding:'12px',background:qForm.car_brand&&qForm.car_model?'#3b82f6':'rgba(255,255,255,0.1)',color:'#fff',border:'none',borderRadius:50,fontSize:14,fontWeight:700,cursor:'pointer',marginTop:6}}>
+                    Continuă →
+                  </button>
+                </div>
+              ):quoteStep===1?(
+                <div>
+                  <p style={{fontSize:13,color:'rgba(255,255,255,0.5)',marginBottom:12}}>Selectează serviciile de care ai nevoie:</p>
+                  <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:8,marginBottom:14}}>
+                    {['Schimb ulei','Frâne','Geometrie','Diagnoză','Revizie','Distribuție','Vopsitorie','Climatizare','ITP','Suspensie','Ambreiaj','Alte lucrări'].map(svc=>(
+                      <button key={svc} onClick={()=>setQForm(p=>({...p,services:p.services.includes(svc)?p.services.filter(s=>s!==svc):[...p.services,svc]}))}
+                        style={{padding:'10px 12px',background:qForm.services.includes(svc)?'#3b82f6':'rgba(255,255,255,0.06)',border:`1px solid ${qForm.services.includes(svc)?'#3b82f6':'rgba(255,255,255,0.12)'}`,borderRadius:10,fontSize:12,color:'#fff',cursor:'pointer',textAlign:'left',fontFamily:"'DM Sans',sans-serif",fontWeight:qForm.services.includes(svc)?600:400}}>
+                        {qForm.services.includes(svc)?'✓ ':''}{svc}
+                      </button>
+                    ))}
+                  </div>
+                  <div style={{display:'flex',gap:10}}>
+                    <button onClick={()=>setQuoteStep(0)} style={{padding:'11px 20px',background:'rgba(255,255,255,0.08)',color:'#fff',border:'none',borderRadius:50,fontSize:13,cursor:'pointer'}}>← Înapoi</button>
+                    <button onClick={()=>setQuoteStep(2)} disabled={qForm.services.length===0}
+                      style={{flex:1,padding:'11px',background:qForm.services.length>0?'#3b82f6':'rgba(255,255,255,0.1)',color:'#fff',border:'none',borderRadius:50,fontSize:14,fontWeight:700,cursor:'pointer'}}>
+                      Continuă ({qForm.services.length} selectate) →
+                    </button>
+                  </div>
+                </div>
+              ):quoteStep===2?(
+                <div>
+                  <div style={{marginBottom:10}}>
+                    <label style={{display:'block',fontSize:11,fontWeight:600,color:'rgba(255,255,255,0.5)',textTransform:'uppercase',letterSpacing:0.5,marginBottom:5}}>Urgență</label>
+                    <div style={{display:'flex',gap:8}}>
+                      {[['flexibil','😌 Flexibil'],['saptamana','📅 Săptămâna asta'],['urgent','🚨 Urgent']].map(([val,label])=>(
+                        <button key={val} onClick={()=>setQForm(p=>({...p,urgency:val}))}
+                          style={{flex:1,padding:'10px 6px',background:qForm.urgency===val?'#3b82f6':'rgba(255,255,255,0.06)',border:`1px solid ${qForm.urgency===val?'#3b82f6':'rgba(255,255,255,0.12)'}`,borderRadius:10,fontSize:11,color:'#fff',cursor:'pointer',fontWeight:qForm.urgency===val?700:400}}>
+                          {label}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                  <div style={{marginBottom:10}}>
+                    <label style={{display:'block',fontSize:11,fontWeight:600,color:'rgba(255,255,255,0.5)',textTransform:'uppercase',letterSpacing:0.5,marginBottom:5}}>Descrie problema (opțional)</label>
+                    <textarea value={qForm.description} onChange={e=>setQForm(p=>({...p,description:e.target.value}))} rows={3}
+                      placeholder="Ex: Zgomot la frânare față, suspectez plăcuțe uzate..."
+                      style={{width:'100%',padding:'10px 12px',background:'rgba(255,255,255,0.08)',border:'1px solid rgba(255,255,255,0.15)',borderRadius:10,fontSize:13,color:'#fff',outline:'none',resize:'none',fontFamily:"'DM Sans',sans-serif",boxSizing:'border-box'}}/>
+                  </div>
+                  <div style={{display:'flex',gap:10}}>
+                    <button onClick={()=>setQuoteStep(1)} style={{padding:'11px 20px',background:'rgba(255,255,255,0.08)',color:'#fff',border:'none',borderRadius:50,fontSize:13,cursor:'pointer'}}>← Înapoi</button>
+                    <button onClick={()=>setQuoteStep(3)} style={{flex:1,padding:'11px',background:'#3b82f6',color:'#fff',border:'none',borderRadius:50,fontSize:14,fontWeight:700,cursor:'pointer'}}>Continuă →</button>
+                  </div>
+                </div>
+              ):(
+                <div>
+                  <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:10,marginBottom:14}}>
+                    {[['contact_name','Numele tău','Ion Popescu'],['contact_phone','Telefon','07xx xxx xxx']].map(([key,label,ph])=>(
+                      <div key={key}>
+                        <label style={{display:'block',fontSize:11,fontWeight:600,color:'rgba(255,255,255,0.5)',textTransform:'uppercase',letterSpacing:0.5,marginBottom:5}}>{label}</label>
+                        <input value={qForm[key]} onChange={e=>setQForm(p=>({...p,[key]:e.target.value}))} placeholder={ph}
+                          style={{width:'100%',padding:'10px 12px',background:'rgba(255,255,255,0.08)',border:'1px solid rgba(255,255,255,0.15)',borderRadius:10,fontSize:13,color:'#fff',outline:'none',fontFamily:"'DM Sans',sans-serif",boxSizing:'border-box'}}/>
+                      </div>
+                    ))}
+                  </div>
+                  <div style={{background:'rgba(255,255,255,0.06)',borderRadius:12,padding:'14px 16px',marginBottom:14}}>
+                    <div style={{fontSize:11,fontWeight:700,color:'rgba(255,255,255,0.4)',textTransform:'uppercase',letterSpacing:0.5,marginBottom:8}}>Sumar cerere</div>
+                    <div style={{fontSize:13,color:'rgba(255,255,255,0.75)',marginBottom:4}}>🚗 {qForm.car_brand} {qForm.car_model} {qForm.car_year}</div>
+                    <div style={{fontSize:13,color:'rgba(255,255,255,0.75)',marginBottom:4}}>🔧 {qForm.services.slice(0,3).join(', ')}{qForm.services.length>3?` +${qForm.services.length-3}`:''}</div>
+                    <div style={{fontSize:13,color:'rgba(255,255,255,0.75)'}}>📍 {qForm.city}</div>
+                  </div>
+                  <div style={{display:'flex',gap:10}}>
+                    <button onClick={()=>setQuoteStep(2)} style={{padding:'11px 20px',background:'rgba(255,255,255,0.08)',color:'#fff',border:'none',borderRadius:50,fontSize:13,cursor:'pointer'}}>← Înapoi</button>
+                    <button onClick={async()=>{
+                      if(!qForm.contact_name||!qForm.contact_phone) return
+                      setSubmitting(true)
+                      try {
+                        await supabase.from('quote_requests').insert({
+                          car_brand:qForm.car_brand,car_model:qForm.car_model,car_year:qForm.car_year,
+                          car_fuel:qForm.car_fuel,car_km:qForm.car_km,city:qForm.city,
+                          services:qForm.services,urgency:qForm.urgency,description:qForm.description,
+                          contact_name:qForm.contact_name,contact_phone:qForm.contact_phone,
+                          status:'activa'
+                        })
+                        setQuoteDone(true)
+                      } catch(e){ console.error(e) }
+                      setSubmitting(false)
+                    }} disabled={submitting||!qForm.contact_name||!qForm.contact_phone}
+                      style={{flex:1,padding:'11px',background:submitting?'rgba(255,255,255,0.1)':'#3b82f6',color:'#fff',border:'none',borderRadius:50,fontSize:14,fontWeight:700,cursor:'pointer'}}>
+                      {submitting?'Se trimite...':'✦ Trimite cererea gratuit →'}
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Mobile bottom nav */}
       <div className="mob-bottom" style={{position:'fixed',bottom:0,left:0,right:0,background:'rgba(255,255,255,0.97)',backdropFilter:'blur(12px)',borderTop:'1px solid #e5e7eb',zIndex:90,padding:'8px 0',justifyContent:'space-around',alignItems:'center'}}>
