@@ -339,7 +339,7 @@ export default function GlobalLayout({ children }) {
                       onChange={e=>setQForm(p=>({...p,car_brand:e.target.value,car_model:''}))}
                       placeholder="Scrie marca (ex: Volkswagen, BMW...)"
                       style={{width:'100%',padding:'10px 12px',background:'rgba(255,255,255,0.08)',border:'1px solid rgba(255,255,255,0.15)',borderRadius:10,fontSize:13,color:'#fff',outline:'none',fontFamily:"'DM Sans',sans-serif",boxSizing:'border-box'}}/>
-                    {qForm.car_brand.length>=2&&!CAR_BRANDS.includes(qForm.car_brand)&&(
+                    {qForm.car_brand.length>=2&&!CAR_BRANDS.some(b=>b.toLowerCase()===qForm.car_brand.toLowerCase())&&(
                       <div style={{position:'absolute',top:'100%',left:0,right:0,background:'#1a2f5e',borderRadius:10,zIndex:10,maxHeight:160,overflowY:'auto',border:'1px solid rgba(255,255,255,0.15)',marginTop:4}}>
                         {CAR_BRANDS.filter(b=>b.toLowerCase().includes(qForm.car_brand.toLowerCase())).map(b=>(
                           <div key={b} onClick={()=>setQForm(p=>({...p,car_brand:b,car_model:''}))}
@@ -361,7 +361,7 @@ export default function GlobalLayout({ children }) {
                       placeholder={qForm.car_brand&&CAR_MODELS[qForm.car_brand]?`ex: ${CAR_MODELS[qForm.car_brand][0]}`:'Selectează mai întâi marca'}
                       disabled={!qForm.car_brand}
                       style={{width:'100%',padding:'10px 12px',background:qForm.car_brand?'rgba(255,255,255,0.08)':'rgba(255,255,255,0.04)',border:'1px solid rgba(255,255,255,0.15)',borderRadius:10,fontSize:13,color:'#fff',outline:'none',fontFamily:"'DM Sans',sans-serif",boxSizing:'border-box',opacity:qForm.car_brand?1:0.5}}/>
-                    {qForm.car_brand&&qForm.car_model.length>=1&&CAR_MODELS[qForm.car_brand]&&(
+                    {qForm.car_brand&&qForm.car_model.length>=1&&CAR_MODELS[qForm.car_brand]&&!(CAR_MODELS[qForm.car_brand]||[]).includes(qForm.car_model)&&(
                       <div style={{position:'absolute',top:'100%',left:0,right:0,background:'#1a2f5e',borderRadius:10,zIndex:10,maxHeight:160,overflowY:'auto',border:'1px solid rgba(255,255,255,0.15)',marginTop:4}}>
                         {(CAR_MODELS[qForm.car_brand]||[]).filter(m=>m.toLowerCase().includes(qForm.car_model.toLowerCase())).map(m=>(
                           <div key={m} onClick={()=>setQForm(p=>({...p,car_model:m}))}
@@ -544,7 +544,7 @@ export default function GlobalLayout({ children }) {
                       onChange={e=>setQForm(p=>({...p,car_brand:e.target.value,car_model:''}))}
                       placeholder="Scrie marca (ex: Volkswagen, BMW...)"
                       style={{width:'100%',padding:'10px 12px',background:'rgba(255,255,255,0.08)',border:'1px solid rgba(255,255,255,0.15)',borderRadius:10,fontSize:13,color:'#fff',outline:'none',fontFamily:"'DM Sans',sans-serif",boxSizing:'border-box'}}/>
-                    {qForm.car_brand.length>=2&&!CAR_BRANDS.includes(qForm.car_brand)&&(
+                    {qForm.car_brand.length>=2&&!CAR_BRANDS.some(b=>b.toLowerCase()===qForm.car_brand.toLowerCase())&&(
                       <div style={{position:'absolute',top:'100%',left:0,right:0,background:'#1a2f5e',borderRadius:10,zIndex:10,maxHeight:160,overflowY:'auto',border:'1px solid rgba(255,255,255,0.15)',marginTop:4}}>
                         {CAR_BRANDS.filter(b=>b.toLowerCase().includes(qForm.car_brand.toLowerCase())).map(b=>(
                           <div key={b} onClick={()=>setQForm(p=>({...p,car_brand:b,car_model:''}))}
@@ -566,7 +566,7 @@ export default function GlobalLayout({ children }) {
                       placeholder={qForm.car_brand&&CAR_MODELS[qForm.car_brand]?`ex: ${CAR_MODELS[qForm.car_brand][0]}`:'Selectează mai întâi marca'}
                       disabled={!qForm.car_brand}
                       style={{width:'100%',padding:'10px 12px',background:qForm.car_brand?'rgba(255,255,255,0.08)':'rgba(255,255,255,0.04)',border:'1px solid rgba(255,255,255,0.15)',borderRadius:10,fontSize:13,color:'#fff',outline:'none',fontFamily:"'DM Sans',sans-serif",boxSizing:'border-box',opacity:qForm.car_brand?1:0.5}}/>
-                    {qForm.car_brand&&qForm.car_model.length>=1&&CAR_MODELS[qForm.car_brand]&&(
+                    {qForm.car_brand&&qForm.car_model.length>=1&&CAR_MODELS[qForm.car_brand]&&!(CAR_MODELS[qForm.car_brand]||[]).includes(qForm.car_model)&&(
                       <div style={{position:'absolute',top:'100%',left:0,right:0,background:'#1a2f5e',borderRadius:10,zIndex:10,maxHeight:160,overflowY:'auto',border:'1px solid rgba(255,255,255,0.15)',marginTop:4}}>
                         {(CAR_MODELS[qForm.car_brand]||[]).filter(m=>m.toLowerCase().includes(qForm.car_model.toLowerCase())).map(m=>(
                           <div key={m} onClick={()=>setQForm(p=>({...p,car_model:m}))}
