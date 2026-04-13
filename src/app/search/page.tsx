@@ -60,7 +60,7 @@ function SearchContent() {
           .search-layout{flex-direction:column!important}
           .search-sidebar{width:100%!important;display:flex!important;overflow-x:auto!important;gap:10px!important;padding-bottom:6px!important;scrollbar-width:none!important}
           .search-sidebar::-webkit-scrollbar{display:none}
-          .search-sidebar>div{flex-shrink:0!important;min-width:200px!important;margin-bottom:0!important}
+          .search-sidebar-item{flex-shrink:0!important;min-width:200px!important;margin-bottom:0!important}
           .search-results{min-width:0!important}
           .svc-card-inner{flex-wrap:wrap!important}
           .svc-card-btn{width:100%!important;text-align:center!important;justify-content:center!important}
@@ -84,7 +84,6 @@ function SearchContent() {
           .search-layout{flex-direction:column!important}
           .search-sidebar{width:100%!important;display:flex!important;overflow-x:auto!important;gap:10px!important;padding-bottom:4px!important;scrollbar-width:none!important}
           .search-sidebar::-webkit-scrollbar{display:none}
-          .search-sidebar>div{flex-shrink:0!important;min-width:220px!important;margin-bottom:0!important}
         }
       `}</style>
       <div className="search-layout" className="search-layout" style={{maxWidth:1100,margin:'0 auto',padding:'16px',display:'flex',gap:16}}>
@@ -92,19 +91,7 @@ function SearchContent() {
         {/* Sidebar filtre */}
         <div className="search-sidebar" style={{width:240,flexShrink:0,display:'flex',flexDirection:'column',gap:12}}>
 
-          <style>{`
-            @media(max-width:768px){
-              .search-sidebar{display:block!important}
-              .search-sidebar-inner{display:flex;gap:8px;overflow-x:auto;padding-bottom:4px;scrollbar-width:none}
-              .search-sidebar-inner::-webkit-scrollbar{display:none}
-              .search-sidebar-inner>div{flex-shrink:0;min-width:200px}
-            }
-            @media(min-width:769px){
-              .search-sidebar-inner{display:block}
-              .search-sidebar-inner>div{margin-bottom:12px}
-            }
-          `}</style>
-          <div className="search-sidebar-inner">
+
           <div style={card({})}>
             <div style={{fontSize:11,fontWeight:700,color:S.muted,textTransform:'uppercase',letterSpacing:1,marginBottom:10,fontFamily:"'Sora',sans-serif"}}>Oraș</div>
             <select value={city} onChange={e=>setCity(e.target.value)} style={{...inp,borderRadius:10}}>
@@ -112,7 +99,7 @@ function SearchContent() {
             </select>
           </div>
 
-          <div style={card()}>
+          <div className="search-sidebar-item" style={card()}>
             <div style={{fontSize:11,fontWeight:700,color:S.muted,textTransform:'uppercase',letterSpacing:1,marginBottom:10,fontFamily:"'Sora',sans-serif"}}>Sortare</div>
             {[['rating','Rating (cel mai bun)'],['reviews','Cele mai multe recenzii'],['name','Nume (A-Z)']].map(([val,label])=>(
               <label key={val} style={{display:'flex',alignItems:'center',gap:8,padding:'7px 0',cursor:'pointer'}}>
@@ -122,7 +109,7 @@ function SearchContent() {
             ))}
           </div>
 
-          <div style={card()}>
+          <div className="search-sidebar-item" style={card()}>
             <div style={{fontSize:11,fontWeight:700,color:S.muted,textTransform:'uppercase',letterSpacing:1,marginBottom:10,fontFamily:"'Sora',sans-serif"}}>Filtre</div>
             {[['Verificat Reparo',filterVerified,setFilterVerified],['ITP pe loc',filterITP,setFilterITP],['Autorizat RAR',filterRAR,setFilterRAR]].map(([label,val,set])=>(
               <label key={label} className="filter-check" style={{display:'flex',alignItems:'center',gap:8,padding:'8px 10px',borderRadius:10,cursor:'pointer',marginBottom:4,transition:'background .15s'}}>
@@ -137,7 +124,7 @@ function SearchContent() {
             </div>
           </div>
 
-          <div style={card()}>
+          <div className="search-sidebar-item" style={card()}>
             <div style={{fontSize:11,fontWeight:700,color:S.muted,textTransform:'uppercase',letterSpacing:1,marginBottom:10,fontFamily:"'Sora',sans-serif"}}>Categorii</div>
             {CATEGORIES.map(c=>(
               <button key={c} onClick={()=>setQuery(c)}
@@ -148,7 +135,6 @@ function SearchContent() {
               </button>
             ))}
           </div>
-          </div>{/* end sidebar-inner */}
         </div>
 
         {/* Rezultate */}

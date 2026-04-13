@@ -76,13 +76,6 @@ export default function MessagesPage() {
           }
         }).subscribe()
     return () => supabase.removeChannel(channel)
-    <style>{`
-      @media(max-width:768px){
-        .messages-layout{flex-direction:column!important;height:auto!important}
-        .messages-sidebar{width:100%!important;height:180px!important;flex-shrink:0!important;border-right:none!important;border-bottom:1px solid #e5e7eb!important;overflow-y:auto!important}
-        .messages-chat{min-height:60vh!important;display:flex!important;flex-direction:column!important}
-        .messages-input-area{position:sticky!important;bottom:72px!important}
-      }`}</style>
   }, [activeConv?.id, user?.id])
 
   function formatTime(ts) {
@@ -102,6 +95,14 @@ export default function MessagesPage() {
   )
 
   return (
+    <>
+    <style>{`
+      @media(max-width:768px){
+        .messages-layout{flex-direction:column!important;height:auto!important}
+        .messages-sidebar{width:100%!important;height:180px!important;flex-shrink:0!important;border-right:none!important;border-bottom:1px solid #e5e7eb!important;overflow-y:auto!important}
+        .messages-chat{min-height:60vh!important;display:flex!important;flex-direction:column!important}
+      }
+    `}</style>
     <div style={{height:'calc(100vh - 120px)',display:'flex',fontFamily:"'DM Sans',sans-serif",background:S.bg}}>
       <style>{`.msg-hover:hover{background:#f0f6ff!important}`}</style>
 
