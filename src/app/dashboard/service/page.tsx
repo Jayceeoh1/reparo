@@ -865,7 +865,10 @@ export default function ServiceDashboard() {
                         {r.services?.slice(0,3).map(s=><span key={s} style={pill('#eaf3ff',S.blue,'')}>{s}</span>)}
                         {(r.services?.length||0)>3&&<span style={pill(S.bg,S.muted,'')}>+{r.services.length-3}</span>}
                       </div>
-                      <div style={{fontSize:11,color:S.muted}}>{new Date(r.created_at).toLocaleDateString('ro-RO')}</div>
+                      <div style={{display:'flex',justifyContent:'space-between',alignItems:'center'}}>
+                        <div style={{fontSize:11,color:S.muted}}>{new Date(r.created_at).toLocaleDateString('ro-RO')}</div>
+                        {r.contact_name&&<div style={{fontSize:11,fontWeight:600,color:S.navy}}>👤 {r.contact_name}</div>}
+                      </div>
                     </button>
                   ))
                 }
@@ -878,8 +881,52 @@ export default function ServiceDashboard() {
                       <h2 style={{fontFamily:"'Sora',sans-serif",fontWeight:700,fontSize:16,color:S.navy}}>Detalii cerere</h2>
                       <button onClick={()=>setSelectedReq(null)} style={{background:'none',border:'none',cursor:'pointer',color:S.muted,fontSize:18}}>✕</button>
                     </div>
+                    {/* Contact client */}
+                    <div style={{background:'#eaf3ff',borderRadius:12,padding:'12px 16px',marginBottom:14,border:'1px solid rgba(26,86,219,0.15)'}}>
+                      <div style={{fontSize:11,color:S.blue,fontWeight:700,textTransform:'uppercase',letterSpacing:0.5,marginBottom:10}}>👤 Date contact client</div>
+                      <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:10}}>
+                        <div style={{display:'flex',alignItems:'center',gap:8}}>
+                          <span style={{fontSize:18}}>👤</span>
+                          <div>
+                            <div style={{fontSize:10,color:S.muted,fontWeight:600,textTransform:'uppercase',letterSpacing:0.5}}>Nume</div>
+                            <div style={{fontWeight:700,fontSize:14,color:S.navy}}>{selectedReq.contact_name||'—'}</div>
+                          </div>
+                        </div>
+                        <div style={{display:'flex',alignItems:'center',gap:8}}>
+                          <span style={{fontSize:18}}>📞</span>
+                          <div>
+                            <div style={{fontSize:10,color:S.muted,fontWeight:600,textTransform:'uppercase',letterSpacing:0.5}}>Telefon</div>
+                            {selectedReq.contact_phone?(
+                              <a href={`tel:${selectedReq.contact_phone}`} style={{fontWeight:700,fontSize:14,color:S.blue,textDecoration:'none'}}>{selectedReq.contact_phone}</a>
+                            ):<div style={{fontWeight:700,fontSize:14,color:S.muted}}>—</div>}
+                          </div>
+                        </div>
+                        <div style={{display:'flex',alignItems:'center',gap:8}}>
+                          <span style={{fontSize:18}}>📍</span>
+                          <div>
+                            <div style={{fontSize:10,color:S.muted,fontWeight:600,textTransform:'uppercase',letterSpacing:0.5}}>Oraș</div>
+                            <div style={{fontWeight:700,fontSize:14,color:S.navy}}>{selectedReq.city||'—'}</div>
+                          </div>
+                        </div>
+                        <div style={{display:'flex',alignItems:'center',gap:8}}>
+                          <span style={{fontSize:18}}>📅</span>
+                          <div>
+                            <div style={{fontSize:10,color:S.muted,fontWeight:600,textTransform:'uppercase',letterSpacing:0.5}}>Data cererii</div>
+                            <div style={{fontWeight:700,fontSize:14,color:S.navy}}>{new Date(selectedReq.created_at).toLocaleDateString('ro-RO',{day:'numeric',month:'long',year:'numeric'})}</div>
+                          </div>
+                        </div>
+                      </div>
+                      {selectedReq.contact_phone&&(
+                        <a href={`tel:${selectedReq.contact_phone}`}
+                          style={{display:'flex',alignItems:'center',justifyContent:'center',gap:8,marginTop:10,padding:'10px',background:S.blue,color:'#fff',borderRadius:10,textDecoration:'none',fontSize:13,fontWeight:700,fontFamily:"'Sora',sans-serif"}}>
+                          📞 Sună clientul acum
+                        </a>
+                      )}
+                    </div>
+
+                    {/* Detalii masina */}
                     <div style={{display:'grid',gridTemplateColumns:'repeat(3,1fr)',gap:10,marginBottom:14}}>
-                      {[['Mașina',`${selectedReq.car_brand} ${selectedReq.car_model} ${selectedReq.car_year||''}`],['Combustibil',selectedReq.car_fuel||'—'],['Kilometraj',selectedReq.car_km?`${selectedReq.car_km.toLocaleString()} km`:'—'],['Urgență',selectedReq.urgency],['Data preferată',selectedReq.preferred_date||'—'],['Interval',selectedReq.preferred_time||'—']].map(([l,v])=>(
+                      {[['Mașina',`${selectedReq.car_brand} ${selectedReq.car_model} ${selectedReq.car_year||''}`],['Combustibil',selectedReq.car_fuel||'—'],['Kilometraj',selectedReq.car_km?`${Number(selectedReq.car_km).toLocaleString()} km`:'—'],['Urgență',selectedReq.urgency||'—'],['Data preferată',selectedReq.preferred_date||'—'],['Interval',selectedReq.preferred_time||'—']].map(([l,v])=>(
                         <div key={l} style={{background:S.bg,borderRadius:10,padding:'10px 12px'}}>
                           <div style={{fontSize:10,color:S.muted,fontWeight:600,textTransform:'uppercase',letterSpacing:0.5,marginBottom:3}}>{l}</div>
                           <div style={{fontWeight:600,fontSize:13,color:S.navy}}>{v}</div>
