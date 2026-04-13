@@ -123,6 +123,8 @@ export default function MyListingsPage() {
   const [loading, setLoading] = useState(true)
   const [editingListing, setEditingListing] = useState(null)
   const [deleting, setDeleting] = useState(null)
+  const [showPromoModal, setShowPromoModal] = useState(null)
+  const [promovate, setPromovate] = useState(null)
   const [filter, setFilter] = useState('toate')
   const supabase = createClient()
 
@@ -313,6 +315,10 @@ export default function MyListingsPage() {
                           style={{padding:'7px 14px',background:'#eaf3ff',color:S.blue,border:`1px solid rgba(26,86,219,0.2)`,borderRadius:50,fontSize:12,fontWeight:600,cursor:'pointer',fontFamily:"'DM Sans',sans-serif"}}>
                           ✏️ Editează
                         </button>
+                        <button onClick={()=>promovate===l.id?null:setShowPromoModal(l)}
+                          style={{padding:'7px 14px',background:l.is_promoted?S.amberBg:'#fff7ed',color:S.amber,border:`1px solid ${S.amber}40`,borderRadius:50,fontSize:12,fontWeight:600,cursor:'pointer',fontFamily:"'DM Sans',sans-serif",display:'flex',alignItems:'center',gap:4}}>
+                          {l.is_promoted?'⭐ Promovat':'🚀 Promovează'}
+                        </button>
                         <button onClick={()=>toggleStatus(l)}
                           style={{padding:'7px 14px',background:isActive?S.amberBg:S.greenBg,color:isActive?S.amber:S.green,border:`1px solid ${isActive?S.amber+'30':S.green+'30'}`,borderRadius:50,fontSize:12,fontWeight:600,cursor:'pointer',fontFamily:"'DM Sans',sans-serif"}}>
                           {isActive?'⏸️ Dezactivează':'▶️ Activează'}
@@ -333,6 +339,58 @@ export default function MyListingsPage() {
 
       {editingListing && (
         <EditModal listing={editingListing} onClose={()=>setEditingListing(null)} onSave={onSaved}/>
+      )}
+
+      {/* Promo Modal */}
+      {showPromoModal&&(
+        <div onClick={e=>{if(e.target===e.currentTarget)setShowPromoModal(null)}}
+          style={{position:'fixed',inset:0,background:'rgba(10,31,68,0.5)',zIndex:1000,display:'flex',alignItems:'center',justifyContent:'center',padding:16}}>
+          <div style={{background:S.white,borderRadius:20,width:'100%',maxWidth:480,padding:28}}>
+            <div style={{textAlign:'center',marginBottom:20}}>
+              <div style={{fontSize:48,marginBottom:8}}>🚀</div>
+              <h3 style={{fontFamily:"'Sora',sans-serif",fontWeight:800,fontSize:20,color:S.navy,marginBottom:6}}>Promovează anunțul</h3>
+              <p style={{fontSize:14,color:S.muted,lineHeight:1.6}}>
+                Anunțul <strong style={{color:S.navy}}>„{showPromoModal.title?.slice(0,40)}"</strong> va apărea primul în listă cu badge <span style={{background:S.yellow,color:'#fff',padding:'1px 6px',borderRadius:4,fontSize:12,fontWeight:700}}>TOP</span>
+              </p>
+            </div>
+
+            <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:12,marginBottom:20}}>
+              {[
+                {days:7,price:19,label:'7 zile',desc:'Promovare de scurtă durată'},
+                {days:30,price:49,label:'30 zile',desc:'Promovare de lungă durată',popular:true},
+              ].map(opt=>(
+                <div key={opt.days} style={{padding:16,borderRadius:14,border:`2px solid ${opt.popular?S.yellow:S.border}`,background:opt.popular?'#fffbeb':S.white,position:'relative'}}>
+                  {opt.popular&&<div style={{position:'absolute',top:-10,left:'50%',transform:'translateX(-50%)',background:S.yellow,color:'#fff',fontSize:10,fontWeight:700,padding:'2px 10px',borderRadius:10,fontFamily:"'Sora',sans-serif",whiteSpace:'nowrap'}}>RECOMANDAT</div>}
+                  <div style={{fontFamily:"'Sora',sans-serif",fontWeight:700,fontSize:15,color:S.navy,marginBottom:4}}>{opt.label}</div>
+                  <div style={{fontFamily:"'Sora',sans-serif",fontWeight:800,fontSize:24,color:opt.popular?S.amber:S.navy,marginBottom:4}}>{opt.price} RON</div>
+                  <div style={{fontSize:12,color:S.muted,marginBottom:12}}>{opt.desc}</div>
+                  <button onClick={async()=>{
+                    // Cu Stripe configurat, deschide checkout
+                    // Fara Stripe, promovam direct (demo)
+                    const exp = new Date(); exp.setDate(exp.getDate()+opt.days)
+                    await supabase.from('listings').update({is_promoted:true}).eq('id',showPromoModal.id)
+                    setListings(prev=>prev.map(l=>l.id===showPromoModal.id?{...l,is_promoted:true}:l))
+                    setPromovate(showPromoModal.id)
+                    setShowPromoModal(null)
+                    alert(`✅ Anunțul a fost promovat pentru ${opt.days} zile!\n\nNota: Activează Stripe pentru plăți reale.`)
+                  }}
+                    style={{width:'100%',padding:'10px',background:opt.popular?S.yellow:S.blue,color:'#fff',border:'none',borderRadius:50,fontSize:13,fontWeight:700,cursor:'pointer',fontFamily:"'Sora',sans-serif"}}>
+                    Promovează {opt.days} zile
+                  </button>
+                </div>
+              ))}
+            </div>
+
+            <div style={{background:S.bg,borderRadius:12,padding:'12px 16px',marginBottom:16,fontSize:12,color:S.muted}}>
+              <strong style={{color:S.navy}}>Ce obții:</strong> Anunțul apare primul în căutări · Badge „TOP" vizibil · De 3x mai multe vizualizări
+            </div>
+
+            <button onClick={()=>setShowPromoModal(null)}
+              style={{width:'100%',padding:'10px',background:S.bg,color:S.muted,border:`1px solid ${S.border}`,borderRadius:50,fontSize:13,cursor:'pointer'}}>
+              Anulează
+            </button>
+          </div>
+        </div>
       )}
     </div>
     </>

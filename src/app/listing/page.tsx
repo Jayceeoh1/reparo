@@ -62,7 +62,7 @@ function ListingsContent() {
     if (activeCategory!=='toate') q = q.eq('category', activeCategory)
     if (sortBy==='pret_asc') q = q.order('price',{ascending:true})
     else if (sortBy==='pret_desc') q = q.order('price',{ascending:false})
-    else q = q.order('created_at',{ascending:false})
+    else q = q.order('is_promoted',{ascending:false}).order('created_at',{ascending:false})
     const {data} = await q.limit(40)
     let results = data||[]
     if (query) results = results.filter(l=>l.title.toLowerCase().includes(query.toLowerCase()))
