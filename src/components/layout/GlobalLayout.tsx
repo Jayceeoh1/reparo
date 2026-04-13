@@ -118,36 +118,46 @@ export default function GlobalLayout({ children }) {
                     <a href="/dashboard/service" style={{padding:'8px 16px',borderRadius:50,fontSize:13,fontWeight:600,background:'var(--bg)',color:'var(--blue)',textDecoration:'none',border:'1.5px solid var(--blue)',fontFamily:"'Sora',sans-serif"}}>Dashboard</a>
                   )}
                   <button onClick={async()=>{await supabase.auth.signOut();window.location.href='/home'}}
-                    style={{padding:'8px 14px',borderRadius:50,fontSize:13,fontWeight:500,background:'none',color:'var(--muted)',border:'1.5px solid var(--border)',cursor:'pointer',fontFamily:"'DM Sans',sans-serif"}}>
+                    style={{padding:'9px 18px',borderRadius:10,fontSize:13,fontWeight:600,background:'#f1f5f9',color:'#475569',border:'none',cursor:'pointer',fontFamily:"'DM Sans',sans-serif",transition:'background .15s'}}
+                    onMouseEnter={e=>e.currentTarget.style.background='#e2e8f0'}
+                    onMouseLeave={e=>e.currentTarget.style.background='#f1f5f9'}>
                     Ieși
                   </button>
                 </>
               ):(
                 <>
-                  <a href="/auth/login" style={{padding:'8px 16px',borderRadius:50,fontSize:13,fontWeight:600,color:'var(--blue)',textDecoration:'none',border:'1.5px solid var(--blue)',fontFamily:"'Sora',sans-serif"}}>Intră în cont</a>
-                  <a href="/auth/register" style={{padding:'8px 16px',borderRadius:50,fontSize:13,fontWeight:600,color:'var(--muted)',textDecoration:'none',border:'1.5px solid var(--border)',fontFamily:"'Sora',sans-serif"}}>Înreg. service</a>
+                  <a href="/auth/login" style={{padding:'9px 20px',borderRadius:10,fontSize:13,fontWeight:600,color:'var(--navy)',textDecoration:'none',fontFamily:"'DM Sans',sans-serif",letterSpacing:'-0.1px'}}>Intră în cont</a>
+                  <a href="/auth/register" style={{padding:'9px 20px',borderRadius:10,fontSize:13,fontWeight:700,color:'#fff',textDecoration:'none',background:'var(--navy)',fontFamily:"'Sora',sans-serif",letterSpacing:'-0.1px'}}>Înregistrare</a>
                 </>
               )}
               <a href="/listing/create"
-                style={{display:'inline-flex',alignItems:'center',gap:5,padding:'10px 18px',borderRadius:50,fontSize:13,fontWeight:600,background:'transparent',color:'var(--blue)',textDecoration:'none',fontFamily:"'Sora',sans-serif",border:'1.5px solid var(--blue)',transition:'all .15s'}}
-                onMouseEnter={e=>{e.currentTarget.style.background='#eaf3ff'}}
-                onMouseLeave={e=>{e.currentTarget.style.background='transparent'}}>
+                style={{display:'inline-flex',alignItems:'center',gap:5,padding:'9px 18px',borderRadius:10,fontSize:13,fontWeight:600,background:'#f0f6ff',color:'var(--blue)',textDecoration:'none',fontFamily:"'DM Sans',sans-serif",transition:'background .15s'}}
+                onMouseEnter={e=>e.currentTarget.style.background='#dbeafe'}
+                onMouseLeave={e=>e.currentTarget.style.background='#f0f6ff'}>
                 + Adaugă anunț
               </a>
               <a href="/home" onClick={e=>{e.preventDefault();window.dispatchEvent(new CustomEvent('open-quote-modal'))}}
-                style={{display:'inline-flex',alignItems:'center',gap:6,padding:'10px 22px',borderRadius:50,fontSize:13,fontWeight:700,background:'var(--yellow)',color:'#fff',textDecoration:'none',fontFamily:"'Sora',sans-serif",boxShadow:'0 4px 16px rgba(245,158,11,0.25)',transition:'background .2s,transform .15s'}}
-                onMouseEnter={e=>{e.currentTarget.style.background='#d97706';e.currentTarget.style.transform='translateY(-1px)'}}
-                onMouseLeave={e=>{e.currentTarget.style.background='var(--yellow)';e.currentTarget.style.transform='none'}}>
-                ✦ Cere ofertă
+                style={{display:'inline-flex',alignItems:'center',gap:6,padding:'9px 20px',borderRadius:10,fontSize:13,fontWeight:700,background:'var(--navy)',color:'#fff',textDecoration:'none',fontFamily:"'Sora',sans-serif",transition:'background .15s'}}
+                onMouseEnter={e=>e.currentTarget.style.background='#1a3a6b'}
+                onMouseLeave={e=>e.currentTarget.style.background='var(--navy)'}>
+                + Cere ofertă
               </a>
             </div>
 
             {/* Mobile: oferta + hamburger */}
             <div className="mob-only" style={{display:'none',alignItems:'center',gap:8,marginLeft:'auto'}}>
-              <a href="/home" onClick={e=>{e.preventDefault();window.dispatchEvent(new CustomEvent('open-quote-modal'))}}
-                style={{padding:'8px 14px',borderRadius:50,fontSize:12,fontWeight:700,background:'var(--blue)',color:'#fff',textDecoration:'none',fontFamily:"'Sora',sans-serif",whiteSpace:'nowrap',boxShadow:'0 2px 8px rgba(26,86,219,0.2)'}}>
-                ✦ Ofertă
-              </a>
+              {!user&&(
+                <>
+                  <a href="/auth/login" style={{padding:'7px 14px',borderRadius:8,fontSize:12,fontWeight:600,color:'var(--navy)',textDecoration:'none',fontFamily:"'DM Sans',sans-serif"}}>Intră</a>
+                  <a href="/auth/register" style={{padding:'7px 14px',borderRadius:8,fontSize:12,fontWeight:700,color:'#fff',background:'var(--navy)',textDecoration:'none',fontFamily:"'DM Sans',sans-serif"}}>Cont nou</a>
+                </>
+              )}
+              {user&&(
+                <a href="/home" onClick={e=>{e.preventDefault();window.dispatchEvent(new CustomEvent('open-quote-modal'))}}
+                  style={{padding:'7px 14px',borderRadius:8,fontSize:12,fontWeight:700,background:'var(--navy)',color:'#fff',textDecoration:'none',fontFamily:"'Sora',sans-serif",whiteSpace:'nowrap'}}>
+                  + Ofertă
+                </a>
+              )}
               <button onClick={()=>setDrawerOpen(o=>!o)}
                 style={{display:'flex',flexDirection:'column',gap:5,cursor:'pointer',padding:6,background:'none',border:'none'}}>
                 {[0,1,2].map(i=>(
