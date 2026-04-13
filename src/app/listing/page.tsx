@@ -122,7 +122,20 @@ function ListingsContent() {
 
   return (
     <div style={{minHeight:'100vh',background:S.bg,fontFamily:"'DM Sans',sans-serif"}}>
-      <style>{`.listing-card{text-decoration:none!important;color:inherit!important}.listing-card:hover{border-color:${S.blue}!important;box-shadow:0 4px 20px rgba(26,86,219,0.1)!important}.listing-card *{text-decoration:none!important}.cat-btn:hover{border-color:${S.blue}!important;color:${S.blue}!important}`}</style>
+      <style>{`.listing-card{text-decoration:none!important;color:inherit!important}.listing-card:hover{border-color:${S.blue}!important;box-shadow:0 4px 20px rgba(26,86,219,0.1)!important}.listing-card *{text-decoration:none!important}.cat-btn:hover{border-color:${S.blue}!important;color:${S.blue}!important}
+        @media(max-width:768px){
+          .listings-grid{grid-template-columns:repeat(2,1fr)!important;gap:10px!important}
+          .listing-card{border-radius:12px!important}
+          .listing-card-img{height:110px!important}
+          .listing-card-body{padding:10px!important}
+          .listing-search-bar{flex-direction:row!important}
+          .cat-pills{gap:6px!important}
+          .cat-pill{padding:6px 12px!important;font-size:11px!important}
+          .sort-bar{flex-wrap:wrap!important;gap:8px!important}
+        }
+        @media(max-width:380px){
+          .listings-grid{grid-template-columns:1fr 1fr!important}
+        }`}</style>
 
 
 
@@ -168,7 +181,7 @@ function ListingsContent() {
 
         {/* Grid */}
         {loading?(
-          <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fill,minmax(220px,1fr))',gap:14}}>
+          <div className="listings-grid" style={{display:'grid',gridTemplateColumns:'repeat(auto-fill,minmax(200px,1fr))',gap:12}}>
             {[1,2,3,4,5,6].map(i=><div key={i} style={{...card({height:240}),animation:'pulse 1.5s infinite'}}/>)}
             <style>{`@keyframes pulse{0%,100%{opacity:1}50%{opacity:.5}}`}</style>
           </div>
@@ -182,7 +195,7 @@ function ListingsContent() {
             </button>
           </div>
         ):(
-          <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fill,minmax(220px,1fr))',gap:14}}>
+          <div className="listings-grid" style={{display:'grid',gridTemplateColumns:'repeat(auto-fill,minmax(200px,1fr))',gap:12}}>
             {listings.map(l=>{
               const coverImg = l.listing_media?.find(m=>m.is_cover)?.url||l.listing_media?.[0]?.url
               const cond = CONDITIONS.find(c=>c.key===l.condition)

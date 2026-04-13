@@ -142,7 +142,20 @@ export default function CreateListingPage() {
 
   return (
     <div style={{minHeight:'100vh',background:S.bg,fontFamily:"'DM Sans',sans-serif"}}>
-      <style>{`.lst-inp:focus{border-color:#1a56db!important;box-shadow:0 0 0 3px rgba(26,86,219,0.1)!important}`}</style>
+      <style>{`.lst-inp:focus{border-color:#1a56db!important;box-shadow:0 0 0 3px rgba(26,86,219,0.1)!important}
+        @media(max-width:768px){
+          .create-header{flex-direction:column!important;gap:8px!important;padding:10px 14px!important}
+          .create-progress{overflow-x:auto!important;scrollbar-width:none!important}
+          .create-progress::-webkit-scrollbar{display:none}
+          .create-content{padding:16px 12px!important}
+          .create-cat-grid{grid-template-columns:1fr 1fr!important;gap:10px!important}
+          .create-details-grid{grid-template-columns:1fr!important}
+          .create-photo-grid{grid-template-columns:repeat(2,1fr)!important}
+          .create-preview-grid{grid-template-columns:1fr!important}
+          .create-btns{flex-direction:row!important;gap:8px!important}
+          .create-cat-btn{padding:12px!important}
+          .create-cond-label{padding:10px 12px!important;font-size:13px!important}
+        }`}</style>
 
       {/* Header */}
       <div style={{background:S.white,borderBottom:`1px solid ${S.border}`,padding:'14px 24px',display:'flex',alignItems:'center',gap:16,position:'sticky',top:64,zIndex:50}}>
@@ -171,7 +184,7 @@ export default function CreateListingPage() {
           <div>
             <h2 style={{fontFamily:"'Sora',sans-serif",fontWeight:700,fontSize:18,color:S.navy,marginBottom:6}}>Ce vinzi?</h2>
             <p style={{fontSize:14,color:S.muted,marginBottom:20}}>Alege categoria potrivită pentru produsul tău.</p>
-            <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:12,marginBottom:20}}>
+            <div className="create-cat-grid" style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:12,marginBottom:20}}>
               {CATEGORIES.map(c=>(
                 <button key={c.key} onClick={()=>setForm(p=>({...p,category:c.key}))}
                   style={{display:'flex',alignItems:'center',gap:12,padding:'16px',borderRadius:14,border:`2px solid ${form.category===c.key?S.blue:S.border}`,background:form.category===c.key?'#eaf3ff':S.white,cursor:'pointer',transition:'all .15s',textAlign:'left'}}>
@@ -268,7 +281,7 @@ export default function CreateListingPage() {
             {/* Contact & livrare */}
             <div style={{background:S.white,borderRadius:16,border:`1px solid ${S.border}`,padding:20,marginBottom:20}}>
               <h3 style={{fontFamily:"'Sora',sans-serif",fontWeight:700,fontSize:14,color:S.navy,marginBottom:14}}>📍 Contact & livrare</h3>
-              <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:12,marginBottom:12}}>
+              <div className="create-details-grid" style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:12,marginBottom:12}}>
                 <div>
                   <label style={lbl}>Oraș *</label>
                   <input className="lst-inp" value={form.city} onChange={e=>setForm(p=>({...p,city:e.target.value}))}
@@ -335,7 +348,7 @@ export default function CreateListingPage() {
                 <div style={{fontSize:12,color:S.muted,marginBottom:10}}>
                   📌 Trageți pentru a reordona · Prima poză = cover principal
                 </div>
-                <div style={{display:'grid',gridTemplateColumns:'repeat(3,1fr)',gap:10,marginBottom:20}}>
+                <div className="create-photo-grid" style={{display:'grid',gridTemplateColumns:'repeat(3,1fr)',gap:10,marginBottom:20}}>
                   {photos.map((url,i)=>(
                     <div key={url} style={{position:'relative',borderRadius:12,overflow:'hidden',border:`2px solid ${i===0?S.blue:S.border}`,aspectRatio:'4/3',background:'#f0f6ff'}}>
                       <img src={url} alt="" style={{width:'100%',height:'100%',objectFit:'cover'}}/>

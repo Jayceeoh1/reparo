@@ -74,7 +74,19 @@ export default function ListingDetailPage({ params }: { params: { id: string } }
   if (loading) return (
     <div style={{minHeight:'80vh',display:'flex',alignItems:'center',justifyContent:'center',background:S.bg}}>
       <div style={{width:36,height:36,border:`3px solid ${S.blue}`,borderTopColor:'transparent',borderRadius:'50%',animation:'spin 1s linear infinite'}}/>
-      <style>{`@keyframes spin{to{transform:rotate(360deg)}}`}</style>
+      <style>{`@keyframes spin{to{transform:rotate(360deg)}}
+      @media(max-width:768px){
+        .listing-detail-grid{grid-template-columns:1fr!important}
+        .listing-detail-sidebar{position:relative!important;top:0!important}
+        .listing-related{grid-template-columns:repeat(2,1fr)!important}
+        .listing-details-grid{grid-template-columns:1fr 1fr!important}
+        .listing-contact-btns{flex-direction:column!important}
+        .listing-compat-brands{flex-wrap:wrap!important}
+      }
+      @media(max-width:480px){
+        .listing-related{grid-template-columns:1fr 1fr!important}
+        .listing-details-grid{grid-template-columns:1fr!important}
+      }`}</style>
     </div>
   )
 
@@ -192,7 +204,7 @@ export default function ListingDetailPage({ params }: { params: { id: string } }
             {/* Details grid */}
             <div style={{background:S.white,borderRadius:16,border:`1px solid ${S.border}`,padding:20,marginBottom:14,boxShadow:'0 2px 12px rgba(10,31,68,0.06)'}}>
               <h2 style={{fontFamily:"'Sora',sans-serif",fontWeight:700,fontSize:15,color:S.navy,marginBottom:14}}>📋 Detalii produs</h2>
-              <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:10}}>
+              <div className="listing-details-grid" style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:10}}>
                 {[
                   ['Stare',cond.label],
                   ['Categorie',CATEGORIES[listing.category]||listing.category],
@@ -228,7 +240,7 @@ export default function ListingDetailPage({ params }: { params: { id: string } }
             {related.length>0&&(
               <div>
                 <h2 style={{fontFamily:"'Sora',sans-serif",fontWeight:700,fontSize:15,color:S.navy,marginBottom:12}}>Anunțuri similare</h2>
-                <div style={{display:'grid',gridTemplateColumns:'repeat(4,1fr)',gap:10}}>
+                <div className="listing-related" style={{display:'grid',gridTemplateColumns:'repeat(4,1fr)',gap:10}}>
                   {related.map(r=>(
                     <a key={r.id} href={`/listing/${r.id}`} className="rel-card"
                       style={{background:S.white,borderRadius:12,border:`1px solid ${S.border}`,padding:12,textDecoration:'none',transition:'all .2s',display:'block'}}>

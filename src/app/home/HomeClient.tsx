@@ -91,22 +91,29 @@ export default function HomeClient() {
         @keyframes pulse{0%,100%{opacity:1}50%{opacity:.5}}
         .cat-item:hover{background:#eaf3ff!important;border-color:#1a56db!important}
         @media(max-width:768px){
-          .home-hero{padding:28px 12px 20px!important}
-          .hero-title{font-size:clamp(22px,6vw,36px)!important}
-          .stats-card{display:grid!important;grid-template-columns:1fr 1fr!important;gap:8px!important;padding:14px!important;width:100%!important}
+          .home-hero{padding:24px 12px 16px!important}
+          .hero-title{font-size:clamp(24px,6vw,40px)!important;line-height:1.15!important}
+          .hero-sub{font-size:14px!important}
+          .stats-card{display:grid!important;grid-template-columns:1fr 1fr!important;gap:10px!important;padding:14px!important;width:100%!important;border-radius:16px!important}
           .footer-grid{grid-template-columns:1fr 1fr!important;gap:16px!important}
-          .cat-grid{grid-template-columns:repeat(4,1fr)!important}
-          .listings-grid{grid-template-columns:repeat(2,1fr)!important}
-          .features-grid{grid-template-columns:repeat(2,1fr)!important}
+          .cat-grid{grid-template-columns:repeat(4,1fr)!important;gap:8px!important}
+          .listings-grid{grid-template-columns:repeat(2,1fr)!important;gap:8px!important}
+          .features-grid{grid-template-columns:repeat(2,1fr)!important;gap:10px!important}
           .svc-grid{grid-template-columns:1fr!important}
-          .cta-section{padding:24px 16px!important}
+          .cta-section{padding:24px 14px!important;border-radius:16px!important}
           .cta-btns{flex-direction:column!important;gap:10px!important}
-          .promo-row{flex-direction:column!important}
+          .cta-btn{width:100%!important;justify-content:center!important;text-align:center!important}
+          .promo-row{flex-direction:column!important;gap:12px!important}
+          .section-title{font-size:17px!important}
+          .listing-card-img{height:100px!important}
+          .footer-brand{margin-bottom:16px!important}
+          .footer-section{margin-bottom:16px!important}
         }
         @media(max-width:400px){
           .cat-grid{grid-template-columns:repeat(3,1fr)!important}
           .listings-grid{grid-template-columns:1fr 1fr!important}
           .stats-card{grid-template-columns:1fr 1fr!important}
+          .features-grid{grid-template-columns:1fr!important}
         }
         .svc-card:hover{border-color:#1a56db!important;box-shadow:0 4px 20px rgba(26,86,219,0.1)!important}
         .listing-card:hover{border-color:#1a56db!important}

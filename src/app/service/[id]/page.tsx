@@ -72,7 +72,16 @@ export default function ServiceProfilePage({ params }: { params: { id: string } 
   if (loading) return (
     <div style={{minHeight:'60vh',display:'flex',alignItems:'center',justifyContent:'center',background:S.bg}}>
       <div style={{width:36,height:36,border:`3px solid ${S.blue}`,borderTopColor:'transparent',borderRadius:'50%',animation:'spin 1s linear infinite'}}/>
-      <style>{`@keyframes spin{to{transform:rotate(360deg)}}`}</style>
+      <style>{`@keyframes spin{to{transform:rotate(360deg)}}
+        @media(max-width:768px){
+          .svc-profile-grid{grid-template-columns:1fr!important}
+          .svc-profile-sidebar{position:relative!important;top:0!important}
+          .svc-profile-header{flex-direction:column!important;gap:12px!important}
+          .svc-offerings-grid{grid-template-columns:1fr!important}
+          .svc-contact-btns{flex-direction:column!important;gap:8px!important}
+          .svc-gallery-grid{grid-template-columns:repeat(2,1fr)!important}
+          .svc-cover{height:min(200px,40vw)!important}
+        }`}</style>
     </div>
   )
 

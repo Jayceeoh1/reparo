@@ -413,9 +413,32 @@ export default function ServiceDashboard() {
         .card-hover:hover{border-color:${S.blueLight}!important;box-shadow:0 4px 20px rgba(26,86,219,0.1)!important}
         .apt-btn:hover{border-color:${S.blue}!important;color:${S.blue}!important}
         @media(max-width:768px){
-          .dash-sidebar{transform:translateX(-100%);position:fixed!important;z-index:200!important;height:100vh!important;top:0!important}
-          .dash-sidebar.open{transform:translateX(0)}
+          .dash-sidebar{transform:translateX(-100%);position:fixed!important;z-index:200!important;height:100vh!important;top:0!important;width:260px!important}
+          .dash-sidebar.open{transform:translateX(0)!important}
           .dash-overlay{display:block!important}
+          .dash-main{padding:14px 12px!important}
+          .dash-hero{padding:16px!important;border-radius:14px!important}
+          .dash-hero h1{font-size:18px!important}
+          .dash-stats{grid-template-columns:repeat(2,1fr)!important;gap:8px!important}
+          .dash-stat{padding:12px!important}
+          .dash-stat-val{font-size:20px!important}
+          .dash-card{padding:14px!important}
+          .dash-grid-2{grid-template-columns:1fr!important}
+          .dash-grid-3{grid-template-columns:1fr!important}
+          .profile-grid{grid-template-columns:1fr!important}
+          .offering-row{flex-direction:column!important}
+          .settings-plans{grid-template-columns:1fr!important}
+          .map-picker-row{flex-direction:column!important}
+          .program-row{flex-direction:column!important;gap:6px!important}
+          .request-row{flex-direction:column!important;gap:8px!important}
+          .appointment-row{flex-direction:column!important;gap:8px!important}
+          .offer-actions{flex-direction:column!important;gap:6px!important}
+          .review-row{flex-direction:column!important;gap:8px!important}
+          .gallery-grid{grid-template-columns:repeat(2,1fr)!important}
+        }
+        @media(max-width:480px){
+          .dash-stats{grid-template-columns:1fr 1fr!important}
+          .dash-hero-btns{flex-direction:column!important;gap:8px!important}
         }
       `}</style>
 
@@ -479,7 +502,7 @@ export default function ServiceDashboard() {
         {sidebarOpen&&<div onClick={()=>setSidebarOpen(false)} style={{position:'fixed',inset:0,background:'rgba(10,31,68,0.4)',zIndex:199,display:'none'}} className="dash-overlay"/>}
 
         {/* MAIN */}
-        <main style={{flex:1,overflowY:'auto',padding:'24px',minWidth:0}}>
+        <main className="dash-main" style={{flex:1,overflowY:'auto',padding:'24px',minWidth:0}}>
 
           {/* ══ ACASĂ ══ */}
           {tab==='Acasă'&&(
@@ -521,7 +544,7 @@ export default function ServiceDashboard() {
               )}
 
               {/* Stats */}
-              <div style={{display:'grid',gridTemplateColumns:'repeat(4,1fr)',gap:12,marginBottom:20}}>
+              <div className="dash-stats" style={{display:'grid',gridTemplateColumns:'repeat(4,1fr)',gap:12,marginBottom:20}}>
                 {[
                   {label:'Cereri noi',value:requests.length,icon:'📋',accent:S.blue,accentBg:'#eaf3ff',tab:'Cereri'},
                   {label:'Programări azi',value:appointments.filter(a=>a.scheduled_date===today).length,icon:'📅',accent:S.green,accentBg:S.greenBg,tab:'Programări'},
@@ -631,7 +654,7 @@ export default function ServiceDashboard() {
                 </div>
               </div>
 
-              <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:16}}>
+              <div className="profile-grid" style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:16}}>
                 {/* Informatii baza */}
                 <div style={card()}>
                   <h3 style={{fontFamily:"'Sora',sans-serif",fontWeight:700,fontSize:14,color:S.navy,marginBottom:16}}>📋 Informații de bază</h3>
@@ -1072,7 +1095,7 @@ export default function ServiceDashboard() {
                     <h3 style={{fontFamily:"'Sora',sans-serif",fontWeight:700,fontSize:15,color:S.navy}}>💳 Plan abonament</h3>
                     {service?.plan_expires_at&&<div style={{fontSize:12,color:S.muted}}>Expiră: {new Date(service.plan_expires_at).toLocaleDateString('ro-RO')}</div>}
                   </div>
-                  <div style={{display:'grid',gridTemplateColumns:'repeat(3,1fr)',gap:12}}>
+                  <div className="settings-plans" style={{display:'grid',gridTemplateColumns:'repeat(3,1fr)',gap:12}}>
                     {[
                       {plan:'free',label:'Free',price:'0',period:'',color:S.muted,features:['Profil public basic','10 cereri/lună','Fără badge verificat']},
                       {plan:'basic',label:'Basic',price:'99',period:'/lună',color:S.blue,features:['Cereri nelimitate','Notificări instant','Badge verificat','Statistici de bază']},

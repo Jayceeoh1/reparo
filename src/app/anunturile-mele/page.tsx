@@ -48,6 +48,22 @@ function EditModal({ listing, onClose, onSave }) {
   }
 
   return (
+    <style>{`
+      @media(max-width:768px){
+        .my-listings-header{flex-direction:column!important;align-items:flex-start!important;gap:10px!important}
+        .my-listings-header a{width:100%!important;justify-content:center!important}
+        .my-listings-stats{grid-template-columns:repeat(2,1fr)!important;gap:8px!important}
+        .listing-row{flex-direction:row!important}
+        .listing-row-photo{width:100px!important;height:90px!important;flex-shrink:0!important}
+        .listing-row-info{flex:1!important;min-width:0!important}
+        .listing-row-title{font-size:13px!important}
+        .listing-row-actions{flex-wrap:wrap!important;gap:6px!important}
+        .listing-row-action-btn{padding:5px 10px!important;font-size:11px!important}
+      }
+      @media(max-width:420px){
+        .listing-row{flex-direction:column!important}
+        .listing-row-photo{width:100%!important;height:140px!important}
+      }`}</style>
     <div onClick={e => { if (e.target === e.currentTarget) onClose() }}
       style={{position:'fixed',inset:0,background:'rgba(10,31,68,0.5)',zIndex:1000,display:'flex',alignItems:'center',justifyContent:'center',padding:16}}>
       <div style={{background:S.white,borderRadius:20,width:'100%',maxWidth:560,padding:28,maxHeight:'90vh',overflowY:'auto'}}>
@@ -184,7 +200,7 @@ export default function MyListingsPage() {
       <div style={{maxWidth:900,margin:'0 auto',padding:'28px 16px'}}>
 
         {/* Header */}
-        <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:24,flexWrap:'wrap',gap:12}}>
+        <div className="my-listings-header" style={{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:24,gap:12}}>
           <div>
             <h1 style={{fontFamily:"'Sora',sans-serif",fontWeight:800,fontSize:24,color:S.navy,marginBottom:4}}>Anunțurile mele</h1>
             <p style={{fontSize:14,color:S.muted}}>Gestionează, editează și șterge anunțurile tale.</p>
@@ -196,7 +212,7 @@ export default function MyListingsPage() {
         </div>
 
         {/* Stats */}
-        <div style={{display:'grid',gridTemplateColumns:'repeat(4,1fr)',gap:12,marginBottom:20}}>
+        <div className="my-listings-stats" style={{display:'grid',gridTemplateColumns:'repeat(4,1fr)',gap:12,marginBottom:20}}>
           {[
             {label:'Total anunțuri',value:stats.total,icon:'📋',color:S.blue,bg:'#eaf3ff'},
             {label:'Active',value:stats.active,icon:'✅',color:S.green,bg:S.greenBg},
@@ -248,7 +264,7 @@ export default function MyListingsPage() {
                   style={{...card({padding:0}),overflow:'hidden',border:`1.5px solid ${isActive?S.border:S.border}`,opacity:isActive?1:0.75,transition:'all .2s'}}>
                   <div style={{display:'flex',gap:0}}>
                     {/* Photo */}
-                    <div style={{width:140,height:120,background:'#eaf3ff',flexShrink:0,position:'relative',overflow:'hidden'}}>
+                    <div className="listing-row-photo" style={{width:140,height:120,background:'#eaf3ff',flexShrink:0,position:'relative',overflow:'hidden'}}>
                       {coverImg
                         ? <img src={coverImg} alt="" style={{width:'100%',height:'100%',objectFit:'cover'}}/>
                         : <div style={{width:'100%',height:'100%',display:'flex',alignItems:'center',justifyContent:'center',fontSize:32}}>
@@ -290,7 +306,7 @@ export default function MyListingsPage() {
                       </div>
 
                       {/* Actions */}
-                      <div style={{display:'flex',gap:8,marginTop:12,flexWrap:'wrap'}}>
+                      <div className="listing-row-actions" style={{display:'flex',gap:6,marginTop:10,flexWrap:'wrap'}}>
                         <a href={`/listing/${l.id}`} target="_blank"
                           style={{padding:'7px 14px',background:S.bg,color:S.navy,border:`1px solid ${S.border}`,borderRadius:50,fontSize:12,fontWeight:600,textDecoration:'none',display:'inline-flex',alignItems:'center',gap:4}}>
                           👁️ Previzualizează

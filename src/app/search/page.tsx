@@ -55,7 +55,16 @@ function SearchContent() {
 
   return (
     <div style={{minHeight:'100vh',background:S.bg,fontFamily:"'DM Sans',sans-serif"}}>
-      <style>{`.svc-card:hover{border-color:${S.blue}!important;box-shadow:0 4px 20px rgba(26,86,219,0.1)!important}.filter-check:hover{background:#eaf3ff!important}`}</style>
+      <style>{`.svc-card:hover{border-color:${S.blue}!important;box-shadow:0 4px 20px rgba(26,86,219,0.1)!important}.filter-check:hover{background:#eaf3ff!important}
+        @media(max-width:768px){
+          .search-layout{flex-direction:column!important}
+          .search-sidebar{width:100%!important;display:flex!important;overflow-x:auto!important;gap:10px!important;padding-bottom:6px!important;scrollbar-width:none!important}
+          .search-sidebar::-webkit-scrollbar{display:none}
+          .search-sidebar>div{flex-shrink:0!important;min-width:200px!important;margin-bottom:0!important}
+          .search-results{min-width:0!important}
+          .svc-card-inner{flex-wrap:wrap!important}
+          .svc-card-btn{width:100%!important;text-align:center!important;justify-content:center!important}
+        }`}</style>
 
       {/* Search subheader */}
       <div style={{background:S.white,borderBottom:`1px solid ${S.border}`,padding:'12px 24px'}}>
@@ -78,7 +87,7 @@ function SearchContent() {
           .search-sidebar>div{flex-shrink:0!important;min-width:220px!important;margin-bottom:0!important}
         }
       `}</style>
-      <div className="search-layout" style={{maxWidth:1100,margin:'0 auto',padding:'16px',display:'flex',gap:16}}>
+      <div className="search-layout" className="search-layout" style={{maxWidth:1100,margin:'0 auto',padding:'16px',display:'flex',gap:16}}>
 
         {/* Sidebar filtre */}
         <div className="search-sidebar" style={{width:240,flexShrink:0,display:'flex',flexDirection:'column',gap:12}}>
@@ -167,7 +176,7 @@ function SearchContent() {
             <div style={{display:'flex',flexDirection:'column',gap:12}}>
               {services.map(s=>(
                 <a key={s.id} href={`/service/${s.id}`} className="svc-card"
-                  style={{...card({padding:14}),display:'flex',gap:12,alignItems:'flex-start',textDecoration:'none',transition:'all .2s',cursor:'pointer',flexWrap:'wrap'}}>
+                  className="svc-card" style={{...card({padding:14}),display:'flex',gap:12,alignItems:'flex-start',textDecoration:'none',transition:'all .2s',cursor:'pointer'}}>
                   <div style={{width:56,height:56,background:'#eaf3ff',borderRadius:14,display:'flex',alignItems:'center',justifyContent:'center',fontSize:26,flexShrink:0}}>🔧</div>
                   <div style={{flex:1,minWidth:0}}>
                     <div style={{display:'flex',alignItems:'flex-start',justifyContent:'space-between',marginBottom:6,flexWrap:'wrap',gap:6}}>

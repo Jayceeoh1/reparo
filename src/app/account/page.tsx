@@ -126,7 +126,19 @@ export default function AccountPage() {
     <div style={{minHeight:'100vh',display:'flex',alignItems:'center',justifyContent:'center',background:S.bg}}>
       <div style={{textAlign:'center'}}>
         <div style={{width:36,height:36,border:`3px solid ${S.blue}`,borderTopColor:'transparent',borderRadius:'50%',animation:'spin 1s linear infinite',margin:'0 auto 12px'}}/>
-        <style>{`@keyframes spin{to{transform:rotate(360deg)}}`}</style>
+        <style>{`@keyframes spin{to{transform:rotate(360deg)}}
+  @media(max-width:768px){
+    .acc-tabs{overflow-x:auto!important;flex-wrap:nowrap!important;border-radius:12px!important;padding:3px!important;scrollbar-width:none}
+    .acc-tabs::-webkit-scrollbar{display:none}
+    .acc-tabs button{flex-shrink:0!important;padding:7px 10px!important;font-size:11px!important;white-space:nowrap!important;border-radius:20px!important}
+    .acc-hero{flex-direction:column!important;align-items:flex-start!important;gap:12px!important}
+    .acc-hero-actions{width:100%!important}
+    .cars-grid{grid-template-columns:1fr!important}
+    .card-grid-2{grid-template-columns:1fr!important}
+    .settings-grid{grid-template-columns:1fr!important}
+    .appt-row{flex-direction:column!important;gap:8px!important}
+    .offer-row{flex-direction:column!important;gap:8px!important}
+  }`}</style>
       </div>
     </div>
   )
@@ -176,7 +188,7 @@ export default function AccountPage() {
         </div>
 
         {/* Tabs */}
-        <div style={{display:'flex',background:S.white,borderRadius:50,border:`1px solid ${S.border}`,padding:4,marginBottom:20,overflowX:'auto',gap:2,scrollbarWidth:'none',WebkitOverflowScrolling:'touch'}}>
+        <div className="acc-tabs" style={{display:'flex',background:S.white,borderRadius:50,border:`1px solid ${S.border}`,padding:4,marginBottom:20,overflowX:'auto',gap:2}}>
           {TABS.map(t=>(
             <button key={t} onClick={()=>setTab(t)} className={tab===t?'':'tab-acc'}
               style={{flexShrink:0,padding:'8px 16px',borderRadius:50,fontSize:13,fontWeight:600,cursor:'pointer',border:'none',background:tab===t?S.blue:'transparent',color:tab===t?'#fff':S.muted,fontFamily:"'DM Sans',sans-serif",transition:'all .15s',whiteSpace:'nowrap'}}>
@@ -200,7 +212,7 @@ export default function AccountPage() {
                 <button onClick={()=>setShowAddCar(true)} style={btn(true)}>Adaugă prima mașină</button>
               </div>
             ):(
-              <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fill,minmax(min(300px,100%),1fr))',gap:14}}>
+              <div className="cars-grid" style={{display:'grid',gridTemplateColumns:'repeat(auto-fill,minmax(min(280px,100%),1fr))',gap:12}}>
                 {cars.map(car=>(
                   <div key={car.id} style={{...card(),border:`1.5px solid ${car.is_default?S.blue:S.border}`}}>
                     <div style={{display:'flex',alignItems:'center',gap:12,marginBottom:14}}>
