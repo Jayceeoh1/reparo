@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from 'next'
 import './globals.css'
+import GlobalLayout from '@/components/layout/GlobalLayout'
 
 export const metadata: Metadata = {
   title: 'Reparo — Servicii Auto România',
@@ -38,17 +39,15 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <meta name="apple-mobile-web-app-status-bar-style" content="default"/>
         <meta name="apple-mobile-web-app-title" content="Reparo"/>
         <meta name="mobile-web-app-capable" content="yes"/>
-        <meta name="msapplication-TileImage" content="/icons/icon-144.png"/>
-        <meta name="msapplication-TileColor" content="#0a1f44"/>
       </head>
       <body>
-        {children}
+        <GlobalLayout>
+          {children}
+        </GlobalLayout>
         <script dangerouslySetInnerHTML={{__html: `
           if ('serviceWorker' in navigator) {
             window.addEventListener('load', function() {
-              navigator.serviceWorker.register('/sw.js').then(function(reg) {
-                console.log('SW registered');
-              }).catch(function(err) {
+              navigator.serviceWorker.register('/sw.js').catch(function(err) {
                 console.log('SW failed:', err);
               });
             });
