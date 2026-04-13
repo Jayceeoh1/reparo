@@ -309,13 +309,20 @@ export default function ServiceDashboard() {
       if (svc) {
         setPf(p => ({...p,name:svc.name||'',description:svc.description||'',phone:svc.phone||'',email:svc.email||'',website:svc.website||'',facebook_url:svc.facebook_url||'',address:svc.address||'',city:svc.city||'',county:svc.county||'',postal_code:svc.postal_code||'',brands_accepted:svc.brands_accepted||[],fuel_types:svc.fuel_types||[],is_authorized_rar:svc.is_authorized_rar||false,has_itp:svc.has_itp||false,warranty_months:svc.warranty_months?.toString()||'0'}))
         const [reqs,apts,revs,offs,offrs] = await Promise.all([
-          supabase.from('quote_requests').select('*').eq('city',svc.city||'').eq('status','activa').order('created_at',{ascending:false}).limit(50),
+          supabase.from('quote_requests').select('*').eq('status','activa').order('created_at',{ascending:false}).limit(50),
           supabase.from('appointments').select('*').eq('service_id',svc.id).order('scheduled_date',{ascending:true}),
           supabase.from('reviews').select('*').eq('service_id',svc.id).order('created_at',{ascending:false}),
           supabase.from('offers').select('*').eq('service_id',svc.id).order('created_at',{ascending:false}),
           supabase.from('service_offerings').select('*').eq('service_id',svc.id),
         ])
-        setRequests(reqs.data||[])
+        const allReqs = reqs.data||[]
+        // Show requests targeted to this service OR from same city
+        const filteredReqs = allReqs.filter(r => 
+          r.target_service_id === svc.id || 
+          (r.city||'').toLowerCase().trim() === (svc.city||'').toLowerCase().trim() ||
+          (!r.target_service_id && !r.city)
+        )
+        setRequests(filteredReqs)
         setAppointments(apts.data||[])
         const sm={}; (apts.data||[]).forEach(a=>sm[a.id]=a.status); setAptStatuses(sm)
         setReviews(revs.data||[])

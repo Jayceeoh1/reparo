@@ -253,7 +253,7 @@ export default function ServiceProfilePage({ params }: { params: { id: string } 
           <div className="svc-profile-sidebar" style={{position:'sticky',top:20}}>
             <div style={card({marginBottom:14})}>
               <h3 style={{fontFamily:"'Sora',sans-serif",fontWeight:700,fontSize:15,color:S.navy,marginBottom:16}}>Contactează service-ul</h3>
-              <button onClick={()=>window.dispatchEvent(new CustomEvent('open-quote-modal'))}
+              <button onClick={()=>window.dispatchEvent(new CustomEvent('open-quote-modal',{detail:{service_id:service.id}}))}
                 style={{width:'100%',padding:'13px',background:S.yellow,color:'#fff',border:'none',borderRadius:50,fontSize:14,fontWeight:700,cursor:'pointer',fontFamily:"'Sora',sans-serif",boxShadow:'0 4px 16px rgba(245,158,11,0.25)',marginBottom:10}}>
                 ✦ Cere ofertă gratuită
               </button>

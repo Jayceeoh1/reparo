@@ -71,7 +71,7 @@ export default function GlobalLayout({ children }) {
   const [quoteStep, setQuoteStep] = useState(0)
   const [quoteDone, setQuoteDone] = useState(false)
   const [submitting, setSubmitting] = useState(false)
-  const [qForm, setQForm] = useState({car_brand:'',car_model:'',car_year:'',car_fuel:'',car_km:'',city:'',services:[],urgency:'',description:'',contact_name:'',contact_phone:''})
+  const [qForm, setQForm] = useState({car_brand:'',car_model:'',car_year:'',car_fuel:'',car_km:'',city:'',services:[],urgency:'',description:'',contact_name:'',contact_phone:'',target_service_id:''})
   const [cityDropdown, setCityDropdown] = useState(false)
   const [city, setCity] = useState('București')
   const [searchQuery, setSearchQuery] = useState('')
@@ -81,7 +81,10 @@ export default function GlobalLayout({ children }) {
   const isActive = (href) => pathname === href || (href !== '/home' && pathname?.startsWith(href.split('?')[0]))
 
   useEffect(() => {
-    const handler = () => { setQuoteOpen(true); setQuoteStep(0); setQuoteDone(false) }
+    const handler = (e:any) => { 
+      setQuoteOpen(true); setQuoteStep(0); setQuoteDone(false)
+      if(e?.detail?.service_id) setQForm(p=>({...p,target_service_id:e.detail.service_id}))
+    }
     window.addEventListener('open-quote-modal', handler)
     return () => window.removeEventListener('open-quote-modal', handler)
   }, [])
@@ -458,11 +461,14 @@ export default function GlobalLayout({ children }) {
                       if(!qForm.contact_name||!qForm.contact_phone) return
                       setSubmitting(true)
                       try {
+                        const {data:userData} = await supabase.auth.getUser()
                         await supabase.from('quote_requests').insert({
                           car_brand:qForm.car_brand,car_model:qForm.car_model,car_year:qForm.car_year,
                           car_fuel:qForm.car_fuel,car_km:qForm.car_km,city:qForm.city,
                           services:qForm.services,urgency:qForm.urgency,description:qForm.description,
                           contact_name:qForm.contact_name,contact_phone:qForm.contact_phone,
+                          user_id:userData?.user?.id||null,
+                          target_service_id:qForm.target_service_id||null,
                           status:'activa'
                         })
                         setQuoteDone(true)
@@ -663,11 +669,14 @@ export default function GlobalLayout({ children }) {
                       if(!qForm.contact_name||!qForm.contact_phone) return
                       setSubmitting(true)
                       try {
+                        const {data:userData} = await supabase.auth.getUser()
                         await supabase.from('quote_requests').insert({
                           car_brand:qForm.car_brand,car_model:qForm.car_model,car_year:qForm.car_year,
                           car_fuel:qForm.car_fuel,car_km:qForm.car_km,city:qForm.city,
                           services:qForm.services,urgency:qForm.urgency,description:qForm.description,
                           contact_name:qForm.contact_name,contact_phone:qForm.contact_phone,
+                          user_id:userData?.user?.id||null,
+                          target_service_id:qForm.target_service_id||null,
                           status:'activa'
                         })
                         setQuoteDone(true)
