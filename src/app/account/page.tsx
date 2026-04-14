@@ -154,7 +154,19 @@ export default function AccountPage() {
 
   return (
     <div style={{minHeight:'100vh',background:S.bg,fontFamily:"'DM Sans',sans-serif"}}>
-      <style>{`.acc-input:focus{border-color:${S.blue}!important;box-shadow:0 0 0 3px rgba(26,86,219,0.1)!important}.tab-acc:hover{background:#eaf3ff!important;color:${S.blue}!important}`}</style>
+      <style>{`
+        .acc-input:focus{border-color:${S.blue}!important;box-shadow:0 0 0 3px rgba(26,86,219,0.1)!important}
+        .tab-acc:hover{background:#eaf3ff!important;color:${S.blue}!important}
+        .doc-types-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:20px;}
+        .doc-modal-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:16px;}
+        .acc-tabs{display:flex;background:#fff;border-radius:50px;border:1px solid #e5e7eb;padding:4px;margin-bottom:20px;overflow-x:auto;gap:2px;scrollbar-width:none;-webkit-overflow-scrolling:touch;}
+        @media(max-width:640px){
+          .doc-types-grid{grid-template-columns:repeat(2,1fr)!important;}
+          .doc-modal-grid{grid-template-columns:repeat(2,1fr)!important;}
+          .acc-profile-header{flex-direction:column!important;align-items:flex-start!important;gap:12px!important;}
+          .acc-profile-stats{flex-wrap:wrap!important;gap:10px!important;}
+        }
+      `}</style>
 
       <div style={{maxWidth:1100,margin:'0 auto',padding:'24px 16px'}}>
 
@@ -365,7 +377,7 @@ export default function AccountPage() {
               <h2 style={{fontFamily:"'Sora',sans-serif",fontWeight:800,fontSize:18,color:S.navy}}>Documente & expirări</h2>
               <button onClick={()=>setShowAddDoc(true)} style={btn(true)}>+ Adaugă document</button>
             </div>
-            <div style={{display:'grid',gridTemplateColumns:'repeat(4,1fr)',gap:12,marginBottom:20}}>
+            <div className="doc-types-grid">
               {DOC_TYPES.map(dt=>{
                 const doc = documents.find(d=>d.type===dt.key)
                 const status = doc?getDocStatus(doc.expires_at):null
@@ -418,7 +430,7 @@ export default function AccountPage() {
               <Modal title="Adaugă document" onClose={()=>setShowAddDoc(false)}>
                 <div>
                   <label style={lbl}>Tip document</label>
-                  <div style={{display:'grid',gridTemplateColumns:'repeat(4,1fr)',gap:8,marginBottom:16}}>
+                  <div className="doc-modal-grid">
                     {DOC_TYPES.map(dt=>(
                       <button key={dt.key} onClick={()=>setDocForm(p=>({...p,type:dt.key}))}
                         style={{padding:'12px 6px',borderRadius:12,border:`1.5px solid ${docForm.type===dt.key?dt.color:S.border}`,background:docForm.type===dt.key?dt.bg:S.white,cursor:'pointer',textAlign:'center'}}>

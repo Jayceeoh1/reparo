@@ -81,7 +81,24 @@ export default function OfertePage() {
 
   return (
     <div style={{minHeight:'100vh',background:S.bg,fontFamily:"'DM Sans',sans-serif"}}>
-      <style>{`.req-card:hover{border-color:${S.blue}!important}`}</style>
+      <style>{`
+        .req-card:hover{border-color:${S.blue}!important}
+        .oferte-layout{display:flex;gap:20px;}
+        .oferte-sidebar{width:280px;flex-shrink:0;}
+        .oferte-prices{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:14px;}
+        .oferte-details{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+        @media(max-width:700px){
+          .oferte-layout{flex-direction:column!important;gap:0!important;}
+          .oferte-sidebar{width:100%!important;margin-bottom:16px!important;}
+          .oferte-sidebar-inner{display:flex!important;overflow-x:auto!important;gap:8px!important;padding-bottom:8px!important;}
+          .oferte-sidebar-inner > button{min-width:200px!important;flex-shrink:0!important;}
+          .oferte-prices{grid-template-columns:repeat(3,1fr)!important;}
+          .oferte-details{grid-template-columns:1fr!important;}
+        }
+        @media(max-width:420px){
+          .oferte-prices{grid-template-columns:1fr!important;}
+        }
+      `}</style>
 
       <div style={{maxWidth:1100,margin:'0 auto',padding:'24px 16px'}}>
         <h1 style={{fontFamily:"'Sora',sans-serif",fontWeight:800,fontSize:22,color:S.navy,marginBottom:6}}>Ofertele mele</h1>
@@ -95,10 +112,10 @@ export default function OfertePage() {
             <a href="/home" style={{...btn('yellow'),textDecoration:'none',display:'inline-flex'}}>✦ Cere ofertă acum →</a>
           </div>
         ):(
-          <div style={{display:'flex',gap:20}}>
+          <div className="oferte-layout">
 
             {/* Cereri sidebar */}
-            <div style={{width:280,flexShrink:0}}>
+            <div className="oferte-sidebar"><div className="oferte-sidebar-inner" style={{display:'flex',flexDirection:'column'}}>
               <div style={{fontSize:11,fontWeight:700,color:S.muted,textTransform:'uppercase',letterSpacing:1,marginBottom:10,fontFamily:"'Sora',sans-serif"}}>Cererile tale</div>
               {requests.map(r=>(
                 <button key={r.id} onClick={()=>setSelectedReq(r.id)} className="req-card"
@@ -115,9 +132,9 @@ export default function OfertePage() {
                   </div>
                 </button>
               ))}
-            </div>
+            </div></div>
 
-            {/* Oferte */}
+            {/* Oferte */
             <div style={{flex:1,minWidth:0}}>
               {currentReq&&(
                 <div style={{...card({marginBottom:14,padding:'14px 18px'}),display:'flex',alignItems:'center',justifyContent:'space-between'}}>
@@ -161,7 +178,7 @@ export default function OfertePage() {
                         </div>
 
                         {/* Preturi */}
-                        <div style={{display:'grid',gridTemplateColumns:'repeat(3,1fr)',gap:10,marginBottom:14}}>
+                        <div className="oferte-prices">
                           {[['Total',o.price_total,true],['Piese',o.price_parts,false],['Manoperă',o.price_labor,false]].map(([l,v,highlight])=>(
                             <div key={l} style={{borderRadius:12,padding:'12px 14px',textAlign:'center',background:highlight?S.navy:S.bg}}>
                               <div style={{fontSize:11,color:highlight?'rgba(255,255,255,0.5)':S.muted,marginBottom:4}}>{l}</div>
@@ -173,7 +190,7 @@ export default function OfertePage() {
                         </div>
 
                         {/* Detalii */}
-                        <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:10,marginBottom:o.description?14:0}}>
+                        <div className="oferte-details" style={{marginBottom:14}}>
                           {o.available_date&&(
                             <div style={{background:S.bg,borderRadius:10,padding:'10px 12px'}}>
                               <div style={{fontSize:10,color:S.muted,marginBottom:2}}>Data disponibilă</div>
