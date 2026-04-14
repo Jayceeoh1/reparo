@@ -1,8 +1,9 @@
 // @ts-nocheck
 'use client'
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useRef } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { usePathname } from 'next/navigation'
+import { useNotifications } from '@/hooks/useNotifications'
 
 const NAV_TABS = [
   { label: 'Acasă', href: '/home' },
@@ -67,6 +68,9 @@ export default function GlobalLayout({ children }) {
   const [user, setUser] = useState(null)
   const [profile, setProfile] = useState(null)
   const [drawerOpen, setDrawerOpen] = useState(false)
+  const [notifOpen, setNotifOpen] = useState(false)
+  const notifRef = useRef(null)
+  const { notifications, unreadCount, markAllRead } = useNotifications(user?.id)
   const [quoteOpen, setQuoteOpen] = useState(false)
   const [quoteStep, setQuoteStep] = useState(0)
   const [quoteDone, setQuoteDone] = useState(false)
@@ -104,6 +108,27 @@ export default function GlobalLayout({ children }) {
     document.addEventListener('mousedown', h)
     return () => document.removeEventListener('mousedown', h)
   }, [cityDropdown])
+
+  useEffect(() => {
+    if (!notifOpen) return
+    const h = (e) => { if (!notifRef.current?.contains(e.target)) setNotifOpen(false) }
+    document.addEventListener('mousedown', h)
+    return () => document.removeEventListener('mousedown', h)
+  }, [notifOpen])
+
+  // Toast pentru notificări noi
+  const [toast, setToast] = useState(null)
+  const prevCount = useRef(0)
+  useEffect(() => {
+    if (unreadCount > prevCount.current && prevCount.current >= 0) {
+      const newest = notifications[0]
+      if (newest) {
+        setToast(newest)
+        setTimeout(() => setToast(null), 4000)
+      }
+    }
+    prevCount.current = unreadCount
+  }, [unreadCount])
 
   if (isExcluded) return <>{children}</>
 
@@ -177,6 +202,56 @@ export default function GlobalLayout({ children }) {
 
             {/* Desktop auth buttons */}
             <div className="hide-mob" style={{display:'flex',alignItems:'center',gap:8,marginLeft:'auto',flexShrink:0}}>
+              {user&&(
+                <div ref={notifRef} style={{position:'relative'}}>
+                  <button onClick={()=>{setNotifOpen(o=>!o);if(!notifOpen)markAllRead()}}
+                    style={{position:'relative',width:38,height:38,borderRadius:10,background:'#f0f6ff',border:'1.5px solid var(--border)',cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'center',fontSize:18,transition:'background .15s'}}
+                    onMouseEnter={e=>e.currentTarget.style.background='#dbeafe'}
+                    onMouseLeave={e=>e.currentTarget.style.background='#f0f6ff'}>
+                    🔔
+                    {unreadCount>0&&(
+                      <div style={{position:'absolute',top:-4,right:-4,width:18,height:18,background:'#ef4444',borderRadius:'50%',display:'flex',alignItems:'center',justifyContent:'center',fontSize:10,fontWeight:700,color:'#fff',border:'2px solid #fff',fontFamily:"'Sora',sans-serif"}}>
+                        {unreadCount>9?'9+':unreadCount}
+                      </div>
+                    )}
+                  </button>
+                  {notifOpen&&(
+                    <div style={{position:'absolute',top:'110%',right:0,width:320,background:'#fff',borderRadius:16,boxShadow:'0 8px 32px rgba(10,31,68,0.15)',border:'1px solid var(--border)',zIndex:300,overflow:'hidden'}}>
+                      <div style={{padding:'14px 16px',borderBottom:'1px solid var(--border)',display:'flex',alignItems:'center',justifyContent:'space-between'}}>
+                        <div style={{fontFamily:"'Sora',sans-serif",fontWeight:700,fontSize:14,color:'var(--navy)'}}>Notificări</div>
+                        {unreadCount>0&&<button onClick={markAllRead} style={{fontSize:11,color:'var(--blue)',background:'none',border:'none',cursor:'pointer',fontWeight:600}}>Marchează citite</button>}
+                      </div>
+                      <div style={{maxHeight:320,overflowY:'auto'}}>
+                        {notifications.length===0?(
+                          <div style={{padding:'32px 16px',textAlign:'center',color:'var(--muted)',fontSize:13}}>
+                            <div style={{fontSize:32,marginBottom:8}}>🔔</div>
+                            Nicio notificare
+                          </div>
+                        ):notifications.map(n=>(
+                          <div key={n.id} style={{padding:'12px 16px',borderBottom:'1px solid #f5f5f5',background:n.is_read?'#fff':'#f0f6ff',cursor:'pointer',transition:'background .15s'}}
+                            onMouseEnter={e=>e.currentTarget.style.background='#f8faff'}
+                            onMouseLeave={e=>e.currentTarget.style.background=n.is_read?'#fff':'#f0f6ff'}>
+                            <div style={{display:'flex',gap:10,alignItems:'flex-start'}}>
+                              <div style={{fontSize:20,flexShrink:0}}>
+                                {n.type==='new_offer'?'💰':n.type==='new_request'?'📋':n.type==='appointment_confirmed'?'📅':n.type==='offer_accepted'?'✅':'🔔'}
+                              </div>
+                              <div style={{flex:1}}>
+                                <div style={{fontFamily:"'Sora',sans-serif",fontWeight:600,fontSize:13,color:'var(--navy)',marginBottom:2}}>{n.title}</div>
+                                {n.body&&<div style={{fontSize:12,color:'var(--muted)',lineHeight:1.4}}>{n.body}</div>}
+                                <div style={{fontSize:11,color:'#94a3b8',marginTop:4}}>{new Date(n.created_at).toLocaleDateString('ro-RO',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'})}</div>
+                              </div>
+                              {!n.is_read&&<div style={{width:8,height:8,borderRadius:'50%',background:'var(--blue)',flexShrink:0,marginTop:4}}/>}
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                      <div style={{padding:'10px 16px',borderTop:'1px solid var(--border)',textAlign:'center'}}>
+                        <a href="/oferte" style={{fontSize:12,color:'var(--blue)',fontWeight:600,textDecoration:'none'}}>Vezi toate ofertele →</a>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
               {user?(
                 <>
                   <a href="/account" style={{padding:'8px 14px',borderRadius:50,fontSize:13,fontWeight:600,color:'var(--navy)',textDecoration:'none',fontFamily:"'Sora',sans-serif",transition:'color .15s'}}
@@ -215,8 +290,19 @@ export default function GlobalLayout({ children }) {
               </a>
             </div>
 
-            {/* Mobile: oferta + hamburger */}
+            {/* Mobile: oferta + notif + hamburger */}
             <div className="mob-only" style={{alignItems:'center',gap:8,marginLeft:'auto'}}>
+              {user&&(
+                <button onClick={()=>{setNotifOpen(o=>!o);markAllRead()}}
+                  style={{position:'relative',width:34,height:34,borderRadius:8,background:'transparent',border:'none',cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'center',fontSize:18}}>
+                  🔔
+                  {unreadCount>0&&(
+                    <div style={{position:'absolute',top:-2,right:-2,width:16,height:16,background:'#ef4444',borderRadius:'50%',display:'flex',alignItems:'center',justifyContent:'center',fontSize:9,fontWeight:700,color:'#fff',border:'2px solid #fff'}}>
+                      {unreadCount>9?'9+':unreadCount}
+                    </div>
+                  )}
+                </button>
+              )}
               {!user&&(
                 <>
                   <a href="/auth/login" style={{padding:'7px 14px',borderRadius:8,fontSize:12,fontWeight:600,color:'var(--navy)',textDecoration:'none',fontFamily:"'DM Sans',sans-serif"}}>Intră</a>
@@ -710,6 +796,20 @@ export default function GlobalLayout({ children }) {
           </a>
         ))}
       </div>
+      {/* Toast notificare */}
+      {toast&&(
+        <div style={{position:'fixed',bottom:90,left:'50%',transform:'translateX(-50%)',zIndex:3000,background:'var(--navy)',color:'#fff',borderRadius:14,padding:'12px 18px',boxShadow:'0 8px 32px rgba(10,31,68,0.3)',display:'flex',alignItems:'center',gap:12,minWidth:280,maxWidth:'90vw',animation:'slideUp .3s ease'}}>
+          <style>{`@keyframes slideUp{from{opacity:0;transform:translateX(-50%) translateY(20px)}to{opacity:1;transform:translateX(-50%) translateY(0)}}`}</style>
+          <div style={{fontSize:22,flexShrink:0}}>
+            {toast.type==='new_offer'?'💰':toast.type==='new_request'?'📋':toast.type==='appointment_confirmed'?'📅':toast.type==='offer_accepted'?'✅':'🔔'}
+          </div>
+          <div style={{flex:1}}>
+            <div style={{fontFamily:"'Sora',sans-serif",fontWeight:700,fontSize:13}}>{toast.title}</div>
+            {toast.body&&<div style={{fontSize:12,opacity:.75,marginTop:2}}>{toast.body}</div>}
+          </div>
+          <button onClick={()=>setToast(null)} style={{background:'none',border:'none',color:'rgba(255,255,255,0.5)',cursor:'pointer',fontSize:16,padding:4}}>✕</button>
+        </div>
+      )}
     </>
   )
 }
