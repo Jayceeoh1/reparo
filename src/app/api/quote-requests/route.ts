@@ -35,9 +35,9 @@ export async function POST(request: Request) {
       .from('services')
       .select('owner_id, name')
       .eq('id', body.target_service_id)
-      .single()
+      .single() as { data: { owner_id: string; name: string } | null }
 
-    if (svc?.owner_id) {
+    if (svc && svc.owner_id) {
       await supabase.from('notifications').insert({
         user_id: svc.owner_id,
         type: 'new_request',
