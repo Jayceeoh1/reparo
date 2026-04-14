@@ -134,7 +134,7 @@ export default function OfertePage() {
               ))}
             </div></div>
 
-            {/* Oferte */
+            {/* Oferte */}
             <div style={{flex:1,minWidth:0}}>
               {currentReq&&(
                 <div style={{...card({marginBottom:14,padding:'14px 18px'}),display:'flex',alignItems:'center',justifyContent:'space-between'}}>
