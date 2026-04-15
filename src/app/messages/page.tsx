@@ -6,7 +6,10 @@ import { createClient } from '@/lib/supabase/client'
 const S = {
   navy:'#0a1f44',blue:'#1a56db',bg:'#f0f6ff',white:'#fff',
   text:'#111827',muted:'#6b7280',border:'#e5e7eb',green:'#16a34a',
+  yellow:'#f59e0b',red:'#dc2626',redBg:'#fee2e2',
 }
+
+const ALLOWED_TYPES = ['image/jpeg','image/png','image/gif','image/webp','application/pdf','video/mp4','video/quicktime']
 
 export default function MessagesPage() {
   const [user, setUser] = useState(null)
@@ -17,7 +20,10 @@ export default function MessagesPage() {
   const [newMsg, setNewMsg] = useState('')
   const [loading, setLoading] = useState(true)
   const [sending, setSending] = useState(false)
+  const [uploading, setUploading] = useState(false)
+  const [showAttachMenu, setShowAttachMenu] = useState(false)
   const bottomRef = useRef(null)
+  const fileRef = useRef(null)
   const supabase = createClient()
 
   useEffect(() => {
@@ -27,7 +33,6 @@ export default function MessagesPage() {
       setUser(user)
       const { data: prof } = await supabase.from('profiles').select('*').eq('id', user.id).single()
       setProfile(prof)
-
       const { data: convs } = await supabase
         .from('conversations')
         .select('*, services(id,name,city), client:profiles!conversations_client_id_fkey(id,full_name)')
@@ -65,6 +70,30 @@ export default function MessagesPage() {
     setSending(false)
   }
 
+  async function uploadFile(file) {
+    if (!file || !activeConv) return
+    if (!ALLOWED_TYPES.includes(file.type)) { alert('Tip de fișier nepermis. Folosește imagini, PDF sau video.'); return }
+    if (file.size > 50 * 1024 * 1024) { alert('Fișierul e prea mare. Max 50MB.'); return }
+    setUploading(true)
+    setShowAttachMenu(false)
+    const ext = file.name.split('.').pop()
+    const path = `messages/${activeConv.id}/${Date.now()}.${ext}`
+    const { error: upErr } = await supabase.storage.from('message-attachments').upload(path, file)
+    if (upErr) { alert('Eroare la upload: ' + upErr.message); setUploading(false); return }
+    const { data: { publicUrl } } = supabase.storage.from('message-attachments').getPublicUrl(path)
+    const isImage = file.type.startsWith('image/')
+    const isPdf = file.type === 'application/pdf'
+    const isVideo = file.type.startsWith('video/')
+    const msgType = isImage ? 'image' : isPdf ? 'pdf' : 'video'
+    const { data } = await supabase.from('messages').insert({
+      conversation_id: activeConv.id, sender_id: user.id,
+      content: file.name, attachment_url: publicUrl, attachment_type: msgType, is_read: false,
+    }).select().single()
+    if (data) setMessages(prev => [...prev, data])
+    setTimeout(() => bottomRef.current?.scrollIntoView({ behavior: 'smooth' }), 50)
+    setUploading(false)
+  }
+
   useEffect(() => {
     if (!activeConv?.id || !user?.id) return
     const channel = supabase.channel(`conv-${activeConv.id}`)
@@ -87,6 +116,54 @@ export default function MessagesPage() {
 
   const otherName = (conv) => profile?.role === 'service' ? conv.client?.full_name || 'Client' : conv.services?.name || 'Service'
 
+  function renderMessage(msg) {
+    const isMine = msg.sender_id === user?.id
+    const bubbleStyle = {
+      maxWidth:'75%', padding:'10px 14px',
+      borderRadius: isMine ? '18px 18px 4px 18px' : '18px 18px 18px 4px',
+      background: isMine ? S.blue : '#f0f6ff',
+      color: isMine ? '#fff' : S.text,
+      fontSize:14, lineHeight:1.5,
+      boxShadow:'0 1px 4px rgba(10,31,68,0.08)'
+    }
+    if (msg.attachment_type === 'image') return (
+      <div style={{display:'flex',justifyContent:isMine?'flex-end':'flex-start'}}>
+        <div style={{maxWidth:'65%'}}>
+          <img src={msg.attachment_url} alt={msg.content} style={{width:'100%',borderRadius:14,display:'block',cursor:'pointer'}} onClick={()=>window.open(msg.attachment_url,'_blank')}/>
+          <div style={{fontSize:10,color:S.muted,marginTop:3,textAlign:isMine?'right':'left'}}>{formatTime(msg.created_at)}</div>
+        </div>
+      </div>
+    )
+    if (msg.attachment_type === 'pdf') return (
+      <div style={{display:'flex',justifyContent:isMine?'flex-end':'flex-start'}}>
+        <a href={msg.attachment_url} target="_blank" rel="noreferrer"
+          style={{display:'flex',alignItems:'center',gap:10,padding:'12px 16px',background:isMine?S.blue:'#fff',border:`1px solid ${S.border}`,borderRadius:14,textDecoration:'none',maxWidth:'70%'}}>
+          <span style={{fontSize:28}}>📄</span>
+          <div>
+            <div style={{fontWeight:600,fontSize:13,color:isMine?'#fff':S.navy,marginBottom:2}}>{msg.content}</div>
+            <div style={{fontSize:11,color:isMine?'rgba(255,255,255,0.65)':S.muted}}>PDF · Click pentru deschidere</div>
+          </div>
+        </a>
+      </div>
+    )
+    if (msg.attachment_type === 'video') return (
+      <div style={{display:'flex',justifyContent:isMine?'flex-end':'flex-start'}}>
+        <div style={{maxWidth:'65%'}}>
+          <video src={msg.attachment_url} controls style={{width:'100%',borderRadius:14,display:'block'}}/>
+          <div style={{fontSize:10,color:S.muted,marginTop:3,textAlign:isMine?'right':'left'}}>{formatTime(msg.created_at)}</div>
+        </div>
+      </div>
+    )
+    return (
+      <div style={{display:'flex',justifyContent:isMine?'flex-end':'flex-start'}}>
+        <div style={bubbleStyle}>
+          <div>{msg.content}</div>
+          <div style={{fontSize:10,color:isMine?'rgba(255,255,255,0.6)':S.muted,marginTop:4,textAlign:'right'}}>{formatTime(msg.created_at)}</div>
+        </div>
+      </div>
+    )
+  }
+
   if (loading) return (
     <div style={{minHeight:'60vh',display:'flex',alignItems:'center',justifyContent:'center',background:S.bg}}>
       <div style={{width:36,height:36,border:`3px solid ${S.blue}`,borderTopColor:'transparent',borderRadius:'50%',animation:'spin 1s linear infinite'}}/>
@@ -100,14 +177,17 @@ export default function MessagesPage() {
         .msg-hover:hover{background:#f0f6ff!important}
         @media(max-width:768px){
           .messages-layout{flex-direction:column!important;height:auto!important}
-          .messages-sidebar{width:100%!important;height:180px!important;flex-shrink:0!important;border-right:none!important;border-bottom:1px solid #e5e7eb!important;overflow-y:auto!important}
+          .messages-sidebar{width:100%!important;height:160px!important;flex-shrink:0!important;border-right:none!important;border-bottom:1px solid #e5e7eb!important;overflow-y:auto!important}
           .messages-chat{min-height:60vh!important;display:flex!important;flex-direction:column!important}
         }
       `}</style>
 
+      <input ref={fileRef} type="file" accept="image/*,application/pdf,video/mp4,video/quicktime" style={{display:'none'}}
+        onChange={e => { if(e.target.files?.[0]) uploadFile(e.target.files[0]); e.target.value='' }}/>
+
       {/* Sidebar */}
-      <div style={{width:300,flexShrink:0,background:S.white,borderRight:`1px solid ${S.border}`,display:'flex',flexDirection:'column',borderRadius:'16px 0 0 16px',overflow:'hidden'}}>
-        <div style={{padding:'20px 16px',borderBottom:`1px solid ${S.border}`}}>
+      <div className="messages-sidebar" style={{width:300,flexShrink:0,background:S.white,borderRight:`1px solid ${S.border}`,display:'flex',flexDirection:'column',borderRadius:'16px 0 0 16px',overflow:'hidden'}}>
+        <div style={{padding:'16px',borderBottom:`1px solid ${S.border}`}}>
           <h2 style={{fontFamily:"'Sora',sans-serif",fontWeight:800,fontSize:16,color:S.navy,margin:0}}>Mesaje</h2>
         </div>
         <div style={{flex:1,overflowY:'auto'}}>
@@ -117,7 +197,6 @@ export default function MessagesPage() {
               <div style={{fontSize:13}}>Nicio conversație</div>
             </div>
           ) : conversations.map(conv => {
-            const unread = 0
             const isActive = activeConv?.id === conv.id
             return (
               <div key={conv.id} onClick={() => selectConv(conv)} className="msg-hover"
@@ -142,40 +221,66 @@ export default function MessagesPage() {
 
       {/* Chat */}
       {activeConv ? (
-        <div style={{flex:1,display:'flex',flexDirection:'column',background:S.white,borderRadius:'0 16px 16px 0',overflow:'hidden'}}>
-          <div style={{padding:'14px 20px',borderBottom:`1px solid ${S.border}`,display:'flex',alignItems:'center',gap:12}}>
+        <div className="messages-chat" style={{flex:1,display:'flex',flexDirection:'column',background:S.white,borderRadius:'0 16px 16px 0',overflow:'hidden'}}>
+          {/* Header */}
+          <div style={{padding:'12px 20px',borderBottom:`1px solid ${S.border}`,display:'flex',alignItems:'center',gap:12}}>
             <div style={{width:40,height:40,background:'#eaf3ff',borderRadius:'50%',display:'flex',alignItems:'center',justifyContent:'center',fontSize:18}}>
               {profile?.role === 'service' ? '👤' : '🔧'}
             </div>
-            <div>
+            <div style={{flex:1}}>
               <div style={{fontFamily:"'Sora',sans-serif",fontWeight:700,fontSize:14,color:S.navy}}>{otherName(activeConv)}</div>
               <div style={{fontSize:12,color:S.green,display:'flex',alignItems:'center',gap:4}}>
                 <span style={{width:6,height:6,borderRadius:'50%',background:S.green,display:'inline-block'}}/>Online
               </div>
             </div>
           </div>
-          <div style={{flex:1,overflowY:'auto',padding:'16px 20px',display:'flex',flexDirection:'column',gap:8}}>
+
+          {/* Messages */}
+          <div style={{flex:1,overflowY:'auto',padding:'16px 20px',display:'flex',flexDirection:'column',gap:10}}>
             {messages.length === 0 ? (
-              <div style={{flex:1,display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',color:S.muted}}>
+              <div style={{flex:1,display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',color:S.muted,padding:'40px 0'}}>
                 <div style={{fontSize:48,marginBottom:10}}>👋</div>
                 <div style={{fontWeight:600,marginBottom:4}}>Începe conversația</div>
                 <div style={{fontSize:13}}>Trimite primul mesaj!</div>
               </div>
-            ) : messages.map(msg => {
-              const isMine = msg.sender_id === user?.id
-              return (
-                <div key={msg.id} style={{display:'flex',justifyContent:isMine?'flex-end':'flex-start'}}>
-                  <div style={{maxWidth:'70%',padding:'10px 14px',borderRadius:isMine?'18px 18px 4px 18px':'18px 18px 18px 4px',background:isMine?S.blue:'#f0f6ff',color:isMine?'#fff':S.text,fontSize:14,lineHeight:1.5,boxShadow:'0 1px 4px rgba(10,31,68,0.08)'}}>
-                    <div>{msg.content}</div>
-                    <div style={{fontSize:10,color:isMine?'rgba(255,255,255,0.6)':S.muted,marginTop:4,textAlign:'right'}}>{formatTime(msg.created_at)}</div>
-                  </div>
+            ) : messages.map(msg => (
+              <div key={msg.id}>{renderMessage(msg)}</div>
+            ))}
+            {uploading && (
+              <div style={{display:'flex',justifyContent:'flex-end'}}>
+                <div style={{padding:'10px 16px',background:'#eaf3ff',borderRadius:14,fontSize:13,color:S.muted,display:'flex',alignItems:'center',gap:8}}>
+                  <div style={{width:16,height:16,border:`2px solid ${S.blue}`,borderTopColor:'transparent',borderRadius:'50%',animation:'spin 1s linear infinite'}}/>
+                  Se încarcă fișierul...
                 </div>
-              )
-            })}
+              </div>
+            )}
             <div ref={bottomRef}/>
           </div>
-          <div style={{padding:'12px 16px',borderTop:`1px solid ${S.border}`}}>
-            <form onSubmit={sendMessage} style={{display:'flex',gap:10,alignItems:'center'}}>
+
+          {/* Input */}
+          <div style={{padding:'12px 16px',borderTop:`1px solid ${S.border}`,background:'#fff'}}>
+            {/* Attach menu */}
+            {showAttachMenu && (
+              <div style={{background:'#fff',border:`1px solid ${S.border}`,borderRadius:14,padding:8,marginBottom:8,display:'flex',gap:6,boxShadow:'0 4px 16px rgba(10,31,68,0.1)'}}>
+                {[
+                  {icon:'🖼️',label:'Imagine',accept:'image/*'},
+                  {icon:'📄',label:'PDF / Deviz',accept:'application/pdf'},
+                  {icon:'🎥',label:'Video',accept:'video/mp4,video/quicktime'},
+                ].map(t=>(
+                  <button key={t.label} onClick={()=>{ fileRef.current.accept=t.accept; fileRef.current.click(); setShowAttachMenu(false) }}
+                    style={{flex:1,display:'flex',flexDirection:'column',alignItems:'center',gap:4,padding:'10px 6px',background:'#f8faff',border:`1px solid ${S.border}`,borderRadius:10,cursor:'pointer',fontSize:11,color:S.navy,fontWeight:600}}>
+                    <span style={{fontSize:22}}>{t.icon}</span>
+                    {t.label}
+                  </button>
+                ))}
+              </div>
+            )}
+            <form onSubmit={sendMessage} style={{display:'flex',gap:8,alignItems:'center'}}>
+              {/* Attach button */}
+              <button type="button" onClick={()=>setShowAttachMenu(o=>!o)}
+                style={{width:40,height:40,borderRadius:'50%',background:showAttachMenu?'#eaf3ff':'#f8faff',border:`1.5px solid ${showAttachMenu?S.blue:S.border}`,cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'center',fontSize:18,flexShrink:0,transition:'all .15s'}}>
+                📎
+              </button>
               <input value={newMsg} onChange={e=>setNewMsg(e.target.value)}
                 placeholder="Scrie un mesaj..."
                 style={{flex:1,padding:'11px 16px',border:`1.5px solid ${S.border}`,borderRadius:50,fontSize:14,fontFamily:"'DM Sans',sans-serif",color:S.text,outline:'none',background:'#f8faff'}}/>

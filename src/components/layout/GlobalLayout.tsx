@@ -257,6 +257,12 @@ export default function GlobalLayout({ children }) {
                   <a href="/account" style={{padding:'8px 14px',borderRadius:50,fontSize:13,fontWeight:600,color:'var(--navy)',textDecoration:'none',fontFamily:"'Sora',sans-serif",transition:'color .15s'}}
                     onMouseEnter={e=>e.currentTarget.style.color='var(--blue)'}
                     onMouseLeave={e=>e.currentTarget.style.color='var(--navy)'}>Contul meu</a>
+                  <a href="/messages" title="Mesaje"
+                    style={{width:36,height:36,borderRadius:10,background:'#f0f6ff',border:'1.5px solid var(--border)',cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'center',fontSize:17,textDecoration:'none',transition:'background .15s'}}
+                    onMouseEnter={e=>e.currentTarget.style.background='#dbeafe'}
+                    onMouseLeave={e=>e.currentTarget.style.background='#f0f6ff'}>
+                    💬
+                  </a>
                   <a href="/oferte" style={{padding:'8px 14px',borderRadius:50,fontSize:13,fontWeight:600,color:'var(--navy)',textDecoration:'none',fontFamily:"'Sora',sans-serif"}}
                     onMouseEnter={e=>e.currentTarget.style.color='var(--blue)'}
                     onMouseLeave={e=>e.currentTarget.style.color='var(--navy)'}>Oferte</a>
@@ -365,6 +371,7 @@ export default function GlobalLayout({ children }) {
               {user?(
                 <>
                   <a href="/account" onClick={()=>setDrawerOpen(false)} style={{display:'block',padding:'13px 24px',fontSize:15,fontWeight:600,color:'var(--blue)',textDecoration:'none',fontFamily:"'Sora',sans-serif"}}>Contul meu</a>
+                  <a href="/messages" onClick={()=>setDrawerOpen(false)} style={{display:'block',padding:'13px 24px',fontSize:15,fontWeight:500,color:'var(--navy)',textDecoration:'none'}}>💬 Mesaje</a>
                   <a href="/oferte" onClick={()=>setDrawerOpen(false)} style={{display:'block',padding:'13px 24px',fontSize:15,fontWeight:500,color:'var(--navy)',textDecoration:'none',fontFamily:"'DM Sans',sans-serif"}}>Ofertele mele</a>
                   {profile?.role==='service'&&<a href="/dashboard/service" onClick={()=>setDrawerOpen(false)} style={{display:'block',padding:'13px 24px',fontSize:15,fontWeight:500,color:'var(--navy)',textDecoration:'none'}}>Dashboard service</a>}
                   <button onClick={async()=>{await supabase.auth.signOut();window.location.href='/home'}}

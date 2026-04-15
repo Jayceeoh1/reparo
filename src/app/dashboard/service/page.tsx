@@ -38,7 +38,27 @@ const input = {
 const label = {display:'block',fontSize:11,fontWeight:700,color:S.muted,
   textTransform:'uppercase',letterSpacing:1,marginBottom:5,fontFamily:"'Sora',sans-serif"}
 
-const ALL_SERVICES = ['Schimb ulei & filtre','Frâne & discuri','Geometrie roți','Echilibrare roți','Diagnoză electronică','Suspensie','Transmisie & cutie viteze','Vopsitorie','Caroserie','Climatizare & AC','Electrică auto','Motor','ITP','RAR','Anvelope & jante','Injecție & turbo','Polishing & detailing','Tractare','Verificare pre-cumpărare','Recondiționare faruri','Folie auto','Detailing interior']
+const SERVICE_CATEGORIES = [
+  { cat:'🔧 Revizie & Mentenanță', items:['Schimb ulei motor','Schimb filtre (aer, polen, combustibil)','Verificare generală','Schimb lichid frână','Schimb lichid răcire (antigel)','Schimb lichid servo','Schimb bujii / bujii incandescente'] },
+  { cat:'🛑 Frâne', items:['Schimb plăcuțe frână','Schimb discuri frână','Schimb etrieri','Recondiționare etrieri','Aerisire sistem frânare','Diagnoză sistem frânare'] },
+  { cat:'⚙️ Mecanică generală', items:['Suspensie (amortizoare, arcuri)','Direcție (bielete, capete bară)','Planetare','Rulmenți roată','Sistem evacuare','Reparații motor generale','Reparații cutie viteze','Revizie cutie viteze'] },
+  { cat:'🔥 Distribuție & Motor', items:['Schimb kit distribuție','Schimb curea accesorii','Reparații motor','Garnitură chiulasă','Rectificare motor'] },
+  { cat:'⚡ Electrică auto', items:['Diagnoză electrică','Reparații instalație electrică','Alternator','Electromotor','Senzori','Probleme bord / martori'] },
+  { cat:'💻 Diagnoză electronică', items:['Scanare erori','Resetare erori','Codări / adaptări','Actualizări software'] },
+  { cat:'❄️ Climatizare & AC', items:['Încărcare freon','Verificare instalație AC','Reparații compresor','Curățare instalație AC'] },
+  { cat:'🎨 Vopsitorie & Caroserie', items:['Vopsitorie element','Vopsitorie integrală','Tinichigerie','Îndreptare caroserie','Polish auto','Reparații daune'] },
+  { cat:'🛞 Anvelope & Roți', items:['Montaj anvelope','Demontaj anvelope','Echilibrare roți','Geometrie roți','Vulcanizare'] },
+  { cat:'🚗 ITP', items:['ITP autoturisme','ITP autoutilitare'] },
+  { cat:'🔋 Baterii & Electric Hibrid', items:['Schimb baterie','Test baterie','Sisteme hibride / electrice'] },
+  { cat:'⛽ Sistem combustibil', items:['Reparații injectoare','Curățare injectoare','Reparații pompă combustibil','Reparații sistem alimentare'] },
+  { cat:'🚘 Transmisie', items:['Ambreiaj','Volantă','Cutie manuală','Cutie automată','Schimb ulei cutie'] },
+  { cat:'🚨 Tractări & Asistență', items:['Tractare auto','Asistență rutieră','Pornire baterie','Transport auto'] },
+  { cat:'🧼 Detailing & Estetică', items:['Spălare auto','Detailing interior','Detailing exterior','Polish','Protecție ceramică','Curățare tapițerie'] },
+  { cat:'🛡️ Accesorii & Protecții', items:['Folii geamuri','PPF (protecție vopsea)','Montaj accesorii'] },
+  { cat:'🔑 Chei & Închideri', items:['Chei auto','Programare chei','Reparații închideri'] },
+  { cat:'🔥 Tuning & Performance', items:['Remap ECU','Stage 1','Stage 2','Tuning motor'] },
+]
+const ALL_SERVICES = SERVICE_CATEGORIES.flatMap(c=>c.items)
 const ALL_BRANDS = ['Toate mărcile','Alfa Romeo','Audi','BMW','Chevrolet','Citroën','Dacia','Fiat','Ford','Honda','Hyundai','Jaguar','Jeep','Kia','Land Rover','Lexus','Mazda','Mercedes-Benz','Mini','Mitsubishi','Nissan','Opel','Peugeot','Porsche','Renault','Seat','Skoda','Subaru','Suzuki','Tesla','Toyota','Volkswagen','Volvo']
 const COUNTIES = ['Alba','Arad','Argeș','Bacău','Bihor','Bistrița-Năsăud','Botoșani','Brăila','Brașov','București','Buzău','Călărași','Caraș-Severin','Cluj','Constanța','Covasna','Dâmbovița','Dolj','Galați','Giurgiu','Gorj','Harghita','Hunedoara','Ialomița','Iași','Ilfov','Maramureș','Mehedinți','Mureș','Neamț','Olt','Prahova','Sălaj','Satu Mare','Sibiu','Suceava','Teleorman','Timiș','Tulcea','Vâlcea','Vaslui','Vrancea']
 const APT_STATUS = {in_asteptare:{label:'Așteptare',bg:S.amberBg,color:S.amber},confirmata:{label:'Confirmată',bg:'#dbeafe',color:S.blue},in_lucru:{label:'În lucru',bg:S.purpleBg,color:S.purple},finalizata:{label:'Finalizată',bg:S.greenBg,color:S.green},anulata:{label:'Anulată',bg:S.redBg,color:S.red}}
@@ -795,7 +815,11 @@ export default function ServiceDashboard() {
                     <label style={label}>Serviciu *</label>
                     <select className="dash-input" value={newOffering.name} onChange={e=>setNewOffering(p=>({...p,name:e.target.value}))} style={input}>
                       <option value="">Selectează serviciul</option>
-                      {ALL_SERVICES.map(s=><option key={s}>{s}</option>)}
+                      {SERVICE_CATEGORIES.map(cat=>(
+                        <optgroup key={cat.cat} label={cat.cat}>
+                          {cat.items.map(s=><option key={s} value={s}>{s}</option>)}
+                        </optgroup>
+                      ))}
                     </select>
                   </div>
                   <div>
@@ -1132,33 +1156,76 @@ export default function ServiceDashboard() {
 
           {tab==='Recenzii'&&(
             <div>
-              <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:20}}>
+              <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:20,flexWrap:'wrap',gap:10}}>
                 <h1 style={{fontFamily:"'Sora',sans-serif",fontWeight:800,fontSize:22,color:S.navy}}>Recenzii</h1>
                 {service?.rating_count>0&&<div style={{display:'flex',alignItems:'center',gap:8,background:S.amberBg,border:`1px solid ${S.amber}30`,padding:'8px 16px',borderRadius:50}}>
                   <span style={{fontFamily:"'Sora',sans-serif",fontWeight:800,fontSize:22,color:S.amber}}>{service.rating_avg.toFixed(1)}</span>
                   <div><div style={{display:'flex',gap:1}}>{[1,2,3,4,5].map(s=><span key={s} style={{fontSize:12,color:s<=Math.round(service.rating_avg)?S.yellow:'#ddd'}}>★</span>)}</div><div style={{fontSize:10,color:S.muted}}>{service.rating_count} recenzii</div></div>
                 </div>}
               </div>
-              {reviews.length===0?<div style={{...card(),textAlign:'center',padding:'60px 20px',color:S.muted}}><div style={{fontSize:48,marginBottom:10}}>⭐</div>Nicio recenzie încă.</div>:
-                reviews.map(r=>(
-                  <div key={r.id} style={{...card({marginBottom:10})}}>
-                    <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:10}}>
-                      <div style={{display:'flex',gap:2}}>{[1,2,3,4,5].map(s=><span key={s} style={{fontSize:16,color:s<=r.rating?S.yellow:'#e5e7eb'}}>★</span>)}</div>
-                      <span style={{fontSize:12,color:S.muted}}>{new Date(r.created_at).toLocaleDateString('ro-RO')}</span>
-                    </div>
-                    {r.comment&&<p style={{fontSize:14,color:S.text,marginBottom:12,lineHeight:1.6}}>{r.comment}</p>}
-                    {r.reply_text?<div style={{background:'#eaf3ff',borderRadius:10,padding:'10px 12px',border:`1px solid ${S.blue}20`}}>
-                      <div style={{fontSize:10,fontWeight:700,color:S.blue,marginBottom:4}}>RĂSPUNSUL TĂU</div>
-                      <p style={{fontSize:13,color:S.blue}}>{r.reply_text}</p>
-                    </div>:replyingTo===r.id?(
-                      <div>
-                        <textarea value={replyText} onChange={e=>setReplyText(e.target.value)} rows={2} placeholder="Răspunsul tău..." style={{...input,resize:'none',marginBottom:8}}/>
-                        <div style={{display:'flex',gap:8}}>
-                          <button onClick={()=>sendReply(r.id)} style={btn('primary')}>Trimite</button>
-                          <button onClick={()=>setReplyingTo(null)} style={btn('ghost')}>Anulează</button>
+
+              {/* Rating breakdown */}
+              {reviews.length>0&&(
+                <div style={{...card({marginBottom:16})}}>
+                  <div style={{fontSize:12,fontWeight:700,color:S.muted,textTransform:'uppercase',letterSpacing:0.5,marginBottom:10}}>Distribuție rating</div>
+                  {[5,4,3,2,1].map(star=>{
+                    const count = reviews.filter(r=>r.rating===star).length
+                    const pct = reviews.length?Math.round(count/reviews.length*100):0
+                    return (
+                      <div key={star} style={{display:'flex',alignItems:'center',gap:8,marginBottom:6}}>
+                        <span style={{fontSize:12,color:S.muted,width:12}}>{star}</span>
+                        <span style={{color:S.yellow,fontSize:12}}>★</span>
+                        <div style={{flex:1,height:6,background:'#f0f0f0',borderRadius:3,overflow:'hidden'}}>
+                          <div style={{width:`${pct}%`,height:'100%',background:S.yellow,borderRadius:3,transition:'width .5s'}}/>
                         </div>
+                        <span style={{fontSize:11,color:S.muted,width:28,textAlign:'right'}}>{count}</span>
                       </div>
-                    ):<button onClick={()=>setReplyingTo(r.id)} style={{...btn('ghost'),fontSize:12,padding:'6px 12px'}}>+ Răspunde la recenzie</button>}
+                    )
+                  })}
+                </div>
+              )}
+
+              {reviews.length===0
+                ?<div style={{...card(),textAlign:'center',padding:'60px 20px',color:S.muted}}><div style={{fontSize:48,marginBottom:10}}>⭐</div>Nicio recenzie încă.</div>
+                :reviews.map(r=>(
+                  <div key={r.id} style={{...card({marginBottom:10})}}>
+                    <div style={{display:'flex',alignItems:'flex-start',justifyContent:'space-between',marginBottom:10}}>
+                      <div>
+                        <div style={{display:'flex',gap:2,marginBottom:4}}>{[1,2,3,4,5].map(s=><span key={s} style={{fontSize:16,color:s<=r.rating?S.yellow:'#e5e7eb'}}>★</span>)}</div>
+                        <div style={{fontSize:12,color:S.muted}}>{r.client_name||'Client anonim'} · {new Date(r.created_at).toLocaleDateString('ro-RO')}</div>
+                      </div>
+                      <div style={{display:'flex',gap:6}}>
+                        {!r.reply_text&&<button onClick={()=>setReplyingTo(r.id)} style={{...btn('ghost'),fontSize:11,padding:'5px 10px'}}>💬 Răspunde</button>}
+                        <button onClick={async()=>{
+                          if(!confirm('Raportezi această recenzie ca falsă?')) return
+                          await supabase.from('reviews').update({is_reported:true,reported_at:new Date().toISOString()}).eq('id',r.id)
+                          setReviews(prev=>prev.map(rv=>rv.id===r.id?{...rv,is_reported:true}:rv))
+                          alert('Recenzia a fost raportată. O vom analiza în 24h.')
+                        }} style={{...btn('ghost'),fontSize:11,padding:'5px 10px',color:r.is_reported?S.muted:S.red,opacity:r.is_reported?.5:1}}
+                          disabled={r.is_reported}>
+                          {r.is_reported?'⚠️ Raportat':'🚨 Raportează'}
+                        </button>
+                      </div>
+                    </div>
+                    {r.comment&&<p style={{fontSize:14,color:S.text,marginBottom:12,lineHeight:1.6,background:'#f8faff',borderRadius:10,padding:'10px 12px'}}>{r.comment}</p>}
+                    {r.reply_text
+                      ?<div style={{background:'#eaf3ff',borderRadius:10,padding:'10px 12px',border:`1px solid ${S.blue}20`}}>
+                        <div style={{fontSize:10,fontWeight:700,color:S.blue,marginBottom:4}}>RĂSPUNSUL TĂU</div>
+                        <p style={{fontSize:13,color:S.blue,margin:0}}>{r.reply_text}</p>
+                        <button onClick={()=>{setReplyingTo(r.id);setReplyText(r.reply_text)}} style={{fontSize:11,color:S.blue,background:'none',border:'none',cursor:'pointer',marginTop:6,padding:0}}>✏️ Editează</button>
+                      </div>
+                      :replyingTo===r.id?(
+                        <div>
+                          <textarea value={replyText} onChange={e=>setReplyText(e.target.value)} rows={3}
+                            placeholder="Răspunsul tău public la această recenzie..."
+                            style={{...input,resize:'none',marginBottom:8}}/>
+                          <div style={{display:'flex',gap:8}}>
+                            <button onClick={()=>sendReply(r.id)} style={btn('primary')}>Publică răspunsul</button>
+                            <button onClick={()=>{setReplyingTo(null);setReplyText('')}} style={btn('ghost')}>Anulează</button>
+                          </div>
+                        </div>
+                      ):null
+                    }
                   </div>
                 ))
               }
@@ -1172,6 +1239,7 @@ export default function ServiceDashboard() {
               <p style={{fontSize:14,color:S.muted,marginBottom:24}}>Gestionează abonamentul, notificările și securitatea contului tău.</p>
 
               <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:16,marginBottom:16}}>
+
 
                 {/* Plan curent */}
                 <div style={{...card(),gridColumn:'1/-1'}}>

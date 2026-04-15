@@ -315,10 +315,10 @@ export default function MyListingsPage() {
                           style={{padding:'7px 14px',background:'#eaf3ff',color:S.blue,border:`1px solid rgba(26,86,219,0.2)`,borderRadius:50,fontSize:12,fontWeight:600,cursor:'pointer',fontFamily:"'DM Sans',sans-serif"}}>
                           ✏️ Editează
                         </button>
-                        <button onClick={()=>promovate===l.id?null:setShowPromoModal(l)}
-                          style={{padding:'7px 14px',background:l.is_promoted?S.amberBg:'#fff7ed',color:S.amber,border:`1px solid ${S.amber}40`,borderRadius:50,fontSize:12,fontWeight:600,cursor:'pointer',fontFamily:"'DM Sans',sans-serif",display:'flex',alignItems:'center',gap:4}}>
+                        <a href={`/listing/promoveaza?listing_id=${l.id}`}
+                          style={{padding:'7px 14px',background:l.is_promoted?S.amberBg:'#fff7ed',color:S.amber,border:`1px solid ${S.amber}40`,borderRadius:50,fontSize:12,fontWeight:600,cursor:'pointer',fontFamily:"'DM Sans',sans-serif",display:'inline-flex',alignItems:'center',gap:4,textDecoration:'none'}}>
                           {l.is_promoted?'⭐ Promovat':'🚀 Promovează'}
-                        </button>
+                        </a>
                         <button onClick={()=>toggleStatus(l)}
                           style={{padding:'7px 14px',background:isActive?S.amberBg:S.greenBg,color:isActive?S.amber:S.green,border:`1px solid ${isActive?S.amber+'30':S.green+'30'}`,borderRadius:50,fontSize:12,fontWeight:600,cursor:'pointer',fontFamily:"'DM Sans',sans-serif"}}>
                           {isActive?'⏸️ Dezactivează':'▶️ Activează'}
