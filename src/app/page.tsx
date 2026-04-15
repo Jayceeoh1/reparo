@@ -1,6 +1,7 @@
 // @ts-nocheck
 'use client'
 import { useState, useEffect } from 'react'
+import './landing.css'
 
 const S = {
   navy:'#0a1f44',blue:'#1a56db',blueLight:'#3b82f6',yellow:'#f59e0b',
@@ -101,124 +102,6 @@ export default function LandingPage() {
 
   return (
     <div style={{fontFamily:"'DM Sans',sans-serif",background:S.white,overflowX:'hidden'}}>
-
-      <style>{`
-        *{box-sizing:border-box;}
-
-        /* ── NAV ── */
-        .lp-nav{
-          position:fixed;top:0;left:0;right:0;z-index:1000;
-          transition:all .4s;
-          padding:0 48px;height:68px;
-          display:flex;align-items:center;justify-content:space-between;
-        }
-        .lp-nav.scrolled{
-          background:rgba(10,31,68,0.97);
-          backdrop-filter:blur(16px);
-          border-bottom:1px solid rgba(255,255,255,0.08);
-        }
-        .lp-nav-links{display:flex;align-items:center;gap:24px;}
-        .lp-hamburger{display:none;flex-direction:column;gap:5px;cursor:pointer;padding:4px;}
-        .lp-hamburger span{display:block;width:24px;height:2px;background:#fff;border-radius:2px;transition:all .3s;}
-        .lp-mobile-menu{
-          display:none;
-          position:fixed;top:68px;left:0;right:0;z-index:999;
-          background:rgba(10,31,68,0.98);
-          backdrop-filter:blur(16px);
-          border-bottom:1px solid rgba(255,255,255,0.1);
-          padding:16px 24px 24px;
-          flex-direction:column;gap:0;
-        }
-        .lp-mobile-menu.open{display:flex;}
-        .lp-mobile-menu a{
-          color:rgba(255,255,255,0.8);text-decoration:none;
-          font-size:16px;font-weight:500;padding:13px 0;
-          border-bottom:1px solid rgba(255,255,255,0.07);
-          display:block;
-        }
-        .lp-mobile-cta{
-          margin-top:14px;padding:15px;border-radius:50px;
-          background:#f59e0b;color:#fff!important;
-          font-weight:700!important;text-align:center;
-          border-bottom:none!important;
-          font-family:'Sora',sans-serif;
-          font-size:15px!important;
-        }
-
-        /* ── HERO ── */
-        .lp-hero{
-          background:linear-gradient(135deg,#0a1f44 0%,#1a3a6b 60%,#0d2854 100%);
-          min-height:100vh;display:flex;align-items:center;
-          padding:100px 48px 60px;position:relative;overflow:hidden;
-        }
-        .lp-hero-grid{
-          max-width:1100px;margin:0 auto;width:100%;
-          display:grid;grid-template-columns:1fr 1fr;gap:60px;align-items:center;
-        }
-        .lp-stats-card{
-          background:rgba(255,255,255,0.07);
-          border:1px solid rgba(255,255,255,0.12);
-          border-radius:24px;padding:32px;
-        }
-        .lp-stats-grid{display:grid;grid-template-columns:1fr 1fr;gap:20px;}
-
-        /* ── SECTIONS ── */
-        .lp-section{padding:80px 48px;}
-        .lp-features-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:20px;}
-        .lp-steps-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:20px;position:relative;}
-        .lp-plans-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:20px;align-items:start;}
-
-        /* ── FOOTER ── */
-        .lp-footer{
-          background:#0a1f44;padding:32px 48px;
-          display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;
-        }
-        .lp-footer-links{display:flex;gap:24px;flex-wrap:wrap;}
-        .lp-trust{display:flex;gap:20px;flex-wrap:wrap;}
-        .lp-final-badges{display:flex;justify-content:center;gap:28px;margin-top:24px;flex-wrap:wrap;}
-
-        /* ── HOVER ── */
-        .feat-card:hover{box-shadow:0 8px 24px rgba(0,0,0,0.08);transform:translateY(-2px);}
-        .plan-card:hover{box-shadow:0 12px 32px rgba(0,0,0,0.12);transform:translateY(-3px);}
-
-        /* ═══ TABLET (≤900px) ═══ */
-        @media(max-width:900px){
-          .lp-nav{padding:0 24px;}
-          .lp-nav-links{display:none;}
-          .lp-hamburger{display:flex;}
-
-          .lp-hero{padding:90px 24px 48px;}
-          .lp-hero-grid{grid-template-columns:1fr;gap:36px;}
-
-          .lp-section{padding:60px 24px;}
-          .lp-features-grid{grid-template-columns:1fr 1fr;}
-          .lp-steps-grid{grid-template-columns:1fr 1fr;gap:24px;}
-          .lp-plans-grid{grid-template-columns:1fr;}
-
-          .lp-footer{padding:28px 24px;flex-direction:column;align-items:flex-start;gap:16px;}
-        }
-
-        /* ═══ MOBILE (≤560px) ═══ */
-        @media(max-width:560px){
-          .lp-nav{padding:0 16px;height:60px;}
-          .lp-mobile-menu{top:60px;}
-
-          .lp-hero{padding:76px 16px 40px;min-height:auto;}
-          .lp-hero-grid{gap:28px;}
-          .lp-stats-card{padding:18px;}
-          .lp-stats-grid{gap:10px;}
-
-          .lp-section{padding:44px 16px;}
-          .lp-features-grid{grid-template-columns:1fr;}
-          .lp-steps-grid{grid-template-columns:1fr;gap:20px;}
-          .step-connector{display:none!important;}
-
-          .lp-trust{gap:10px;}
-          .lp-final-badges{gap:12px;}
-          .lp-footer{padding:24px 16px;gap:16px;}
-          .lp-footer-links{gap:12px;}
-        }
-      `}</style>
 
       {/* ── NAV ── */}
       <nav className={`lp-nav${scrolled?' scrolled':''}`}>
