@@ -129,10 +129,28 @@ export default function AccountPage() {
   }
 
   async function addDocument() {
+    if (!docForm.expires_at) return
     setSaving(true)
-    const { data } = await supabase.from('car_documents').insert({...docForm,user_id:user.id,car_id:docForm.car_id||cars[0]?.id}).select('*, cars(brand, model, plate_number)').single()
+    const insertData = {
+      type: docForm.type,
+      expires_at: docForm.expires_at,
+      user_id: user.id,
+      car_id: docForm.car_id || null,  // null dacă nu e selectată nicio mașină
+    }
+    const { data, error } = await supabase
+      .from('car_documents')
+      .insert(insertData)
+      .select('*, cars(brand, model, plate_number)')
+      .single()
+    if (error) {
+      alert('Eroare la salvare: ' + error.message)
+      setSaving(false)
+      return
+    }
     if (data) setDocuments(prev=>[...prev,data])
-    setDocForm({type:'itp',expires_at:'',car_id:''}); setShowAddDoc(false); setSaving(false)
+    setDocForm({type:'itp',expires_at:'',car_id:''})
+    setShowAddDoc(false)
+    setSaving(false)
   }
 
   async function saveProfile() {
