@@ -324,17 +324,17 @@ export default function HomeClient() {
             <span className="bnav-icon">❤️</span>
             <span className="bnav-label">Favorite</span>
           </a>
-          {/* Cere ofertă — buton central proeminent */}
+          {/* Cere ofertă — buton central */}
           <div className="bnav-cta">
             <button className="bnav-cta-btn" onClick={() => { setModalOpen(true); setModalStep(0); setSubmitDone(false) }}>
               ✦
             </button>
             <span className="bnav-cta-label">Ofertă</span>
           </div>
-          {/* Dezmembrări */}
-          <a href="/listing?category=dezmembrari" className="bnav-item">
-            <span className="bnav-icon">🔩</span>
-            <span className="bnav-label">Dezmembrări</span>
+          {/* RCA */}
+          <a href="/itp-rca?tab=rca" className="bnav-item">
+            <span className="bnav-icon">📄</span>
+            <span className="bnav-label">RCA</span>
           </a>
           {/* Cont */}
           <a href="/account" className="bnav-item">

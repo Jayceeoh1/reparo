@@ -185,14 +185,15 @@ export default function ItpRcaPage() {
         {/* ══ RCA ══ */}
         {activeTab==='rca'&&(
           <div>
+            {/* Info RCA */}
             <div style={card({marginBottom:20})}>
-              <h2 style={{fontFamily:"'Sora',sans-serif",fontWeight:700,fontSize:17,color:S.navy,marginBottom:8}}>Cum funcționează RCA?</h2>
+              <h2 style={{fontFamily:"'Sora',sans-serif",fontWeight:700,fontSize:17,color:S.navy,marginBottom:8}}>Ce este RCA?</h2>
               <p style={{fontSize:13,color:S.muted,lineHeight:1.7,marginBottom:20}}>
                 RCA (Răspundere Civilă Auto) este obligatoriu în România. Acoperă daunele produse altor persoane în caz de accident din vina ta.
               </p>
-              <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:12,marginBottom:20}}>
+              <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fill,minmax(200px,1fr))',gap:12,marginBottom:20}}>
                 {RCA_TIPS.map(tip=>(
-                  <div key={tip.title} style={{background:S.bg,borderRadius:14,padding:'16px'}}>
+                  <div key={tip.title} style={{background:S.bg,borderRadius:14,padding:16}}>
                     <div style={{fontSize:28,marginBottom:10}}>{tip.icon}</div>
                     <div style={{fontFamily:"'Sora',sans-serif",fontWeight:700,fontSize:14,color:S.navy,marginBottom:4}}>{tip.title}</div>
                     <div style={{fontSize:12,color:S.muted,lineHeight:1.5}}>{tip.desc}</div>
@@ -201,14 +202,34 @@ export default function ItpRcaPage() {
               </div>
             </div>
 
-            <div style={{background:`linear-gradient(135deg,${S.navy} 0%,#1a3a6b 100%)`,borderRadius:20,padding:'32px',textAlign:'center'}}>
-              <div style={{fontSize:40,marginBottom:12}}>📄</div>
-              <h2 style={{fontFamily:"'Sora',sans-serif",fontWeight:800,fontSize:22,color:'#fff',marginBottom:8}}>Compară oferte RCA</h2>
-              <p style={{color:'rgba(255,255,255,0.55)',fontSize:14,marginBottom:20,maxWidth:400,margin:'0 auto 20px'}}>
-                Integrarea cu brokeri RCA vine în curând. Setează un reminder pentru a fi notificat.
+            {/* CTA Redirect broker RCA */}
+            <div style={{background:`linear-gradient(135deg,${S.green} 0%,#15803d 100%)`,borderRadius:20,padding:'36px 32px',textAlign:'center',marginBottom:20}}>
+              <div style={{fontSize:48,marginBottom:12}}>📄</div>
+              <h2 style={{fontFamily:"'Sora',sans-serif",fontWeight:800,fontSize:24,color:'#fff',marginBottom:8,letterSpacing:-0.5}}>
+                Compară oferte RCA
+              </h2>
+              <p style={{color:'rgba(255,255,255,0.7)',fontSize:15,marginBottom:24,maxWidth:440,margin:'0 auto 24px',lineHeight:1.7}}>
+                Găsești cea mai bună ofertă RCA în câteva minute. Compară prețuri de la toate asigurătoarele autorizate din România.
               </p>
-              <button onClick={()=>setActiveTab('reminder')} style={btnP(S.yellow,'rgba(245,158,11,0.3)')}>
-                🔔 Setează reminder expirare RCA →
+              <a href="https://www.iasig.ro/?ref=reparo" target="_blank" rel="noopener noreferrer"
+                style={{display:'inline-flex',alignItems:'center',gap:10,padding:'15px 36px',background:'#fff',color:S.green,borderRadius:50,fontSize:16,fontWeight:800,textDecoration:'none',fontFamily:"'Sora',sans-serif",boxShadow:'0 8px 32px rgba(0,0,0,0.15)',transition:'all .2s'}}>
+                Compară oferte RCA →
+              </a>
+              <div style={{color:'rgba(255,255,255,0.5)',fontSize:12,marginTop:14}}>
+                Ești redirecționat către un partener autorizat ASF
+              </div>
+            </div>
+
+            {/* Reminder RCA */}
+            <div style={{...card(),display:'flex',alignItems:'center',gap:16,flexWrap:'wrap'}}>
+              <div style={{width:48,height:48,background:S.amberBg,borderRadius:12,display:'flex',alignItems:'center',justifyContent:'center',fontSize:24,flexShrink:0}}>🔔</div>
+              <div style={{flex:1}}>
+                <div style={{fontFamily:"'Sora',sans-serif",fontWeight:700,fontSize:14,color:S.navy,marginBottom:3}}>Setează reminder expirare RCA</div>
+                <div style={{fontSize:13,color:S.muted}}>Vei fi notificat cu 30 de zile înainte. Gestionezi din contul tău.</div>
+              </div>
+              <button onClick={()=>setActiveTab('reminder')}
+                style={{...btnP(S.amber,'rgba(245,158,11,0.2)'),flexShrink:0}}>
+                Setează reminder →
               </button>
             </div>
           </div>
