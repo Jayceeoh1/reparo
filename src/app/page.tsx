@@ -30,11 +30,11 @@ const PLANS = [
   {name:'Pro',price:'199',period:'/lună',features:['Tot din Basic','Poziție prioritară în căutări','Anunțuri promovate','Mesagerie internă','Manager de cont dedicat'],cta:'Alege Pro',primary:true},
 ]
 
-const STATS = [
-  {value:'2.400+',label:'Service-uri înregistrate'},
-  {value:'48.000+',label:'Cereri trimise'},
-  {value:'4.8/5',label:'Rating mediu platformă'},
-  {value:'94%',label:'Rata de răspuns'},
+const STATS_DEFAULT = [
+  {value:'—',label:'Service-uri înregistrate'},
+  {value:'—',label:'Cereri trimise'},
+  {value:'—',label:'Rating mediu platformă'},
+  {value:'—',label:'Rata de răspuns'},
 ]
 
 const FAQS_DATA = [
@@ -50,6 +50,48 @@ export default function LandingPage() {
   const [scrolled, setScrolled] = useState(false)
   const [openFaq, setOpenFaq] = useState(null)
   const [menuOpen, setMenuOpen] = useState(false)
+  const [stats, setStats] = useState(STATS_DEFAULT)
+
+  useEffect(() => {
+    // Fetch real stats from Supabase
+    async function loadStats() {
+      try {
+        const supabase = (await import('@/lib/supabase/client')).createClient()
+        const [svcsRes, reqsRes, ratingsRes, responseRes] = await Promise.all([
+          supabase.from('services').select('id', {count:'exact',head:true}).eq('is_active',true),
+          supabase.from('quote_requests').select('id', {count:'exact',head:true}),
+          supabase.from('services').select('rating_avg').eq('is_active',true).gt('rating_count',0),
+          supabase.from('offers').select('id', {count:'exact',head:true}),
+        ])
+        const totalServices = svcsRes.count || 0
+        const totalRequests = reqsRes.count || 0
+        const totalOffers = responseRes.count || 0
+
+        // Rating mediu
+        const ratings = ratingsRes.data || []
+        const avgRating = ratings.length > 0
+          ? (ratings.reduce((sum, s) => sum + (s.rating_avg || 0), 0) / ratings.length).toFixed(1)
+          : '—'
+
+        // Rata de răspuns = oferte / cereri * 100
+        const responseRate = totalRequests > 0
+          ? Math.min(Math.round((totalOffers / totalRequests) * 100), 100)
+          : 0
+
+        const fmt = (n: number) => n >= 1000 ? `${(n/1000).toFixed(1).replace('.0','')}K+` : n > 0 ? `${n}+` : '—'
+
+        setStats([
+          {value: fmt(totalServices), label:'Service-uri înregistrate'},
+          {value: fmt(totalRequests), label:'Cereri trimise'},
+          {value: avgRating !== '—' ? `${avgRating}/5` : '—', label:'Rating mediu platformă'},
+          {value: responseRate > 0 ? `${responseRate}%` : '—', label:'Rata de răspuns'},
+        ])
+      } catch(e) {
+        console.error('Stats load failed:', e)
+      }
+    }
+    loadStats()
+  }, [])
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 80)
@@ -256,7 +298,7 @@ export default function LandingPage() {
           <div className="lp-stats-card">
             <div style={{fontSize:12,fontWeight:700,color:'rgba(255,255,255,0.4)',textTransform:'uppercase',letterSpacing:2,marginBottom:20,fontFamily:"'Sora',sans-serif"}}>Platforma în cifre</div>
             <div className="lp-stats-grid">
-              {STATS.map(s=>(
+              {stats.map(s=>(
                 <div key={s.label} style={{background:'rgba(255,255,255,0.05)',borderRadius:14,padding:'16px 14px'}}>
                   <div style={{fontFamily:"'Sora',sans-serif",fontWeight:800,fontSize:'clamp(20px,4vw,28px)',color:S.yellow,marginBottom:4}}>{s.value}</div>
                   <div style={{fontSize:12,color:'rgba(255,255,255,0.45)',lineHeight:1.4}}>{s.label}</div>
@@ -389,7 +431,7 @@ export default function LandingPage() {
             Gata să câștigi mai mulți clienți?
           </h2>
           <p style={{fontSize:'clamp(14px,2vw,16px)',color:'rgba(255,255,255,0.55)',marginBottom:32,lineHeight:1.7}}>
-            Alătură-te celor 2.400+ service-uri care folosesc deja Reparo. Înregistrarea e gratuită și durează 5 minute.
+            Alătură-te celor {stats[0].value !== '—' ? stats[0].value : 'mii de'} service-uri care folosesc deja Reparo. Înregistrarea e gratuită și durează 5 minute.
           </p>
           <a href="/auth/register"
             style={{display:'inline-flex',alignItems:'center',gap:10,padding:'16px 32px',background:S.yellow,color:'#fff',textDecoration:'none',borderRadius:50,fontSize:'clamp(14px,2vw,17px)',fontWeight:700,fontFamily:"'Sora',sans-serif",boxShadow:'0 8px 32px rgba(245,158,11,0.4)'}}>
