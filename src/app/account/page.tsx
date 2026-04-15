@@ -2,6 +2,7 @@
 'use client'
 import { useEffect, useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
+import { CAR_BRANDS, CAR_MODELS, FUEL_TYPES } from '@/lib/carData'
 
 const S = {
   navy:'#0a1f44',blue:'#1a56db',blueLight:'#3b82f6',yellow:'#f59e0b',
@@ -17,16 +18,6 @@ const lbl = {display:'block',fontSize:11,fontWeight:700,color:S.muted,textTransf
 const btn = (primary=true) => ({display:'inline-flex',alignItems:'center',gap:6,padding:'9px 18px',borderRadius:50,fontSize:13,fontWeight:600,cursor:'pointer',border:primary?'none':`1.5px solid ${S.border}`,fontFamily:"'DM Sans',sans-serif",background:primary?S.blue:'transparent',color:primary?'#fff':S.muted,boxShadow:primary?'0 2px 8px rgba(26,86,219,0.2)':'none',transition:'all .15s'})
 
 const TABS = ['Mașinile mele','Programări','Istoric lucrări','Documente & ITP/RCA','Oferte primite','Setări cont']
-const BRANDS = [
-  'Alfa Romeo','Aston Martin','Audi','BMW','Bentley','Chevrolet','Chrysler',
-  'Citroën','Cupra','Dacia','Daewoo','Dodge','DS','Fiat','Ford','Genesis',
-  'Honda','Hyundai','Infiniti','Jaguar','Jeep','Kia','Lada','Lamborghini',
-  'Land Rover','Lexus','Maserati','Mazda','Mercedes-Benz','Mini','Mitsubishi',
-  'Nissan','Opel','Peugeot','Porsche','Ram','Renault','Rolls-Royce','Saab',
-  'Seat','Skoda','Smart','SsangYong','Subaru','Suzuki','Tesla','Toyota',
-  'Volkswagen','Volvo','Daihatsu','Isuzu','Acura','Altele'
-]
-const FUELS = ['Benzină','Diesel','Hybrid','Electric','GPL']
 const DOC_TYPES = [{key:'itp',label:'ITP',icon:'🛡️',color:S.blue,bg:'#eaf3ff'},{key:'rca',label:'RCA',icon:'📄',color:S.green,bg:S.greenBg},{key:'rovinieta',label:'Rovinietă',icon:'🛣️',color:S.amber,bg:S.amberBg},{key:'casco',label:'CASCO',icon:'🔒',color:S.purple,bg:S.purpleBg}]
 
 function Modal({title, onClose, children}) {
@@ -291,19 +282,99 @@ export default function AccountPage() {
             {showAddCar&&(
               <Modal title="Adaugă mașină" onClose={()=>setShowAddCar(false)}>
                 <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:12}}>
-                  {[{k:'brand',l:'Marcă',type:'select',opts:BRANDS},{k:'model',l:'Model',type:'text',p:'ex: Seria 3'},{k:'year',l:'An fabricație',type:'number',p:'2021'},{k:'fuel_type',l:'Combustibil',type:'select',opts:FUELS},{k:'engine_cc',l:'Capacitate',type:'text',p:'2.0'},{k:'horsepower',l:'Putere (CP)',type:'number',p:'190'},{k:'plate_number',l:'Nr. înmatriculare',type:'text',p:'B-11-XYZ'},{k:'color',l:'Culoare',type:'text',p:'Negru'}].map(f=>(
-                    <div key={f.k}>
-                      <label style={lbl}>{f.l}</label>
-                      {f.type==='select'?(
-                        <select className="acc-input" value={carForm[f.k]} onChange={e=>setCarForm(p=>({...p,[f.k]:e.target.value}))} style={inp}>
-                          <option value="">Selectează</option>
-                          {f.opts.map(o=><option key={o}>{o}</option>)}
-                        </select>
-                      ):(
-                        <input className="acc-input" type={f.type} value={carForm[f.k]} onChange={e=>setCarForm(p=>({...p,[f.k]:e.target.value}))} placeholder={f.p} style={inp}/>
-                      )}
-                    </div>
-                  ))}
+
+                  {/* Brand autocomplete */}
+                  <div style={{gridColumn:'1/-1',position:'relative'}}>
+                    <label style={lbl}>Marcă *</label>
+                    <input className="acc-input" value={carForm.brand}
+                      onChange={e=>setCarForm(p=>({...p,brand:e.target.value,model:''}))}
+                      placeholder="ex: BMW, Dacia, Volkswagen..."
+                      style={inp}/>
+                    {carForm.brand.length>=1&&!CAR_BRANDS.some(b=>b.toLowerCase()===carForm.brand.toLowerCase())&&(
+                      <div style={{position:'absolute',top:'100%',left:0,right:0,background:'#fff',borderRadius:10,zIndex:50,maxHeight:180,overflowY:'auto',border:`1px solid ${S.border}`,boxShadow:'0 4px 16px rgba(10,31,68,0.1)',marginTop:4}}>
+                        {CAR_BRANDS.filter(b=>b.toLowerCase().includes(carForm.brand.toLowerCase())).slice(0,8).map(b=>(
+                          <div key={b} onClick={()=>setCarForm(p=>({...p,brand:b,model:''}))}
+                            style={{padding:'9px 14px',cursor:'pointer',fontSize:13,color:S.navy,borderBottom:`1px solid ${S.border}`}}
+                            onMouseEnter={e=>e.currentTarget.style.background='#eaf3ff'}
+                            onMouseLeave={e=>e.currentTarget.style.background='transparent'}>
+                            {b}
+                          </div>
+                        ))}
+                        {CAR_BRANDS.filter(b=>b.toLowerCase().includes(carForm.brand.toLowerCase())).length===0&&(
+                          <div style={{padding:'9px 14px',fontSize:12,color:S.muted,fontStyle:'italic'}}>Scrie manual marca</div>
+                        )}
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Model autocomplete */}
+                  <div style={{gridColumn:'1/-1',position:'relative'}}>
+                    <label style={lbl}>Model *</label>
+                    <input className="acc-input" value={carForm.model}
+                      onChange={e=>setCarForm(p=>({...p,model:e.target.value}))}
+                      placeholder={carForm.brand&&CAR_MODELS[carForm.brand]?`ex: ${CAR_MODELS[carForm.brand][0]}`:'Selectează mai întâi marca'}
+                      disabled={!carForm.brand}
+                      style={{...inp,opacity:carForm.brand?1:0.5}}/>
+                    {carForm.brand&&carForm.model.length>=1&&CAR_MODELS[carForm.brand]&&!CAR_MODELS[carForm.brand].includes(carForm.model)&&(
+                      <div style={{position:'absolute',top:'100%',left:0,right:0,background:'#fff',borderRadius:10,zIndex:50,maxHeight:180,overflowY:'auto',border:`1px solid ${S.border}`,boxShadow:'0 4px 16px rgba(10,31,68,0.1)',marginTop:4}}>
+                        {(CAR_MODELS[carForm.brand]||[]).filter(m=>m.toLowerCase().includes(carForm.model.toLowerCase())).slice(0,8).map(m=>(
+                          <div key={m} onClick={()=>setCarForm(p=>({...p,model:m}))}
+                            style={{padding:'9px 14px',cursor:'pointer',fontSize:13,color:S.navy,borderBottom:`1px solid ${S.border}`}}
+                            onMouseEnter={e=>e.currentTarget.style.background='#eaf3ff'}
+                            onMouseLeave={e=>e.currentTarget.style.background='transparent'}>
+                            {m}
+                          </div>
+                        ))}
+                        {(CAR_MODELS[carForm.brand]||[]).filter(m=>m.toLowerCase().includes(carForm.model.toLowerCase())).length===0&&(
+                          <div style={{padding:'9px 14px',fontSize:12,color:S.muted,fontStyle:'italic'}}>Scrie manual modelul</div>
+                        )}
+                      </div>
+                    )}
+                  </div>
+
+                  {/* An */}
+                  <div>
+                    <label style={lbl}>An fabricație</label>
+                    <select className="acc-input" value={carForm.year} onChange={e=>setCarForm(p=>({...p,year:e.target.value}))} style={inp}>
+                      <option value="">Selectează</option>
+                      {Array.from({length:35},(_,i)=>new Date().getFullYear()-i).map(y=>(
+                        <option key={y} value={y}>{y}</option>
+                      ))}
+                    </select>
+                  </div>
+
+                  {/* Combustibil */}
+                  <div>
+                    <label style={lbl}>Combustibil</label>
+                    <select className="acc-input" value={carForm.fuel_type} onChange={e=>setCarForm(p=>({...p,fuel_type:e.target.value}))} style={inp}>
+                      <option value="">Selectează</option>
+                      {FUEL_TYPES.map(f=><option key={f} value={f}>{f}</option>)}
+                    </select>
+                  </div>
+
+                  {/* Capacitate */}
+                  <div>
+                    <label style={lbl}>Capacitate</label>
+                    <input className="acc-input" value={carForm.engine_cc} onChange={e=>setCarForm(p=>({...p,engine_cc:e.target.value}))} placeholder="ex: 2.0" style={inp}/>
+                  </div>
+
+                  {/* Putere */}
+                  <div>
+                    <label style={lbl}>Putere (CP)</label>
+                    <input className="acc-input" type="number" value={carForm.horsepower} onChange={e=>setCarForm(p=>({...p,horsepower:e.target.value}))} placeholder="190" style={inp}/>
+                  </div>
+
+                  {/* Nr inmatriculare */}
+                  <div>
+                    <label style={lbl}>Nr. înmatriculare</label>
+                    <input className="acc-input" value={carForm.plate_number} onChange={e=>setCarForm(p=>({...p,plate_number:e.target.value}))} placeholder="B-11-XYZ" style={inp}/>
+                  </div>
+
+                  {/* Culoare */}
+                  <div>
+                    <label style={lbl}>Culoare</label>
+                    <input className="acc-input" value={carForm.color} onChange={e=>setCarForm(p=>({...p,color:e.target.value}))} placeholder="Negru" style={inp}/>
+                  </div>
                    <div style={{gridColumn:'1/-1'}}>
                     <label style={lbl}>Kilometraj actual</label>
                     <input className="acc-input" type="number" value={carForm.current_km} onChange={e=>setCarForm(p=>({...p,current_km:e.target.value}))} placeholder="87500" style={inp}/>
