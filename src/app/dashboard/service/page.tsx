@@ -59,7 +59,17 @@ const SERVICE_CATEGORIES = [
   { cat:'🔥 Tuning & Performance', items:['Remap ECU','Stage 1','Stage 2','Tuning motor'] },
 ]
 const ALL_SERVICES = SERVICE_CATEGORIES.flatMap(c=>c.items)
-const ALL_BRANDS = ['Toate mărcile','Alfa Romeo','Audi','BMW','Chevrolet','Citroën','Dacia','Fiat','Ford','Honda','Hyundai','Jaguar','Jeep','Kia','Land Rover','Lexus','Mazda','Mercedes-Benz','Mini','Mitsubishi','Nissan','Opel','Peugeot','Porsche','Renault','Seat','Skoda','Subaru','Suzuki','Tesla','Toyota','Volkswagen','Volvo']
+const ALL_BRANDS = [
+  'Alfa Romeo','Aston Martin','Audi','BMW','Bentley','Bugatti','Buick',
+  'Cadillac','Chevrolet','Chrysler','Citroën','Cupra','Dacia','Daewoo',
+  'Dodge','DS','Ferrari','Fiat','Ford','Genesis','GMC','Honda','Hummer',
+  'Hyundai','Infiniti','Jaguar','Jeep','Kia','Lada','Lamborghini',
+  'Land Rover','Lexus','Lincoln','Lotus','Maserati','Mazda','McLaren',
+  'Mercedes-Benz','Mini','Mitsubishi','Nissan','Oldsmobile','Opel',
+  'Peugeot','Pontiac','Porsche','Ram','Renault','Rolls-Royce','Saab',
+  'Seat','Skoda','Smart','SsangYong','Subaru','Suzuki','Tesla','Toyota',
+  'Volkswagen','Volvo','Zastava','Daihatsu','Isuzu','Acura','Infiniti',
+]
 const COUNTIES = ['Alba','Arad','Argeș','Bacău','Bihor','Bistrița-Năsăud','Botoșani','Brăila','Brașov','București','Buzău','Călărași','Caraș-Severin','Cluj','Constanța','Covasna','Dâmbovița','Dolj','Galați','Giurgiu','Gorj','Harghita','Hunedoara','Ialomița','Iași','Ilfov','Maramureș','Mehedinți','Mureș','Neamț','Olt','Prahova','Sălaj','Satu Mare','Sibiu','Suceava','Teleorman','Timiș','Tulcea','Vâlcea','Vaslui','Vrancea']
 const APT_STATUS = {in_asteptare:{label:'Așteptare',bg:S.amberBg,color:S.amber},confirmata:{label:'Confirmată',bg:'#dbeafe',color:S.blue},in_lucru:{label:'În lucru',bg:S.purpleBg,color:S.purple},finalizata:{label:'Finalizată',bg:S.greenBg,color:S.green},anulata:{label:'Anulată',bg:S.redBg,color:S.red}}
 
@@ -311,7 +321,7 @@ export default function ServiceDashboard() {
   const [profileSaved, setProfileSaved] = useState(false)
   const [newOffering, setNewOffering] = useState({name:'',price_from:'',price_to:'',duration_min:'',description:''})
   const [sidebarOpen, setSidebarOpen] = useState(false)
-  const [pf, setPf] = useState({name:'',description:'',phone:'',email:'',website:'',facebook_url:'',address:'',city:'',county:'',postal_code:'',brands_accepted:[],fuel_types:[],min_year_accepted:'',is_authorized_rar:false,has_itp:false,warranty_months:'0',opening_hours:{Lu:'08:00-18:00',Ma:'08:00-18:00',Mi:'08:00-18:00',Jo:'08:00-18:00',Vi:'08:00-18:00',Sâ:'09:00-14:00',Du:'Închis'}})
+  const [pf, setPf] = useState({name:'',description:'',phone:'',email:'',website:'',facebook_url:'',address:'',city:'',county:'',postal_code:'',brands_accepted:[],fuel_types:[],min_year_accepted:'',is_authorized_rar:false,has_itp:false,warranty_months:'0',is_multibrand:true,opening_hours:{Lu:'08:00-18:00',Ma:'08:00-18:00',Mi:'08:00-18:00',Jo:'08:00-18:00',Vi:'08:00-18:00',Sâ:'09:00-14:00',Du:'Închis'}})
   const supabase = createClient()
   const today = new Date().toISOString().split('T')[0]
 
@@ -327,7 +337,7 @@ export default function ServiceDashboard() {
       }
       setService(svc)
       if (svc) {
-        setPf(p => ({...p,name:svc.name||'',description:svc.description||'',phone:svc.phone||'',email:svc.email||'',website:svc.website||'',facebook_url:svc.facebook_url||'',address:svc.address||'',city:svc.city||'',county:svc.county||'',postal_code:svc.postal_code||'',brands_accepted:svc.brands_accepted||[],fuel_types:svc.fuel_types||[],is_authorized_rar:svc.is_authorized_rar||false,has_itp:svc.has_itp||false,warranty_months:svc.warranty_months?.toString()||'0'}))
+        setPf(p => ({...p,name:svc.name||'',description:svc.description||'',phone:svc.phone||'',email:svc.email||'',website:svc.website||'',facebook_url:svc.facebook_url||'',address:svc.address||'',city:svc.city||'',county:svc.county||'',postal_code:svc.postal_code||'',brands_accepted:svc.brands_accepted||[],fuel_types:svc.fuel_types||[],is_authorized_rar:svc.is_authorized_rar||false,has_itp:svc.has_itp||false,warranty_months:svc.warranty_months?.toString()||'0',is_multibrand:svc.is_multibrand!==false}))
         const [reqs,apts,revs,offs,offrs] = await Promise.all([
           supabase.from('quote_requests').select('*').eq('status','activa').order('created_at',{ascending:false}).limit(50),
           supabase.from('appointments').select('*').eq('service_id',svc.id).order('scheduled_date',{ascending:true}),
@@ -358,7 +368,7 @@ export default function ServiceDashboard() {
   async function saveProfile() {
     if (!service) return
     setProfileSaving(true)
-    await supabase.from('services').update({name:pf.name,description:pf.description,phone:pf.phone,email:pf.email,website:pf.website,facebook_url:pf.facebook_url,address:pf.address,city:pf.city,county:pf.county,postal_code:pf.postal_code,brands_accepted:pf.brands_accepted.length?pf.brands_accepted:null,fuel_types:pf.fuel_types.length?pf.fuel_types:null,min_year_accepted:pf.min_year_accepted?parseInt(pf.min_year_accepted):null,is_authorized_rar:pf.is_authorized_rar,has_itp:pf.has_itp,warranty_months:parseInt(pf.warranty_months)||0,is_active:true}).eq('id',service.id)
+    await supabase.from('services').update({name:pf.name,description:pf.description,phone:pf.phone,email:pf.email,website:pf.website,facebook_url:pf.facebook_url,address:pf.address,city:pf.city,county:pf.county,postal_code:pf.postal_code,brands_accepted:pf.brands_accepted.length?pf.brands_accepted:null,fuel_types:pf.fuel_types.length?pf.fuel_types:null,min_year_accepted:pf.min_year_accepted?parseInt(pf.min_year_accepted):null,is_authorized_rar:pf.is_authorized_rar,has_itp:pf.has_itp,warranty_months:parseInt(pf.warranty_months)||0,is_multibrand:pf.is_multibrand,is_active:true}).eq('id',service.id)
     setProfileSaving(false); setProfileSaved(true)
     setTimeout(()=>setProfileSaved(false),2500)
   }
@@ -742,18 +752,69 @@ export default function ServiceDashboard() {
                 {/* Specializari */}
                 <div style={{...card(),gridColumn:'1/-1'}}>
                   <h3 style={{fontFamily:"'Sora',sans-serif",fontWeight:700,fontSize:14,color:S.navy,marginBottom:16}}>🚗 Specializări & certificări</h3>
+
+                  {/* Multimarca vs Unimarca */}
+                  <div style={{marginBottom:20}}>
+                    <label style={label}>Tip service</label>
+                    <div style={{display:'flex',gap:10}}>
+                      {[{val:true,icon:'🌐',label:'Multimarcă',desc:'Repară orice marcă de mașină'},{val:false,icon:'🎯',label:'Unimarcă',desc:'Specializat pe anumite mărci'}].map(opt=>(
+                        <button key={String(opt.val)} onClick={()=>setPf(p=>({...p,is_multibrand:opt.val,brands_accepted:opt.val?[]:p.brands_accepted}))}
+                          style={{flex:1,padding:'14px 16px',borderRadius:14,border:`2px solid ${pf.is_multibrand===opt.val?S.blue:S.border}`,background:pf.is_multibrand===opt.val?'#eaf3ff':S.white,cursor:'pointer',textAlign:'left',transition:'all .15s'}}>
+                          <div style={{fontSize:20,marginBottom:4}}>{opt.icon}</div>
+                          <div style={{fontFamily:"'Sora',sans-serif",fontWeight:700,fontSize:13,color:pf.is_multibrand===opt.val?S.blue:S.navy,marginBottom:2}}>{opt.label}</div>
+                          <div style={{fontSize:11,color:S.muted}}>{opt.desc}</div>
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Mărci acceptate — afișat întotdeauna, cu buton Toate mai proeminent */}
+                  <div style={{marginBottom:20}}>
+                    <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:8}}>
+                      <label style={label}>
+                        {pf.is_multibrand ? 'Mărci acceptate (toate implicit)' : 'Mărci specializate *'}
+                      </label>
+                      <div style={{display:'flex',gap:6}}>
+                        <button onClick={()=>setPf(p=>({...p,brands_accepted:[]}))}
+                          style={{padding:'4px 12px',borderRadius:50,border:`1.5px solid ${pf.brands_accepted.length===0?S.blue:S.border}`,background:pf.brands_accepted.length===0?S.blue:'#fff',color:pf.brands_accepted.length===0?'#fff':S.muted,fontSize:11,fontWeight:600,cursor:'pointer'}}>
+                          ✓ Toate
+                        </button>
+                        <button onClick={()=>setPf(p=>({...p,brands_accepted:[...ALL_BRANDS]}))}
+                          style={{padding:'4px 12px',borderRadius:50,border:`1.5px solid ${S.border}`,background:'#fff',color:S.muted,fontSize:11,fontWeight:600,cursor:'pointer'}}>
+                          Selectează toate
+                        </button>
+                      </div>
+                    </div>
+                    <div style={{border:`1px solid ${S.border}`,borderRadius:12,padding:12,background:S.bg,maxHeight:160,overflowY:'auto',display:'flex',flexWrap:'wrap',gap:6}}>
+                      {ALL_BRANDS.map(brand=>(
+                        <button key={brand} onClick={()=>setPf(p=>({...p,brands_accepted:p.brands_accepted.includes(brand)?p.brands_accepted.filter(b=>b!==brand):[...p.brands_accepted,brand]}))}
+                          style={{padding:'5px 12px',borderRadius:50,border:`1.5px solid ${pf.brands_accepted.includes(brand)?S.blue:S.border}`,background:pf.brands_accepted.includes(brand)?'#eaf3ff':'#fff',color:pf.brands_accepted.includes(brand)?S.blue:S.muted,fontSize:11,fontWeight:pf.brands_accepted.includes(brand)?700:400,cursor:'pointer',transition:'all .1s'}}>
+                          {brand}
+                        </button>
+                      ))}
+                    </div>
+                    {pf.brands_accepted.length>0&&(
+                      <div style={{fontSize:12,color:S.blue,marginTop:6,fontWeight:600}}>
+                        {pf.brands_accepted.length} mărci selectate
+                      </div>
+                    )}
+                  </div>
+
                   <div style={{display:'grid',gridTemplateColumns:'1fr 1fr 1fr',gap:16}}>
+                    {/* Combustibil */}
                     <div>
                       <label style={label}>Combustibil acceptat</label>
                       <div style={{display:'flex',flexWrap:'wrap',gap:6}}>
-                        {['Benzină','Diesel','Hybrid','Electric','GPL'].map(f=>(
+                        {[['Benzină','⛽'],['Diesel','🛢️'],['Hybrid','🔋'],['Electric','⚡'],['GPL','🟢']].map(([f,icon])=>(
                           <button key={f} onClick={()=>setPf(p=>({...p,fuel_types:p.fuel_types.includes(f)?p.fuel_types.filter(x=>x!==f):[...p.fuel_types,f]}))}
-                            style={{padding:'6px 12px',borderRadius:50,border:`1.5px solid ${pf.fuel_types.includes(f)?S.blue:S.border}`,background:pf.fuel_types.includes(f)?'#eaf3ff':S.white,color:pf.fuel_types.includes(f)?S.blue:S.muted,fontSize:12,fontWeight:600,cursor:'pointer',transition:'all .15s'}}>
-                            {f}
+                            style={{padding:'7px 14px',borderRadius:50,border:`1.5px solid ${pf.fuel_types.includes(f)?S.blue:S.border}`,background:pf.fuel_types.includes(f)?'#eaf3ff':S.white,color:pf.fuel_types.includes(f)?S.blue:S.muted,fontSize:12,fontWeight:600,cursor:'pointer',transition:'all .15s',display:'flex',alignItems:'center',gap:4}}>
+                            {icon} {f}
                           </button>
                         ))}
                       </div>
                     </div>
+
+                    {/* Garantie + An minim */}
                     <div>
                       <label style={label}>Garanție lucrări</label>
                       <select className="dash-input" value={pf.warranty_months} onChange={e=>setPf(p=>({...p,warranty_months:e.target.value}))} style={input}>
@@ -764,6 +825,8 @@ export default function ServiceDashboard() {
                         <input className="dash-input" type="number" value={pf.min_year_accepted} onChange={e=>setPf(p=>({...p,min_year_accepted:e.target.value}))} placeholder="ex: 2005" style={input}/>
                       </div>
                     </div>
+
+                    {/* Certificări */}
                     <div>
                       <label style={label}>Certificări</label>
                       {[{k:'is_authorized_rar',l:'🛡️ Autorizat RAR'},{k:'has_itp',l:'✅ ITP pe loc'}].map(opt=>(
@@ -772,24 +835,6 @@ export default function ServiceDashboard() {
                           <span style={{fontSize:13,fontWeight:600,color:pf[opt.k]?S.blue:S.navy}}>{opt.l}</span>
                         </label>
                       ))}
-                    </div>
-                  </div>
-
-                  <div style={{marginTop:16}}>
-                    <label style={label}>Mărci acceptate ({pf.brands_accepted.length===0?'toate':pf.brands_accepted.length+' selectate'})</label>
-                    <div style={{maxHeight:120,overflowY:'auto',border:`1px solid ${S.border}`,borderRadius:10,padding:10,display:'flex',flexWrap:'wrap',gap:6,background:S.bg}}>
-                      <button onClick={()=>setPf(p=>({...p,brands_accepted:[]}))}
-                        style={{padding:'4px 10px',borderRadius:50,border:`1.5px solid ${pf.brands_accepted.length===0?S.blue:S.border}`,background:pf.brands_accepted.length===0?S.blue:'#fff',color:pf.brands_accepted.length===0?'#fff':S.muted,fontSize:11,fontWeight:600,cursor:'pointer'}}>
-                        Toate
-                      </button>
-                      {ALL_BRANDS.filter(b=>b!=='Toate mărcile').map(brand=>(
-                        <button key={brand} onClick={()=>setPf(p=>({...p,brands_accepted:p.brands_accepted.includes(brand)?p.brands_accepted.filter(b=>b!==brand):[...p.brands_accepted,brand]}))}
-                          style={{padding:'4px 10px',borderRadius:50,border:`1.5px solid ${pf.brands_accepted.includes(brand)?S.blue:S.border}`,background:pf.brands_accepted.includes(brand)?'#eaf3ff':'#fff',color:pf.brands_accepted.includes(brand)?S.blue:S.muted,fontSize:11,fontWeight:pf.brands_accepted.includes(brand)?700:400,cursor:'pointer'}}>
-                          {brand}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
                 </div>
               </div>
 
@@ -1018,55 +1063,119 @@ export default function ServiceDashboard() {
           {/* ══ PROGRAMARI ══ */}
           {tab==='Programări'&&(
             <div>
-              <h1 style={{fontFamily:"'Sora',sans-serif",fontWeight:800,fontSize:22,color:S.navy,marginBottom:20}}>Calendar programări</h1>
-              <div style={{display:'grid',gridTemplateColumns:'280px 1fr',gap:16}}>
-                <div style={card()}>
-                  <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:14}}>
-                    <button onClick={()=>setCalMonth(d=>new Date(d.getFullYear(),d.getMonth()-1,1))} style={{background:S.bg,border:`1px solid ${S.border}`,borderRadius:8,width:30,height:30,cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'center'}}>‹</button>
-                    <span style={{fontFamily:"'Sora',sans-serif",fontWeight:700,fontSize:13,color:S.navy}}>{calMonth.toLocaleDateString('ro-RO',{month:'long',year:'numeric'})}</span>
-                    <button onClick={()=>setCalMonth(d=>new Date(d.getFullYear(),d.getMonth()+1,1))} style={{background:S.bg,border:`1px solid ${S.border}`,borderRadius:8,width:30,height:30,cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'center'}}>›</button>
+              <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:20}}>
+                <h1 style={{fontFamily:"'Sora',sans-serif",fontWeight:800,fontSize:22,color:S.navy}}>Calendar programări</h1>
+                <div style={{fontSize:13,color:S.muted}}>
+                  {appointments.filter(a=>a.scheduled_date===today).length} programări azi
+                </div>
+              </div>
+
+              <div style={{display:'grid',gridTemplateColumns:'300px 1fr',gap:16}}>
+                {/* Mini calendar */}
+                <div>
+                  <div style={card({marginBottom:12})}>
+                    <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:14}}>
+                      <button onClick={()=>setCalMonth(d=>new Date(d.getFullYear(),d.getMonth()-1,1))} style={{background:S.bg,border:`1px solid ${S.border}`,borderRadius:8,width:30,height:30,cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'center'}}>‹</button>
+                      <span style={{fontFamily:"'Sora',sans-serif",fontWeight:700,fontSize:13,color:S.navy}}>{calMonth.toLocaleDateString('ro-RO',{month:'long',year:'numeric'})}</span>
+                      <button onClick={()=>setCalMonth(d=>new Date(d.getFullYear(),d.getMonth()+1,1))} style={{background:S.bg,border:`1px solid ${S.border}`,borderRadius:8,width:30,height:30,cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'center'}}>›</button>
+                    </div>
+                    <div style={{display:'grid',gridTemplateColumns:'repeat(7,1fr)',marginBottom:4}}>
+                      {['L','M','M','J','V','S','D'].map((d,i)=><div key={i} style={{textAlign:'center',fontSize:11,fontWeight:700,color:S.muted,padding:'4px 0'}}>{d}</div>)}
+                    </div>
+                    <div style={{display:'grid',gridTemplateColumns:'repeat(7,1fr)',gap:2}}>
+                      {Array.from({length:firstDay}).map((_,i)=><div key={`e${i}`}/>)}
+                      {Array.from({length:daysInMonth}).map((_,i)=>{
+                        const day=i+1
+                        const apts=aptsForDay(day)
+                        const isToday=day===new Date().getDate()&&calMonth.getMonth()===new Date().getMonth()&&calMonth.getFullYear()===new Date().getFullYear()
+                        return (
+                          <div key={day} style={{textAlign:'center',padding:'5px 2px',borderRadius:8,background:isToday?S.blue:apts.length>0?'#eaf3ff':'transparent',cursor:'default'}}>
+                            <div style={{fontSize:12,fontWeight:isToday?700:400,color:isToday?'#fff':apts.length>0?S.blue:S.text}}>{day}</div>
+                            {apts.length>0&&<div style={{fontSize:9,color:isToday?'rgba(255,255,255,0.8)':S.blue,fontWeight:700}}>{apts.length}</div>}
+                          </div>
+                        )
+                      })}
+                    </div>
                   </div>
-                  <div style={{display:'grid',gridTemplateColumns:'repeat(7,1fr)',marginBottom:4}}>
-                    {['L','M','M','J','V','S','D'].map((d,i)=><div key={i} style={{textAlign:'center',fontSize:11,fontWeight:700,color:S.muted,padding:'4px 0'}}>{d}</div>)}
-                  </div>
-                  <div style={{display:'grid',gridTemplateColumns:'repeat(7,1fr)',gap:2}}>
-                    {Array.from({length:firstDay}).map((_,i)=><div key={`e${i}`}/>)}
-                    {Array.from({length:daysInMonth}).map((_,i)=>{
-                      const day=i+1
-                      const apts=aptsForDay(day)
-                      const isToday=day===new Date().getDate()&&calMonth.getMonth()===new Date().getMonth()&&calMonth.getFullYear()===new Date().getFullYear()
-                      return <div key={day} style={{textAlign:'center',padding:'5px 2px',borderRadius:8,background:isToday?S.blue:'transparent',cursor:'default'}}>
-                        <div style={{fontSize:12,color:isToday?'#fff':S.text}}>{day}</div>
-                        {apts.length>0&&<div style={{width:4,height:4,borderRadius:'50%',background:isToday?'#fff':S.yellow,margin:'2px auto 0'}}/>}
+
+                  {/* Rezumat rapid */}
+                  <div style={card()}>
+                    <div style={{fontSize:12,fontWeight:700,color:S.muted,textTransform:'uppercase',letterSpacing:0.5,marginBottom:10}}>Rezumat</div>
+                    {[
+                      {label:'Azi',count:appointments.filter(a=>a.scheduled_date===today).length,color:S.blue,bg:'#eaf3ff'},
+                      {label:'Această săptămână',count:appointments.filter(a=>{const d=new Date(a.scheduled_date);const now=new Date();const wk=new Date(now);wk.setDate(now.getDate()+7);return d>=now&&d<=wk}).length,color:S.green,bg:S.greenBg},
+                      {label:'În așteptare',count:appointments.filter(a=>(aptStatuses[a.id]||a.status)==='in_asteptare').length,color:S.amber,bg:S.amberBg},
+                    ].map(r=>(
+                      <div key={r.label} style={{display:'flex',justifyContent:'space-between',alignItems:'center',padding:'8px 10px',background:r.bg,borderRadius:10,marginBottom:6}}>
+                        <span style={{fontSize:12,color:r.color,fontWeight:600}}>{r.label}</span>
+                        <span style={{fontFamily:"'Sora',sans-serif",fontWeight:800,fontSize:18,color:r.color}}>{r.count}</span>
                       </div>
-                    })}
+                    ))}
                   </div>
                 </div>
 
+                {/* Lista programări */}
                 <div style={{display:'flex',flexDirection:'column',gap:10}}>
-                  {appointments.length===0?<div style={{...card(),textAlign:'center',padding:'40px 20px',color:S.muted}}>
-                    <div style={{fontSize:40,marginBottom:10}}>📅</div>Nicio programare
-                  </div>:appointments.map(a=>(
-                    <div key={a.id} style={card({padding:16})}>
-                      <div style={{display:'flex',justifyContent:'space-between',alignItems:'flex-start',marginBottom:12}}>
-                        <div>
-                          <div style={{fontWeight:700,fontSize:14,color:S.navy,marginBottom:2}}>
-                            {new Date(a.scheduled_date).toLocaleDateString('ro-RO',{weekday:'short',day:'numeric',month:'short'})} · {a.scheduled_time}
-                          </div>
-                          {a.notes&&<div style={{fontSize:12,color:S.muted}}>{a.notes}</div>}
-                        </div>
-                        <span style={pill((APT_STATUS[aptStatuses[a.id]||a.status]||APT_STATUS.in_asteptare).bg,(APT_STATUS[aptStatuses[a.id]||a.status]||APT_STATUS.in_asteptare).color,'')}>{(APT_STATUS[aptStatuses[a.id]||a.status]||APT_STATUS.in_asteptare).label}</span>
-                      </div>
-                      <div style={{display:'flex',gap:6,flexWrap:'wrap'}}>
-                        {[{s:'in_asteptare',l:'⏳ Așteptare'},{s:'confirmata',l:'✅ Confirmată'},{s:'in_lucru',l:'🔧 În lucru'},{s:'finalizata',l:'🏁 Finalizată'}].map(opt=>(
-                          <button key={opt.s} onClick={()=>updateAptStatus(a.id,opt.s)} className="apt-btn"
-                            style={{padding:'6px 12px',borderRadius:50,fontSize:12,fontWeight:600,cursor:'pointer',border:`1.5px solid ${(aptStatuses[a.id]||a.status)===opt.s?S.blue:S.border}`,background:(aptStatuses[a.id]||a.status)===opt.s?'#eaf3ff':S.white,color:(aptStatuses[a.id]||a.status)===opt.s?S.blue:S.muted,transition:'all .15s'}}>
-                            {opt.l}
-                          </button>
-                        ))}
-                      </div>
+                  {appointments.length===0
+                    ?<div style={{...card(),textAlign:'center',padding:'60px 20px',color:S.muted}}>
+                      <div style={{fontSize:48,marginBottom:12}}>📅</div>
+                      <div style={{fontWeight:600,fontSize:15,marginBottom:4}}>Nicio programare</div>
+                      <div style={{fontSize:13}}>Programările apar automat când clienții acceptă ofertele tale.</div>
                     </div>
-                  ))}
+                    :appointments.map(a=>{
+                      const status = aptStatuses[a.id]||a.status
+                      const st = APT_STATUS[status]||APT_STATUS.in_asteptare
+                      const isToday2 = a.scheduled_date===today
+                      return (
+                        <div key={a.id} style={{...card({padding:16}),border:`1.5px solid ${isToday2?S.blue:S.border}`}}>
+                          {/* Header */}
+                          <div style={{display:'flex',justifyContent:'space-between',alignItems:'flex-start',marginBottom:12}}>
+                            <div>
+                              <div style={{display:'flex',alignItems:'center',gap:8,marginBottom:4}}>
+                                {isToday2&&<span style={{background:S.blue,color:'#fff',fontSize:10,fontWeight:700,padding:'2px 8px',borderRadius:50,fontFamily:"'Sora',sans-serif"}}>AZI</span>}
+                                <div style={{fontFamily:"'Sora',sans-serif",fontWeight:700,fontSize:15,color:S.navy}}>
+                                  {new Date(a.scheduled_date).toLocaleDateString('ro-RO',{weekday:'long',day:'numeric',month:'long'})}
+                                </div>
+                              </div>
+                              <div style={{display:'flex',alignItems:'center',gap:12,fontSize:13,color:S.muted}}>
+                                <span>⏰ {a.scheduled_time||'Oră nespecificată'}</span>
+                                {a.duration_min&&<span>⏱️ ~{a.duration_min} min</span>}
+                              </div>
+                            </div>
+                            <span style={pill(st.bg,st.color,'')}>{st.label}</span>
+                          </div>
+
+                          {/* Lucrare + client */}
+                          {(a.work_description||a.client_name||a.car_info)&&(
+                            <div style={{background:S.bg,borderRadius:10,padding:'10px 12px',marginBottom:12}}>
+                              {a.car_info&&<div style={{fontSize:12,color:S.navy,fontWeight:600,marginBottom:4}}>🚗 {a.car_info}</div>}
+                              {a.client_name&&<div style={{fontSize:12,color:S.muted,marginBottom:4}}>👤 {a.client_name}</div>}
+                              {a.work_description&&<div style={{fontSize:13,color:S.text,lineHeight:1.5}}>{a.work_description}</div>}
+                            </div>
+                          )}
+
+                          {/* Note */}
+                          {a.notes&&<div style={{fontSize:13,color:S.muted,background:'#fffbf0',border:`1px solid ${S.amber}30`,borderRadius:8,padding:'8px 12px',marginBottom:12}}>📝 {a.notes}</div>}
+
+                          {/* Butoane status */}
+                          <div style={{display:'flex',gap:6,flexWrap:'wrap'}}>
+                            {[
+                              {s:'in_asteptare',l:'⏳ Așteptare'},
+                              {s:'confirmata',l:'✅ Confirmată'},
+                              {s:'in_lucru',l:'🔧 În lucru'},
+                              {s:'finalizata',l:'🏁 Finalizată'},
+                              {s:'anulata',l:'❌ Anulată'},
+                            ].map(opt=>(
+                              <button key={opt.s} onClick={()=>updateAptStatus(a.id,opt.s)}
+                                style={{padding:'6px 12px',borderRadius:50,fontSize:11,fontWeight:600,cursor:'pointer',border:`1.5px solid ${status===opt.s?S.blue:S.border}`,background:status===opt.s?'#eaf3ff':S.white,color:status===opt.s?S.blue:S.muted,transition:'all .15s'}}>
+                                {opt.l}
+                              </button>
+                            ))}
+                          </div>
+                        </div>
+                      )
+                    })
+                  }
                 </div>
               </div>
             </div>
