@@ -321,7 +321,33 @@ export default function ServiceDashboard() {
   const [profileSaved, setProfileSaved] = useState(false)
   const [newOffering, setNewOffering] = useState({name:'',price_from:'',price_to:'',duration_min:'',description:''})
   const [sidebarOpen, setSidebarOpen] = useState(false)
-  const [pf, setPf] = useState({name:'',description:'',phone:'',email:'',website:'',facebook_url:'',address:'',city:'',county:'',postal_code:'',brands_accepted:[],fuel_types:[],min_year_accepted:'',is_authorized_rar:false,has_itp:false,warranty_months:'0',is_multibrand:true,opening_hours:{Lu:'08:00-18:00',Ma:'08:00-18:00',Mi:'08:00-18:00',Jo:'08:00-18:00',Vi:'08:00-18:00',Sâ:'09:00-14:00',Du:'Închis'}})
+  const [showAddApt, setShowAddApt] = useState(false)
+  const [newApt, setNewApt] = useState({client_name:'',car_info:'',scheduled_date:'',scheduled_time:'',duration_min:'60',work_description:'',notes:''})
+  const [addingApt, setAddingApt] = useState(false)
+
+  async function addManualAppointment() {
+    if (!newApt.scheduled_date||!newApt.scheduled_time) return
+    setAddingApt(true)
+    const {data,error} = await supabase.from('appointments').insert({
+      service_id:service.id,
+      scheduled_date:newApt.scheduled_date,
+      scheduled_time:newApt.scheduled_time,
+      duration_min:newApt.duration_min?parseInt(newApt.duration_min):null,
+      client_name:newApt.client_name||null,
+      car_info:newApt.car_info||null,
+      work_description:newApt.work_description||null,
+      notes:newApt.notes||null,
+      status:'confirmata',
+    }).select().single()
+    if (!error&&data) {
+      setAppointments(prev=>[...prev,data].sort((a,b)=>a.scheduled_date.localeCompare(b.scheduled_date)))
+      setAptStatuses(prev=>({...prev,[data.id]:'confirmata'}))
+      setNewApt({client_name:'',car_info:'',scheduled_date:'',scheduled_time:'',duration_min:'60',work_description:'',notes:''})
+      setShowAddApt(false)
+    }
+    setAddingApt(false)
+  }
+  const [pf, setPf] = useState({name:'',description:'',phone:'',email:'',website:'',facebook_url:'',address:'',city:'',county:'',postal_code:'',brands_accepted:[],fuel_types:[],min_year_accepted:'',is_authorized_rar:false,has_itp:false,warranty_months:'0',is_multibrand:true,is_dismantling:false,opening_hours:{Lu:'08:00-18:00',Ma:'08:00-18:00',Mi:'08:00-18:00',Jo:'08:00-18:00',Vi:'08:00-18:00',Sâ:'09:00-14:00',Du:'Închis'}})
   const supabase = createClient()
   const today = new Date().toISOString().split('T')[0]
 
@@ -337,7 +363,7 @@ export default function ServiceDashboard() {
       }
       setService(svc)
       if (svc) {
-        setPf(p => ({...p,name:svc.name||'',description:svc.description||'',phone:svc.phone||'',email:svc.email||'',website:svc.website||'',facebook_url:svc.facebook_url||'',address:svc.address||'',city:svc.city||'',county:svc.county||'',postal_code:svc.postal_code||'',brands_accepted:svc.brands_accepted||[],fuel_types:svc.fuel_types||[],is_authorized_rar:svc.is_authorized_rar||false,has_itp:svc.has_itp||false,warranty_months:svc.warranty_months?.toString()||'0',is_multibrand:svc.is_multibrand!==false}))
+        setPf(p => ({...p,name:svc.name||'',description:svc.description||'',phone:svc.phone||'',email:svc.email||'',website:svc.website||'',facebook_url:svc.facebook_url||'',address:svc.address||'',city:svc.city||'',county:svc.county||'',postal_code:svc.postal_code||'',brands_accepted:svc.brands_accepted||[],fuel_types:svc.fuel_types||[],is_authorized_rar:svc.is_authorized_rar||false,has_itp:svc.has_itp||false,warranty_months:svc.warranty_months?.toString()||'0',is_multibrand:svc.is_multibrand!==false,is_dismantling:svc.is_dismantling||false}))
         const [reqs,apts,revs,offs,offrs] = await Promise.all([
           supabase.from('quote_requests').select('*').eq('status','activa').order('created_at',{ascending:false}).limit(50),
           supabase.from('appointments').select('*').eq('service_id',svc.id).order('scheduled_date',{ascending:true}),
@@ -368,7 +394,7 @@ export default function ServiceDashboard() {
   async function saveProfile() {
     if (!service) return
     setProfileSaving(true)
-    await supabase.from('services').update({name:pf.name,description:pf.description,phone:pf.phone,email:pf.email,website:pf.website,facebook_url:pf.facebook_url,address:pf.address,city:pf.city,county:pf.county,postal_code:pf.postal_code,brands_accepted:pf.brands_accepted.length?pf.brands_accepted:null,fuel_types:pf.fuel_types.length?pf.fuel_types:null,min_year_accepted:pf.min_year_accepted?parseInt(pf.min_year_accepted):null,is_authorized_rar:pf.is_authorized_rar,has_itp:pf.has_itp,warranty_months:parseInt(pf.warranty_months)||0,is_multibrand:pf.is_multibrand,is_active:true}).eq('id',service.id)
+    await supabase.from('services').update({name:pf.name,description:pf.description,phone:pf.phone,email:pf.email,website:pf.website,facebook_url:pf.facebook_url,address:pf.address,city:pf.city,county:pf.county,postal_code:pf.postal_code,brands_accepted:pf.brands_accepted.length?pf.brands_accepted:null,fuel_types:pf.fuel_types.length?pf.fuel_types:null,min_year_accepted:pf.min_year_accepted?parseInt(pf.min_year_accepted):null,is_authorized_rar:pf.is_authorized_rar,has_itp:pf.has_itp,warranty_months:parseInt(pf.warranty_months)||0,is_multibrand:pf.is_multibrand,is_dismantling:pf.is_dismantling,is_active:true}).eq('id',service.id)
     setProfileSaving(false); setProfileSaved(true)
     setTimeout(()=>setProfileSaved(false),2500)
   }
@@ -753,11 +779,11 @@ export default function ServiceDashboard() {
                 <div style={{...card(),gridColumn:'1/-1'}}>
                   <h3 style={{fontFamily:"'Sora',sans-serif",fontWeight:700,fontSize:14,color:S.navy,marginBottom:16}}>🚗 Specializări & certificări</h3>
 
-                  {/* Multimarca vs Unimarca */}
+                  {/* Tip service */}
                   <div style={{marginBottom:20}}>
                     <label style={label}>Tip service</label>
-                    <div style={{display:'flex',gap:10}}>
-                      {[{val:true,icon:'🌐',label:'Multimarcă',desc:'Repară orice marcă de mașină'},{val:false,icon:'🎯',label:'Unimarcă',desc:'Specializat pe anumite mărci'}].map(opt=>(
+                    <div style={{display:'flex',gap:10,flexWrap:'wrap'}}>
+                      {[{val:true,icon:'🌐',label:'Multimarcă',desc:'Repară orice marcă'},{val:false,icon:'🎯',label:'Unimarcă',desc:'Mărci specifice'}].map(opt=>(
                         <button key={String(opt.val)} onClick={()=>setPf(p=>({...p,is_multibrand:opt.val,brands_accepted:opt.val?[]:p.brands_accepted}))}
                           style={{flex:1,padding:'14px 16px',borderRadius:14,border:`2px solid ${pf.is_multibrand===opt.val?S.blue:S.border}`,background:pf.is_multibrand===opt.val?'#eaf3ff':S.white,cursor:'pointer',textAlign:'left',transition:'all .15s'}}>
                           <div style={{fontSize:20,marginBottom:4}}>{opt.icon}</div>
@@ -766,6 +792,29 @@ export default function ServiceDashboard() {
                         </button>
                       ))}
                     </div>
+                  </div>
+
+                  {/* Parc dezmembrari */}
+                  <div style={{marginBottom:20}}>
+                    <label style={label}>Tip unitate</label>
+                    <button onClick={()=>setPf(p=>({...p,is_dismantling:!p.is_dismantling}))}
+                      style={{display:'flex',alignItems:'center',gap:14,width:'100%',padding:'16px',borderRadius:14,border:`2px solid ${pf.is_dismantling?'#d97706':S.border}`,background:pf.is_dismantling?'#fef3c7':S.white,cursor:'pointer',textAlign:'left',transition:'all .15s'}}>
+                      <div style={{width:48,height:48,background:pf.is_dismantling?'#fef3c7':'#f0f0f0',borderRadius:12,display:'flex',alignItems:'center',justifyContent:'center',fontSize:24,flexShrink:0}}>🔩</div>
+                      <div style={{flex:1}}>
+                        <div style={{fontFamily:"'Sora',sans-serif",fontWeight:700,fontSize:14,color:pf.is_dismantling?'#d97706':S.navy,marginBottom:2}}>
+                          {pf.is_dismantling ? '✅ Parc dezmembrări activ' : 'Activează Parc dezmembrări'}
+                        </div>
+                        <div style={{fontSize:12,color:S.muted}}>Poți adăuga piese dezmembrate și vehicule pentru dezmembrare</div>
+                      </div>
+                      <div style={{width:44,height:24,borderRadius:12,background:pf.is_dismantling?'#d97706':'#e5e7eb',position:'relative',transition:'background .2s',flexShrink:0}}>
+                        <div style={{position:'absolute',top:2,left:pf.is_dismantling?20:2,width:20,height:20,borderRadius:'50%',background:'#fff',transition:'left .2s',boxShadow:'0 1px 4px rgba(0,0,0,0.2)'}}/>
+                      </div>
+                    </button>
+                    {pf.is_dismantling&&(
+                      <div style={{marginTop:8,padding:'10px 14px',background:'#fef3c7',borderRadius:10,border:'1px solid #d9770620',fontSize:12,color:'#92400e'}}>
+                        🔩 Ca parc dezmembrări, poți adăuga piese și vehicule în secțiunea <strong>Anunțuri</strong>. Profilul tău va apărea în categoria Dezmembrări.
+                      </div>
+                    )}
                   </div>
 
                   {/* Mărci acceptate — afișat întotdeauna, cu buton Toate mai proeminent */}
@@ -1065,12 +1114,83 @@ export default function ServiceDashboard() {
           {/* ══ PROGRAMARI ══ */}
           {tab==='Programări'&&(
             <div>
-              <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:20}}>
+              <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:20,flexWrap:'wrap',gap:10}}>
                 <h1 style={{fontFamily:"'Sora',sans-serif",fontWeight:800,fontSize:22,color:S.navy}}>Calendar programări</h1>
-                <div style={{fontSize:13,color:S.muted}}>
-                  {appointments.filter(a=>a.scheduled_date===today).length} programări azi
+                <div style={{display:'flex',alignItems:'center',gap:10}}>
+                  <span style={{fontSize:13,color:S.muted}}>{appointments.filter(a=>a.scheduled_date===today).length} programări azi</span>
+                  <button onClick={()=>setShowAddApt(true)}
+                    style={{display:'inline-flex',alignItems:'center',gap:6,padding:'9px 18px',background:S.blue,color:'#fff',border:'none',borderRadius:50,fontSize:13,fontWeight:700,cursor:'pointer',fontFamily:"'Sora',sans-serif"}}>
+                    + Adaugă programare
+                  </button>
                 </div>
               </div>
+
+              {/* Modal adaugare programare manuala */}
+              {showAddApt&&(
+                <div onClick={e=>{if(e.target===e.currentTarget)setShowAddApt(false)}}
+                  style={{position:'fixed',inset:0,background:'rgba(10,18,30,0.6)',zIndex:2000,display:'flex',alignItems:'center',justifyContent:'center',padding:16}}>
+                  <div style={{background:'#fff',borderRadius:20,width:'100%',maxWidth:500,padding:28,maxHeight:'90vh',overflowY:'auto'}}>
+                    <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:20}}>
+                      <h3 style={{fontFamily:"'Sora',sans-serif",fontWeight:800,fontSize:17,color:S.navy}}>Adaugă programare</h3>
+                      <button onClick={()=>setShowAddApt(false)} style={{background:'none',border:'none',cursor:'pointer',fontSize:20,color:S.muted}}>✕</button>
+                    </div>
+                    <div style={{display:'grid',gap:12}}>
+                      {/* Data + Ora */}
+                      <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:10}}>
+                        <div>
+                          <label style={label}>Data *</label>
+                          <input type="date" value={newApt.scheduled_date} onChange={e=>setNewApt(p=>({...p,scheduled_date:e.target.value}))} min={today} style={input}/>
+                        </div>
+                        <div>
+                          <label style={label}>Ora *</label>
+                          <select value={newApt.scheduled_time} onChange={e=>setNewApt(p=>({...p,scheduled_time:e.target.value}))} style={input}>
+                            {Array.from({length:22},(_, i)=>{
+                              const h = Math.floor(i/2)+8
+                              const m = i%2===0?'00':'30'
+                              const t = `${String(h).padStart(2,'0')}:${m}`
+                              return <option key={t} value={t}>{t}</option>
+                            })}
+                          </select>
+                        </div>
+                      </div>
+                      {/* Durata */}
+                      <div>
+                        <label style={label}>Durată estimată</label>
+                        <select value={newApt.duration_min} onChange={e=>setNewApt(p=>({...p,duration_min:e.target.value}))} style={input}>
+                          {[['30','30 minute'],['60','1 oră'],['90','1h 30min'],['120','2 ore'],['180','3 ore'],['240','4 ore'],['480','Toată ziua']].map(([v,l])=>(
+                            <option key={v} value={v}>{l}</option>
+                          ))}
+                        </select>
+                      </div>
+                      {/* Client */}
+                      <div>
+                        <label style={label}>Numele clientului</label>
+                        <input value={newApt.client_name} onChange={e=>setNewApt(p=>({...p,client_name:e.target.value}))} placeholder="Ion Popescu" style={input}/>
+                      </div>
+                      {/* Masina */}
+                      <div>
+                        <label style={label}>Mașina</label>
+                        <input value={newApt.car_info} onChange={e=>setNewApt(p=>({...p,car_info:e.target.value}))} placeholder="ex: BMW Seria 3, B-11-XYZ" style={input}/>
+                      </div>
+                      {/* Lucrare */}
+                      <div>
+                        <label style={label}>Lucrare / Descriere</label>
+                        <textarea value={newApt.work_description} onChange={e=>setNewApt(p=>({...p,work_description:e.target.value}))} rows={2}
+                          placeholder="ex: Schimb ulei + filtre, Frâne față..." style={{...input,resize:'none'}}/>
+                      </div>
+                      {/* Note */}
+                      <div>
+                        <label style={label}>Note interne (opțional)</label>
+                        <input value={newApt.notes} onChange={e=>setNewApt(p=>({...p,notes:e.target.value}))} placeholder="ex: Client fidel, aduce piese proprii" style={input}/>
+                      </div>
+                    </div>
+                    <button onClick={addManualAppointment} disabled={addingApt||!newApt.scheduled_date||!newApt.scheduled_time}
+                      style={{...btn('primary'),width:'100%',justifyContent:'center',marginTop:16,padding:'12px',fontSize:14,opacity:(!newApt.scheduled_date||!newApt.scheduled_time)?.5:1}}>
+                      {addingApt?'Se salvează...':'✅ Salvează programarea'}
+                    </button>
+                  </div>
+                </div>
+              )}
 
               <div style={{display:'grid',gridTemplateColumns:'300px 1fr',gap:16}}>
                 {/* Mini calendar */}
