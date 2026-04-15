@@ -286,7 +286,7 @@ export default function AccountPage() {
                       )}
                     </div>
                   ))}
-                <div style={{gridColumn:'1/-1'}}>
+                   <div style={{gridColumn:'1/-1'}}>
                     <label style={lbl}>Kilometraj actual</label>
                     <input className="acc-input" type="number" value={carForm.current_km} onChange={e=>setCarForm(p=>({...p,current_km:e.target.value}))} placeholder="87500" style={inp}/>
                   </div>
@@ -323,6 +323,7 @@ export default function AccountPage() {
                       }
                     }}/>
                   </div>
+                 </div>
                 <button onClick={addCar} disabled={saving||!carForm.brand||!carForm.model} style={{...btn(true),width:'100%',justifyContent:'center',marginTop:16,padding:'12px',fontSize:14,opacity:(!carForm.brand||!carForm.model)?.5:1}}>
                   {saving?'Se salvează...':'Salvează mașina'}
                 </button>
