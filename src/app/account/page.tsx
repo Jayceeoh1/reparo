@@ -322,7 +322,7 @@ export default function AccountPage() {
                         setCarForm(p=>({...p,talon_url:publicUrl}))
                       }
                     }}/>
-                </div>
+                  </div>
                 <button onClick={addCar} disabled={saving||!carForm.brand||!carForm.model} style={{...btn(true),width:'100%',justifyContent:'center',marginTop:16,padding:'12px',fontSize:14,opacity:(!carForm.brand||!carForm.model)?.5:1}}>
                   {saving?'Se salvează...':'Salvează mașina'}
                 </button>
