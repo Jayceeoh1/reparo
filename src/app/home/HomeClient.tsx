@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import './homepage.css'
+import { CAR_BRANDS, CAR_MODELS, CITIES, FUEL_TYPES } from '@/lib/carData'
 
 type Service = { id: string; name: string; city: string | null; rating_avg: number; rating_count: number; description: string | null; address: string | null; plan: string; is_verified: boolean; has_itp: boolean; is_authorized_rar: boolean; warranty_months: number }
 
@@ -381,20 +382,114 @@ export default function HomeClient() {
                 </div>
               ) : modalStep === 0 ? (
                 <div>
-                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, marginBottom: 10 }}>
-                    {[['car_brand', 'Marcă mașină', 'BMW, Dacia...'], ['car_model', 'Model', 'Seria 3, Logan...'], ['car_year', 'An fabricație', '2019'], ['car_fuel', 'Combustibil', 'Diesel / Benzină'], ['car_km', 'Kilometraj', '87000'], ['car_plate', 'Nr. înmatriculare (opț.)', 'B-11-XYZ']].map(([key, label, ph]) => (
-                      <div key={key}>
-                        <label style={{ display: 'block', fontSize: 11, fontWeight: 600, color: 'rgba(255,255,255,0.5)', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 5 }}>{label}</label>
-                        <input value={form[key]} onChange={e => setForm(p => ({ ...p, [key]: e.target.value }))} placeholder={ph}
-                          style={{ width: '100%', padding: '10px 12px', background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.15)', borderRadius: 10, fontSize: 13, color: '#fff', outline: 'none', fontFamily: "'DM Sans',sans-serif", boxSizing: 'border-box' }} />
-                      </div>
-                    ))}
-                  </div>
-                  <div style={{ marginBottom: 10 }}>
-                    <label style={{ display: 'block', fontSize: 11, fontWeight: 600, color: 'rgba(255,255,255,0.5)', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 5 }}>Orașul tău</label>
-                    <input value={form.city} onChange={e => setForm(p => ({ ...p, city: e.target.value }))} placeholder="București"
+                  {/* Brand autocomplete */}
+                  <div style={{ marginBottom: 10, position: 'relative' }}>
+                    <label style={{ display: 'block', fontSize: 11, fontWeight: 600, color: 'rgba(255,255,255,0.5)', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 5 }}>Marcă mașină *</label>
+                    <input value={form.car_brand}
+                      onChange={e => setForm(p => ({ ...p, car_brand: e.target.value, car_model: '' }))}
+                      placeholder="ex: BMW, Dacia, Volkswagen..."
                       style={{ width: '100%', padding: '10px 12px', background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.15)', borderRadius: 10, fontSize: 13, color: '#fff', outline: 'none', fontFamily: "'DM Sans',sans-serif", boxSizing: 'border-box' }} />
+                    {form.car_brand.length >= 1 && !CAR_BRANDS.some(b => b.toLowerCase() === form.car_brand.toLowerCase()) && (
+                      <div style={{ position: 'absolute', top: '100%', left: 0, right: 0, background: '#1a2f5e', borderRadius: 10, zIndex: 50, maxHeight: 180, overflowY: 'auto', border: '1px solid rgba(255,255,255,0.15)', marginTop: 4 }}>
+                        {CAR_BRANDS.filter(b => b.toLowerCase().includes(form.car_brand.toLowerCase())).slice(0, 8).map(b => (
+                          <div key={b} onClick={() => setForm(p => ({ ...p, car_brand: b, car_model: '' }))}
+                            style={{ padding: '9px 14px', cursor: 'pointer', fontSize: 13, color: '#fff', borderBottom: '1px solid rgba(255,255,255,0.07)' }}
+                            onMouseEnter={e => e.currentTarget.style.background = 'rgba(59,130,246,0.3)'}
+                            onMouseLeave={e => e.currentTarget.style.background = 'transparent'}>
+                            {b}
+                          </div>
+                        ))}
+                        {CAR_BRANDS.filter(b => b.toLowerCase().includes(form.car_brand.toLowerCase())).length === 0 && (
+                          <div style={{ padding: '9px 14px', fontSize: 12, color: 'rgba(255,255,255,0.4)', fontStyle: 'italic' }}>Scrie manual marca</div>
+                        )}
+                      </div>
+                    )}
                   </div>
+
+                  {/* Model autocomplete */}
+                  <div style={{ marginBottom: 10, position: 'relative' }}>
+                    <label style={{ display: 'block', fontSize: 11, fontWeight: 600, color: 'rgba(255,255,255,0.5)', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 5 }}>Model *</label>
+                    <input value={form.car_model}
+                      onChange={e => setForm(p => ({ ...p, car_model: e.target.value }))}
+                      placeholder={form.car_brand && CAR_MODELS[form.car_brand] ? `ex: ${CAR_MODELS[form.car_brand][0]}` : 'Selectează mai întâi marca'}
+                      disabled={!form.car_brand}
+                      style={{ width: '100%', padding: '10px 12px', background: form.car_brand ? 'rgba(255,255,255,0.08)' : 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.15)', borderRadius: 10, fontSize: 13, color: '#fff', outline: 'none', fontFamily: "'DM Sans',sans-serif", boxSizing: 'border-box', opacity: form.car_brand ? 1 : 0.5 }} />
+                    {form.car_brand && form.car_model.length >= 1 && CAR_MODELS[form.car_brand] && !CAR_MODELS[form.car_brand].includes(form.car_model) && (
+                      <div style={{ position: 'absolute', top: '100%', left: 0, right: 0, background: '#1a2f5e', borderRadius: 10, zIndex: 50, maxHeight: 180, overflowY: 'auto', border: '1px solid rgba(255,255,255,0.15)', marginTop: 4 }}>
+                        {(CAR_MODELS[form.car_brand] || []).filter(m => m.toLowerCase().includes(form.car_model.toLowerCase())).slice(0, 8).map(m => (
+                          <div key={m} onClick={() => setForm(p => ({ ...p, car_model: m }))}
+                            style={{ padding: '9px 14px', cursor: 'pointer', fontSize: 13, color: '#fff', borderBottom: '1px solid rgba(255,255,255,0.07)' }}
+                            onMouseEnter={e => e.currentTarget.style.background = 'rgba(59,130,246,0.3)'}
+                            onMouseLeave={e => e.currentTarget.style.background = 'transparent'}>
+                            {m}
+                          </div>
+                        ))}
+                        {(CAR_MODELS[form.car_brand] || []).filter(m => m.toLowerCase().includes(form.car_model.toLowerCase())).length === 0 && (
+                          <div style={{ padding: '9px 14px', fontSize: 12, color: 'rgba(255,255,255,0.4)', fontStyle: 'italic' }}>Scrie manual modelul</div>
+                        )}
+                      </div>
+                    )}
+                  </div>
+
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, marginBottom: 10 }}>
+                    {/* An fabricatie */}
+                    <div>
+                      <label style={{ display: 'block', fontSize: 11, fontWeight: 600, color: 'rgba(255,255,255,0.5)', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 5 }}>An fabricație</label>
+                      <select value={form.car_year} onChange={e => setForm(p => ({ ...p, car_year: e.target.value }))}
+                        style={{ width: '100%', padding: '10px 12px', background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.15)', borderRadius: 10, fontSize: 13, color: '#fff', outline: 'none', fontFamily: "'DM Sans',sans-serif", boxSizing: 'border-box' }}>
+                        <option value="" style={{ background: '#1a2332' }}>Selectează</option>
+                        {Array.from({ length: 35 }, (_, i) => new Date().getFullYear() - i).map(y => (
+                          <option key={y} value={y} style={{ background: '#1a2332' }}>{y}</option>
+                        ))}
+                      </select>
+                    </div>
+
+                    {/* Combustibil */}
+                    <div>
+                      <label style={{ display: 'block', fontSize: 11, fontWeight: 600, color: 'rgba(255,255,255,0.5)', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 5 }}>Combustibil</label>
+                      <select value={form.car_fuel} onChange={e => setForm(p => ({ ...p, car_fuel: e.target.value }))}
+                        style={{ width: '100%', padding: '10px 12px', background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.15)', borderRadius: 10, fontSize: 13, color: '#fff', outline: 'none', fontFamily: "'DM Sans',sans-serif", boxSizing: 'border-box' }}>
+                        <option value="" style={{ background: '#1a2332' }}>Selectează</option>
+                        {FUEL_TYPES.map(f => <option key={f} value={f} style={{ background: '#1a2332' }}>{f}</option>)}
+                      </select>
+                    </div>
+
+                    {/* Kilometraj */}
+                    <div>
+                      <label style={{ display: 'block', fontSize: 11, fontWeight: 600, color: 'rgba(255,255,255,0.5)', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 5 }}>Kilometraj</label>
+                      <input type="number" value={form.car_km} onChange={e => setForm(p => ({ ...p, car_km: e.target.value }))} placeholder="ex: 87000"
+                        style={{ width: '100%', padding: '10px 12px', background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.15)', borderRadius: 10, fontSize: 13, color: '#fff', outline: 'none', fontFamily: "'DM Sans',sans-serif", boxSizing: 'border-box' }} />
+                    </div>
+
+                    {/* Nr. inmatriculare */}
+                    <div>
+                      <label style={{ display: 'block', fontSize: 11, fontWeight: 600, color: 'rgba(255,255,255,0.5)', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 5 }}>Nr. înmatriculare (opț.)</label>
+                      <input value={form.car_plate} onChange={e => setForm(p => ({ ...p, car_plate: e.target.value }))} placeholder="B-11-XYZ"
+                        style={{ width: '100%', padding: '10px 12px', background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.15)', borderRadius: 10, fontSize: 13, color: '#fff', outline: 'none', fontFamily: "'DM Sans',sans-serif", boxSizing: 'border-box' }} />
+                    </div>
+                  </div>
+
+                  {/* Oras autocomplete */}
+                  <div style={{ marginBottom: 10, position: 'relative' }}>
+                    <label style={{ display: 'block', fontSize: 11, fontWeight: 600, color: 'rgba(255,255,255,0.5)', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 5 }}>Orașul tău</label>
+                    <input value={form.city}
+                      onChange={e => setForm(p => ({ ...p, city: e.target.value }))}
+                      placeholder="ex: București, Cluj-Napoca..."
+                      style={{ width: '100%', padding: '10px 12px', background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.15)', borderRadius: 10, fontSize: 13, color: '#fff', outline: 'none', fontFamily: "'DM Sans',sans-serif", boxSizing: 'border-box' }} />
+                    {form.city.length >= 2 && !CITIES.some(c => c.toLowerCase() === form.city.toLowerCase()) && (
+                      <div style={{ position: 'absolute', top: '100%', left: 0, right: 0, background: '#1a2f5e', borderRadius: 10, zIndex: 50, maxHeight: 160, overflowY: 'auto', border: '1px solid rgba(255,255,255,0.15)', marginTop: 4 }}>
+                        {CITIES.filter(c => c.toLowerCase().includes(form.city.toLowerCase())).slice(0, 6).map(c => (
+                          <div key={c} onClick={() => setForm(p => ({ ...p, city: c }))}
+                            style={{ padding: '9px 14px', cursor: 'pointer', fontSize: 13, color: '#fff', borderBottom: '1px solid rgba(255,255,255,0.07)' }}
+                            onMouseEnter={e => e.currentTarget.style.background = 'rgba(59,130,246,0.3)'}
+                            onMouseLeave={e => e.currentTarget.style.background = 'transparent'}>
+                            📍 {c}
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+
                   <button onClick={() => setModalStep(1)} disabled={!form.car_brand || !form.car_model}
                     style={{ width: '100%', padding: '12px', background: form.car_brand && form.car_model ? '#3b82f6' : 'rgba(255,255,255,0.1)', color: '#fff', border: 'none', borderRadius: 50, fontSize: 14, fontWeight: 700, cursor: 'pointer', fontFamily: "'Sora',sans-serif", marginTop: 6 }}>
                     Continuă →
