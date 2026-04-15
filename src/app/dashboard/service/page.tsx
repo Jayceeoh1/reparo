@@ -835,8 +835,10 @@ export default function ServiceDashboard() {
                           <span style={{fontSize:13,fontWeight:600,color:pf[opt.k]?S.blue:S.navy}}>{opt.l}</span>
                         </label>
                       ))}
-                </div>
-              </div>
+                    </div>
+                  </div>{/* end grid 1fr 1fr 1fr */}
+                </div>{/* end card Specializari */}
+              </div>{/* end profile grid */}
 
               <div style={{display:'flex',justifyContent:'flex-end',marginTop:16}}>
                 <button onClick={saveProfile} disabled={profileSaving}
