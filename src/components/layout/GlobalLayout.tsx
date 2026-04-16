@@ -579,22 +579,35 @@ export default function GlobalLayout({ children }) {
         </div>
       )}
 
-      {/* Mobile bottom nav */}
-        <div className="mob-bottom" style={{position:'fixed',bottom:0,left:0,right:0,background:'rgba(255,255,255,0.95)',backdropFilter:'blur(12px)',borderTop:'1px solid var(--border)',zIndex:99,paddingBottom:'env(safe-area-inset-bottom,0px)'}}>
-          <div style={{display:'flex',maxWidth:500,margin:'0 auto'}}>
+      {/* Mobile bottom nav - Varianta 2: pill activ */}
+        <div className="mob-bottom" style={{position:'fixed',bottom:0,left:0,right:0,background:'rgba(255,255,255,0.97)',backdropFilter:'blur(12px)',borderTop:'1px solid #e5e7eb',zIndex:99,paddingBottom:'env(safe-area-inset-bottom,0px)'}}>
+          <div style={{display:'flex',padding:'6px 8px 10px',gap:4,maxWidth:500,margin:'0 auto'}}>
             {[
-              {href:'/home',icon:'🏠',label:'Acasă'},
-              {href:'/search',icon:'🔍',label:'Caută'},
-              {href:'/listing',icon:'📦',label:'Piese'},
-              {href:'/itp-rca',icon:'🛡️',label:'ITP & RCA'},
-              {href:user?'/account':'/auth/login',icon:'👤',label:user?'Contul meu':'Cont'},
-            ].map(item=>(
-              <a key={item.href} href={item.href}
-                style={{flex:1,display:'flex',flexDirection:'column',alignItems:'center',gap:3,padding:'8px 4px',textDecoration:'none',color:pathname===item.href?'var(--blue)':'var(--muted)',fontFamily:"'DM Sans',sans-serif",transition:'color .15s'}}>
-                <span style={{fontSize:20}}>{item.icon}</span>
-                <span style={{fontSize:10,fontWeight:pathname===item.href?700:500}}>{item.label}</span>
-              </a>
-            ))}
+              {href:'/home',label:'Acasă',icon:(active)=>(
+                <svg width="20" height="20" viewBox="0 0 24 24" fill={active?'#1a56db':'none'} stroke={active?'#1a56db':'#9ca3af'} strokeWidth="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+              )},
+              {href:'/search',label:'Caută',icon:(active)=>(
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke={active?'#1a56db':'#9ca3af'} strokeWidth="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+              )},
+              {href:'/listing',label:'Piese',icon:(active)=>(
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke={active?'#1a56db':'#9ca3af'} strokeWidth="2"><rect x="1" y="3" width="15" height="13" rx="1"/><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>
+              )},
+              {href:'/itp-rca',label:'ITP & RCA',icon:(active)=>(
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke={active?'#1a56db':'#9ca3af'} strokeWidth="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+              )},
+              {href:user?'/account':'/auth/login',label:user?'Contul meu':'Cont',icon:(active)=>(
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke={active?'#1a56db':'#9ca3af'} strokeWidth="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+              )},
+            ].map(item=>{
+              const active = pathname===item.href||(item.href!=='/home'&&pathname?.startsWith(item.href.split('?')[0]))
+              return (
+                <a key={item.href} href={item.href}
+                  style={{flex:1,display:'flex',flexDirection:'column',alignItems:'center',gap:3,textDecoration:'none',padding:'6px 4px',borderRadius:12,background:active?'#eaf3ff':'transparent',transition:'background .15s'}}>
+                  {item.icon(active)}
+                  <span style={{fontSize:10,fontWeight:active?600:400,color:active?'#1a56db':'#9ca3af',fontFamily:"'DM Sans',sans-serif",whiteSpace:'nowrap'}}>{item.label}</span>
+                </a>
+              )
+            })}
           </div>
         </div>
 
@@ -787,21 +800,36 @@ export default function GlobalLayout({ children }) {
         </div>
       )}
 
-      {/* Mobile bottom nav */}
-      <div className="mob-bottom" style={{position:'fixed',bottom:0,left:0,right:0,background:'rgba(255,255,255,0.97)',backdropFilter:'blur(12px)',borderTop:'1px solid #e5e7eb',zIndex:90,padding:'8px 0',justifyContent:'space-around',alignItems:'center'}}>
-        {[
-          {href:'/home',icon:'🏠',label:'Acasă'},
-          {href:'/search',icon:'🔍',label:'Service-uri'},
-          {href:'/listing',icon:'📦',label:'Anunțuri'},
-          {href:'/itp-rca',icon:'🛡️',label:'ITP & RCA'},
-          {href:user?'/account':'/auth/login',icon:'👤',label:user?'Contul meu':'Intră'},
-        ].map(item=>(
-          <a key={item.href} href={item.href}
-            style={{display:'flex',flexDirection:'column',alignItems:'center',gap:2,textDecoration:'none',flex:1,padding:'4px 0'}}>
-            <span style={{fontSize:20}}>{item.icon}</span>
-            <span style={{fontSize:10,color:pathname===item.href?'#1a56db':'#6b7280',fontWeight:pathname===item.href?700:400,fontFamily:"'DM Sans',sans-serif"}}>{item.label}</span>
-          </a>
-        ))}
+      {/* Mobile bottom nav - Varianta 2: pill activ */}
+      <div className="mob-bottom" style={{position:'fixed',bottom:0,left:0,right:0,background:'rgba(255,255,255,0.97)',backdropFilter:'blur(12px)',borderTop:'1px solid #e5e7eb',zIndex:90,paddingBottom:'env(safe-area-inset-bottom,0px)'}}>
+        <div style={{display:'flex',padding:'6px 8px 10px',gap:4,maxWidth:500,margin:'0 auto'}}>
+          {[
+            {href:'/home',label:'Acasă',icon:(active)=>(
+              <svg width="20" height="20" viewBox="0 0 24 24" fill={active?'#1a56db':'none'} stroke={active?'#1a56db':'#9ca3af'} strokeWidth="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+            )},
+            {href:'/search',label:'Caută',icon:(active)=>(
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke={active?'#1a56db':'#9ca3af'} strokeWidth="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+            )},
+            {href:'/listing',label:'Piese',icon:(active)=>(
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke={active?'#1a56db':'#9ca3af'} strokeWidth="2"><rect x="1" y="3" width="15" height="13" rx="1"/><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>
+            )},
+            {href:'/itp-rca',label:'ITP & RCA',icon:(active)=>(
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke={active?'#1a56db':'#9ca3af'} strokeWidth="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+            )},
+            {href:user?'/account':'/auth/login',label:user?'Contul meu':'Intră',icon:(active)=>(
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke={active?'#1a56db':'#9ca3af'} strokeWidth="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+            )},
+          ].map(item=>{
+            const active = pathname===item.href || (item.href!=='/home' && pathname?.startsWith(item.href.split('?')[0]))
+            return (
+              <a key={item.href} href={item.href}
+                style={{flex:1,display:'flex',flexDirection:'column',alignItems:'center',gap:3,textDecoration:'none',padding:'6px 4px',borderRadius:12,background:active?'#eaf3ff':'transparent',transition:'background .15s'}}>
+                {item.icon(active)}
+                <span style={{fontSize:10,fontWeight:active?600:400,color:active?'#1a56db':'#9ca3af',fontFamily:"'DM Sans',sans-serif",whiteSpace:'nowrap'}}>{item.label}</span>
+              </a>
+            )
+          })}
+        </div>
       </div>
       {/* Toast notificare */}
       {toast&&(
