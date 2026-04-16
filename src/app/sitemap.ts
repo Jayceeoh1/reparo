@@ -28,7 +28,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       .eq('is_active', true)
       .limit(500)
 
-    const serviceRoutes: MetadataRoute.Sitemap = (services || []).map(s => ({
+    const serviceRoutes: MetadataRoute.Sitemap = ((services || []) as any[]).map(s => ({
       url: `${base}/service/${s.id}`,
       lastModified: new Date(s.updated_at || new Date()),
       changeFrequency: 'weekly' as const,
