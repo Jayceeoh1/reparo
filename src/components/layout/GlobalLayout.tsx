@@ -490,13 +490,16 @@ export default function GlobalLayout({ children }) {
                 </div>
               ):quoteStep===1?(
                 <div>
-                  <p style={{fontSize:13,color:'rgba(255,255,255,0.5)',marginBottom:12}}>Selectează serviciile de care ai nevoie:</p>
-                  <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:8,marginBottom:14}}>
-                    {['Schimb ulei','Frâne','Geometrie','Diagnoză','Revizie','Distribuție','Vopsitorie','Climatizare','ITP','Suspensie','Ambreiaj','Alte lucrări'].map(svc=>(
-                      <button key={svc} onClick={()=>setQForm(p=>({...p,services:p.services.includes(svc)?p.services.filter(s=>s!==svc):[...p.services,svc]}))}
-                        style={{padding:'10px 12px',background:qForm.services.includes(svc)?'#3b82f6':'rgba(255,255,255,0.06)',border:`1px solid ${qForm.services.includes(svc)?'#3b82f6':'rgba(255,255,255,0.12)'}`,borderRadius:10,fontSize:12,color:'#fff',cursor:'pointer',textAlign:'left',fontFamily:"'DM Sans',sans-serif",fontWeight:qForm.services.includes(svc)?600:400}}>
-                        {qForm.services.includes(svc)?'✓ ':''}{svc}
-                      </button>
+                  <p style={{fontSize:13,color:'rgba(255,255,255,0.5)',marginBottom:12}}>Precizează specialitatea în care se încadrează lucrarea:</p>
+                  <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:0,marginBottom:16,border:'1px solid rgba(255,255,255,0.1)',borderRadius:12,overflow:'hidden'}}>
+                    {['AC & climă','Audio & alarme','Anvelope & jante','Caroserie & tinichigerie','Climatizare','Cutie de viteze','Detailing auto','Diagnoză computerizată','Electrică auto','Eșapamente','Frâne & discuri','Geamuri & parbriz','Geometrie roți','Instalații GPL','ITP','Mecanică generală','Mecanică ușoară','Motor','Recondiționare injectoare','Recondiționare pompe injecție','Recondiționare turbine','Restaurare auto','Revizii & schimb ulei','Suspensie','Tapițerie & interior','Transmisie','Tuning exterior','Tuning motor','Vopsitorie','Altele'].map((svc,i)=>(
+                      <label key={svc} onClick={()=>setQForm(p=>({...p,services:p.services.includes(svc)?p.services.filter(s=>s!==svc):[...p.services,svc]}))}
+                        style={{display:'flex',alignItems:'center',gap:10,padding:'10px 14px',cursor:'pointer',background:qForm.services.includes(svc)?'rgba(59,130,246,0.15)':'rgba(255,255,255,0.03)',borderBottom:i<29?'1px solid rgba(255,255,255,0.07)':'none',borderRight:i%2===0?'1px solid rgba(255,255,255,0.07)':'none'}}>
+                        <div style={{width:16,height:16,borderRadius:4,border:`2px solid ${qForm.services.includes(svc)?'#3b82f6':'rgba(255,255,255,0.3)'}`,background:qForm.services.includes(svc)?'#3b82f6':'transparent',display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0}}>
+                          {qForm.services.includes(svc)&&<svg width='9' height='9' viewBox='0 0 10 10'><polyline points='1.5,5 4,7.5 8.5,2.5' fill='none' stroke='white' strokeWidth='1.8' strokeLinecap='round' strokeLinejoin='round'/></svg>}
+                        </div>
+                        <span style={{fontSize:12,color:qForm.services.includes(svc)?'#93c5fd':'rgba(255,255,255,0.75)',fontWeight:qForm.services.includes(svc)?600:400,lineHeight:1.3}}>{svc}</span>
+                      </label>
                     ))}
                   </div>
                   <div style={{display:'flex',gap:10}}>
@@ -719,13 +722,16 @@ export default function GlobalLayout({ children }) {
                 </div>
               ):quoteStep===1?(
                 <div>
-                  <p style={{fontSize:13,color:'rgba(255,255,255,0.5)',marginBottom:12}}>Selectează serviciile de care ai nevoie:</p>
-                  <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:8,marginBottom:14}}>
-                    {['Schimb ulei','Frâne','Geometrie','Diagnoză','Revizie','Distribuție','Vopsitorie','Climatizare','ITP','Suspensie','Ambreiaj','Alte lucrări'].map(svc=>(
-                      <button key={svc} onClick={()=>setQForm(p=>({...p,services:p.services.includes(svc)?p.services.filter(s=>s!==svc):[...p.services,svc]}))}
-                        style={{padding:'10px 12px',background:qForm.services.includes(svc)?'#3b82f6':'rgba(255,255,255,0.06)',border:`1px solid ${qForm.services.includes(svc)?'#3b82f6':'rgba(255,255,255,0.12)'}`,borderRadius:10,fontSize:12,color:'#fff',cursor:'pointer',textAlign:'left',fontFamily:"'DM Sans',sans-serif",fontWeight:qForm.services.includes(svc)?600:400}}>
-                        {qForm.services.includes(svc)?'✓ ':''}{svc}
-                      </button>
+                  <p style={{fontSize:13,color:'rgba(255,255,255,0.5)',marginBottom:12}}>Precizează specialitatea în care se încadrează lucrarea:</p>
+                  <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:0,marginBottom:16,border:'1px solid rgba(255,255,255,0.1)',borderRadius:12,overflow:'hidden'}}>
+                    {['AC & climă','Audio & alarme','Anvelope & jante','Caroserie & tinichigerie','Climatizare','Cutie de viteze','Detailing auto','Diagnoză computerizată','Electrică auto','Eșapamente','Frâne & discuri','Geamuri & parbriz','Geometrie roți','Instalații GPL','ITP','Mecanică generală','Mecanică ușoară','Motor','Recondiționare injectoare','Recondiționare pompe injecție','Recondiționare turbine','Restaurare auto','Revizii & schimb ulei','Suspensie','Tapițerie & interior','Transmisie','Tuning exterior','Tuning motor','Vopsitorie','Altele'].map((svc,i)=>(
+                      <label key={svc} onClick={()=>setQForm(p=>({...p,services:p.services.includes(svc)?p.services.filter(s=>s!==svc):[...p.services,svc]}))}
+                        style={{display:'flex',alignItems:'center',gap:10,padding:'10px 14px',cursor:'pointer',background:qForm.services.includes(svc)?'rgba(59,130,246,0.15)':'rgba(255,255,255,0.03)',borderBottom:i<29?'1px solid rgba(255,255,255,0.07)':'none',borderRight:i%2===0?'1px solid rgba(255,255,255,0.07)':'none'}}>
+                        <div style={{width:16,height:16,borderRadius:4,border:`2px solid ${qForm.services.includes(svc)?'#3b82f6':'rgba(255,255,255,0.3)'}`,background:qForm.services.includes(svc)?'#3b82f6':'transparent',display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0}}>
+                          {qForm.services.includes(svc)&&<svg width='9' height='9' viewBox='0 0 10 10'><polyline points='1.5,5 4,7.5 8.5,2.5' fill='none' stroke='white' strokeWidth='1.8' strokeLinecap='round' strokeLinejoin='round'/></svg>}
+                        </div>
+                        <span style={{fontSize:12,color:qForm.services.includes(svc)?'#93c5fd':'rgba(255,255,255,0.75)',fontWeight:qForm.services.includes(svc)?600:400,lineHeight:1.3}}>{svc}</span>
+                      </label>
                     ))}
                   </div>
                   <div style={{display:'flex',gap:10}}>

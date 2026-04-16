@@ -21,7 +21,16 @@ const CATEGORIES = [
 
 const FILTERS = ['Toate', 'Deschis acum', 'Sub 5 km', 'Sub 10 km', 'Sub 25 km', 'Recenzii 4+', 'Diesel', 'Benzină', 'Hybrid / Electric', 'Service autorizat', 'Garanție lucrări']
 
-const SVC_LIST = ['Schimb ulei & filtre', 'Frâne & discuri', 'Geometrie roți', 'Echilibrare roți', 'Diagnoză electronică', 'Suspensie', 'Transmisie & cutie viteze', 'Vopsitorie & caroserie', 'Climatizare & AC', 'Electrică auto', 'Motor', 'ITP', 'Anvelope & jante', 'Injecție & turbo', 'Detailing auto', 'Altele']
+const SVC_LIST = [
+  'AC & climă','Audio & alarme','Anvelope & jante','Caroserie & tinichigerie',
+  'Climatizare','Cutie de viteze','Detailing auto','Diagnoză computerizată',
+  'Electrică auto','Eșapamente','Frâne & discuri','Geamuri & parbriz',
+  'Geometrie roți','Instalații GPL','ITP','Mecanică generală',
+  'Mecanică ușoară','Motor','Recondiționare injectoare','Recondiționare pompe injecție',
+  'Recondiționare turbine','Restaurare auto','Revizii & schimb ulei',
+  'Suspensie','Tapițerie & interior','Transmisie','Tuning exterior','Tuning motor',
+  'Vopsitorie','Altele',
+]
 const BRANDS_PIESE = ['Orice brand', 'OEM Original', 'Bosch', 'Brembo', 'SKF', 'Febi', 'TRW', 'Valeo']
 const STEP_LABELS = ['Mașina', 'Servicii', 'Detalii', 'Confirmare']
 
@@ -461,13 +470,16 @@ export default function HomeClient() {
                 </div>
               ) : modalStep === 1 ? (
                 <div>
-                  <p style={{ fontSize: 13, color: 'rgba(255,255,255,0.5)', marginBottom: 12 }}>Selectează serviciile de care ai nevoie:</p>
-                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, marginBottom: 14 }}>
-                    {SVC_LIST.map(svc => (
-                      <button key={svc} onClick={() => toggleSvc(svc)}
-                        style={{ padding: '10px 12px', background: form.services.includes(svc) ? '#3b82f6' : 'rgba(255,255,255,0.06)', border: `1px solid ${form.services.includes(svc) ? '#3b82f6' : 'rgba(255,255,255,0.12)'}`, borderRadius: 10, fontSize: 12, color: '#fff', cursor: 'pointer', textAlign: 'left', fontFamily: "'DM Sans',sans-serif", fontWeight: form.services.includes(svc) ? 600 : 400 }}>
-                        {form.services.includes(svc) ? '✓ ' : ''}{svc}
-                      </button>
+                  <p style={{ fontSize: 13, color: 'rgba(255,255,255,0.5)', marginBottom: 16 }}>Precizează specialitatea în care se încadrează lucrarea:</p>
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 0, marginBottom: 16, border: '1px solid rgba(255,255,255,0.1)', borderRadius: 12, overflow: 'hidden' }}>
+                    {SVC_LIST.map((svc, i) => (
+                      <label key={svc} onClick={() => toggleSvc(svc)}
+                        style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '10px 14px', cursor: 'pointer', background: form.services.includes(svc) ? 'rgba(59,130,246,0.15)' : 'rgba(255,255,255,0.03)', borderBottom: i < SVC_LIST.length - 2 ? '1px solid rgba(255,255,255,0.07)' : 'none', borderRight: i % 2 === 0 ? '1px solid rgba(255,255,255,0.07)' : 'none', transition: 'background .1s' }}>
+                        <div style={{ width: 16, height: 16, borderRadius: 4, border: `2px solid ${form.services.includes(svc) ? '#3b82f6' : 'rgba(255,255,255,0.3)'}`, background: form.services.includes(svc) ? '#3b82f6' : 'transparent', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, transition: 'all .1s' }}>
+                          {form.services.includes(svc) && <svg width="9" height="9" viewBox="0 0 10 10"><polyline points="1.5,5 4,7.5 8.5,2.5" fill="none" stroke="white" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/></svg>}
+                        </div>
+                        <span style={{ fontSize: 12, color: form.services.includes(svc) ? '#93c5fd' : 'rgba(255,255,255,0.75)', fontWeight: form.services.includes(svc) ? 600 : 400, lineHeight: 1.3 }}>{svc}</span>
+                      </label>
                     ))}
                   </div>
                   <div style={{ display: 'flex', gap: 10 }}>
