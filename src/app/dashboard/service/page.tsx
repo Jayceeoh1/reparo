@@ -436,6 +436,17 @@ export default function ServiceDashboard() {
     setNewOffering({name:'',price_from:'',price_to:'',duration_min:'',description:''})
   }
 
+  async function addWholeCategory(catItems) {
+    if (!service) return
+    const existing = offerings.map(o=>o.name)
+    const toAdd = catItems.filter(s=>!existing.includes(s))
+    if (toAdd.length===0) { alert('Toate serviciile din această categorie sunt deja adăugate!'); return }
+    const inserts = toAdd.map(name=>({name, service_id:service.id, is_active:true}))
+    const {data, error} = await supabase.from('service_offerings').insert(inserts).select()
+    if (error) { alert('Eroare: ' + error.message); return }
+    if (data) setOfferings(prev=>[...data,...prev])
+  }
+
   async function deleteOffering(id) {
     await supabase.from('service_offerings').delete().eq('id',id)
     setOfferings(prev=>prev.filter(o=>o.id!==id))
@@ -909,14 +920,16 @@ export default function ServiceDashboard() {
                 <div style={{display:'grid',gridTemplateColumns:'2fr 1fr 1fr 1fr',gap:12,marginBottom:12}}>
                   <div>
                     <label style={label}>Serviciu *</label>
-                    <select className="dash-input" value={newOffering.name} onChange={e=>setNewOffering(p=>({...p,name:e.target.value}))} style={input}>
-                      <option value="">Selectează serviciul</option>
-                      {SERVICE_CATEGORIES.map(cat=>(
-                        <optgroup key={cat.cat} label={cat.cat}>
-                          {cat.items.map(s=><option key={s} value={s}>{s}</option>)}
-                        </optgroup>
-                      ))}
-                    </select>
+                    <div style={{position:'relative'}}>
+                      <select className="dash-input" value={newOffering.name} onChange={e=>setNewOffering(p=>({...p,name:e.target.value}))} style={input}>
+                        <option value="">Selectează serviciul</option>
+                        {SERVICE_CATEGORIES.map(cat=>(
+                          <optgroup key={cat.cat} label={cat.cat}>
+                            {cat.items.map(s=><option key={s} value={s}>{s}</option>)}
+                          </optgroup>
+                        ))}
+                      </select>
+                    </div>
                   </div>
                   <div>
                     <label style={label}>Preț de la (RON)</label>
@@ -936,6 +949,25 @@ export default function ServiceDashboard() {
                   <input className="dash-input" value={newOffering.description} onChange={e=>setNewOffering(p=>({...p,description:e.target.value}))} placeholder="ex: include filtrul de ulei, verificare nivel lichide..." style={input}/>
                 </div>
                 <button onClick={addOffering} disabled={!newOffering.name} style={{...btn('primary'),opacity:!newOffering.name?.5:1}}>+ Adaugă serviciu</button>
+              </div>
+
+              {/* Adaugă rapid pe categorii */}
+              <div style={card({marginBottom:16})}>
+                <h3 style={{fontFamily:"'Sora',sans-serif",fontWeight:700,fontSize:14,color:S.navy,marginBottom:4}}>⚡ Adaugă rapid pe categorii</h3>
+                <p style={{fontSize:12,color:S.muted,marginBottom:14}}>Click pe o categorie pentru a adăuga toate serviciile din ea dintr-o dată.</p>
+                <div style={{display:'flex',flexWrap:'wrap',gap:8}}>
+                  {SERVICE_CATEGORIES.map(cat=>{
+                    const allAdded = cat.items.every(s=>offerings.some(o=>o.name===s))
+                    return (
+                      <button key={cat.cat} onClick={()=>addWholeCategory(cat.items)}
+                        disabled={allAdded}
+                        style={{display:'inline-flex',alignItems:'center',gap:6,padding:'7px 14px',borderRadius:50,border:`1.5px solid ${allAdded?S.border:'#1a56db30'}`,background:allAdded?S.bg:'#eaf3ff',color:allAdded?S.muted:S.blue,fontSize:12,fontWeight:600,cursor:allAdded?'not-allowed':'pointer',transition:'all .15s',opacity:allAdded?.6:1}}>
+                        {allAdded?'✓ ':''}{cat.cat}
+                        {!allAdded&&<span style={{background:S.blue,color:'#fff',borderRadius:50,padding:'1px 7px',fontSize:10,fontWeight:700}}>{cat.items.length}</span>}
+                      </button>
+                    )
+                  })}
+                </div>
               </div>
 
               {offerings.length===0?<div style={{...card(),textAlign:'center',padding:'40px 20px',color:S.muted}}>

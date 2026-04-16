@@ -130,7 +130,9 @@ export default function HomeClient() {
         </div>
         <div className="cat-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(8,1fr)', gap: 10, marginBottom: 20 }}>
           {CATEGORIES.map(c => (
-            <a key={c.key} href={c.key === 'toate' ? '/search' : `/search?category=${c.key}`} className="cat-item"
+            <a key={c.key}
+              href={c.key === 'dezmembrari' ? '/piese-oferta' : c.key === 'toate' ? '/search' : `/search?category=${c.key}`}
+              className="cat-item"
               style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '14px 6px 12px', background: '#fff', borderRadius: 16, border: `1.5px solid ${S.border}`, cursor: 'pointer', textDecoration: 'none', transition: 'all .15s' }}>
               <div className="cat-icon" style={{ width: 44, height: 44, background: c.color, borderRadius: 12, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 22, marginBottom: 8 }}>{c.icon}</div>
               <div className="cat-label" style={{ fontSize: 11, color: S.navy, fontWeight: 600, textAlign: 'center', lineHeight: 1.3 }}>{c.label}</div>
