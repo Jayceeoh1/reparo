@@ -600,7 +600,7 @@ export default function GlobalLayout({ children }) {
               if(item.href==='__oferta__') return (
                 <div key="oferta" style={{flex:1,display:'flex',flexDirection:'column',alignItems:'center',gap:4}}>
                   <button onClick={()=>window.dispatchEvent(new CustomEvent('open-quote-modal'))}
-                    style={{width:56,height:56,background:'#1a56db',borderRadius:'50%',display:'flex',alignItems:'center',justifyContent:'center',marginTop:-30,border:'4px solid #f5f7fa',boxShadow:'0 6px 18px rgba(26,86,219,.3)',cursor:'pointer',outline:'none',flexShrink:0}}>
+                    style={{width:56,height:56,background:'#1a56db',borderRadius:'50%',display:'flex',alignItems:'center',justifyContent:'center',marginTop:-24,border:'4px solid #fff',boxShadow:'0 6px 18px rgba(26,86,219,.3)',cursor:'pointer',outline:'none',flexShrink:0}}>
                     <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2.5" strokeLinecap="round"><path d="M12 5v14M5 12h14"/></svg>
                   </button>
                   <span style={{fontSize:10,fontWeight:700,color:'#1a56db'}}>Ofertă</span>
@@ -829,7 +829,7 @@ export default function GlobalLayout({ children }) {
             if(item.href==='__oferta__') return (
               <div key="oferta" style={{flex:1,display:'flex',flexDirection:'column',alignItems:'center',gap:4}}>
                 <button onClick={()=>window.dispatchEvent(new CustomEvent('open-quote-modal'))}
-                  style={{width:56,height:56,background:'#1a56db',borderRadius:'50%',display:'flex',alignItems:'center',justifyContent:'center',marginTop:-30,border:'4px solid #f5f7fa',boxShadow:'0 6px 18px rgba(26,86,219,.3)',cursor:'pointer',outline:'none',flexShrink:0}}>
+                  style={{width:56,height:56,background:'#1a56db',borderRadius:'50%',display:'flex',alignItems:'center',justifyContent:'center',marginTop:-24,border:'4px solid #fff',boxShadow:'0 6px 18px rgba(26,86,219,.3)',cursor:'pointer',outline:'none',flexShrink:0}}>
                   <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2.5" strokeLinecap="round"><path d="M12 5v14M5 12h14"/></svg>
                 </button>
                 <span style={{fontSize:10,fontWeight:700,color:'#1a56db'}}>Ofertă</span>

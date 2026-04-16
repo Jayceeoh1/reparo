@@ -177,7 +177,7 @@ export default function HomeClient() {
 
         {/* Anunțuri piese */}
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14 }}>
-          <h2 className="section-title" style={{ fontSize: 17, fontWeight: 700, color: S.navy, fontFamily: "'Sora',sans-serif", letterSpacing: -0.3 }}>Piese & Dezmembrări</h2>
+          <h2 className="section-title" style={{ fontSize: 17, fontWeight: 700, color: S.navy, fontFamily: "'Sora',sans-serif", letterSpacing: -0.3 }}>Anunțuri</h2>
           <div style={{ display: 'flex', gap: 12, alignItems: 'center' }}>
             <a href="/listing?category=dezmembrari" style={{ fontSize: 13, color: '#d97706', textDecoration: 'none', fontWeight: 600 }}>Dezmembrări →</a>
             <a href="/listing" style={{ fontSize: 13, color: S.blue, textDecoration: 'none', fontWeight: 600 }}>Toate →</a>
