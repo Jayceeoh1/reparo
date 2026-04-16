@@ -197,14 +197,10 @@ export default function HomeClient() {
             {[1, 2, 3, 4].map(i => <div key={i} style={{ background: '#fff', borderRadius: 14, height: 220, border: `0.5px solid ${S.border}`, animation: 'pulse 1.5s infinite' }} />)}
           </div>
         ) : listings.length === 0 ? (
-          <div style={{ background: '#fff', borderRadius: 16, border: `1px solid ${S.border}`, padding: '32px 20px', textAlign: 'center', marginBottom: 28, display: 'flex', alignItems: 'center', gap: 20, flexWrap: 'wrap', justifyContent: 'center' }}>
-            <div>
-              <div style={{ fontSize: 36, marginBottom: 8 }}>📦</div>
-              <div style={{ fontSize: 14, color: '#666', marginBottom: 4 }}>Niciun anunț momentan</div>
-            </div>
-            <a href="/listing/create" style={{ display: 'inline-flex', alignItems: 'center', gap: 8, padding: '11px 22px', background: S.yellow, color: '#fff', borderRadius: 50, fontSize: 13, fontWeight: 700, textDecoration: 'none', fontFamily: "'Sora',sans-serif", boxShadow: '0 4px 12px rgba(245,158,11,0.3)' }}>
-              + Adaugă anunț gratuit
-            </a>
+          <div style={{ background: '#fff', borderRadius: 16, border: `1px solid ${S.border}`, padding: '32px 20px', textAlign: 'center', marginBottom: 28 }}>
+            <div style={{ fontSize: 36, marginBottom: 8 }}>📦</div>
+            <div style={{ fontSize: 14, color: '#666', marginBottom: 4 }}>Niciun anunț momentan</div>
+            <div style={{ fontSize: 13, color: S.muted }}>Service-urile și parcurile de dezmembrări vor adăuga piese în curând.</div>
           </div>
         ) : (
           <>
@@ -237,12 +233,7 @@ export default function HomeClient() {
                 )
               })}
             </div>
-            {/* Buton adaugă anunț vizibil */}
-            <div style={{ textAlign: 'center', marginBottom: 28 }}>
-              <a href="/listing/create" style={{ display: 'inline-flex', alignItems: 'center', gap: 8, padding: '11px 28px', background: S.yellow, color: '#fff', borderRadius: 50, fontSize: 14, fontWeight: 700, textDecoration: 'none', fontFamily: "'Sora',sans-serif", boxShadow: '0 4px 16px rgba(245,158,11,0.3)' }}>
-                + Adaugă anunț gratuit
-              </a>
-            </div>
+
           </>
         )}
 

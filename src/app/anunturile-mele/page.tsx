@@ -205,10 +205,7 @@ export default function MyListingsPage() {
             <h1 style={{fontFamily:"'Sora',sans-serif",fontWeight:800,fontSize:24,color:S.navy,marginBottom:4}}>Anunțurile mele</h1>
             <p style={{fontSize:14,color:S.muted}}>Gestionează, editează și șterge anunțurile tale.</p>
           </div>
-          <a href="/listing/create"
-            style={{display:'inline-flex',alignItems:'center',gap:8,padding:'11px 22px',background:S.yellow,color:'#fff',borderRadius:50,textDecoration:'none',fontSize:14,fontWeight:700,fontFamily:"'Sora',sans-serif",boxShadow:'0 4px 16px rgba(245,158,11,0.3)'}}>
-            + Adaugă anunț nou
-          </a>
+          
         </div>
 
         {/* Stats */}
@@ -249,9 +246,7 @@ export default function MyListingsPage() {
               {listings.length === 0 ? 'Nu ai niciun anunț publicat' : 'Niciun anunț în această categorie'}
             </div>
             <p style={{fontSize:14,color:S.muted,marginBottom:20}}>Publică primul tău anunț gratuit pe Reparo.</p>
-            <a href="/listing/create" style={{display:'inline-flex',alignItems:'center',gap:8,padding:'12px 24px',background:S.yellow,color:'#fff',borderRadius:50,textDecoration:'none',fontSize:14,fontWeight:700,fontFamily:"'Sora',sans-serif"}}>
-              + Adaugă primul anunț
-            </a>
+            
           </div>
         ) : (
           <div style={{display:'flex',flexDirection:'column',gap:12}}>

@@ -150,10 +150,7 @@ function ListingsContent() {
               <svg width="15" height="15" viewBox="0 0 15 15" fill="none"><circle cx="6" cy="6" r="4.5" stroke="#fff" strokeWidth="1.6"/><path d="M9.5 9.5L13 13" stroke="#fff" strokeWidth="1.6" strokeLinecap="round"/></svg>
             </button>
           </form>
-          <a href="/listing/create"
-            style={{...btnPrimary,background:S.yellow,boxShadow:'0 2px 8px rgba(245,158,11,0.25)',flexShrink:0,textDecoration:'none'}}>
-            + Adaugă anunț
-          </a>
+
         </div>
 
         {/* Categorii */}
