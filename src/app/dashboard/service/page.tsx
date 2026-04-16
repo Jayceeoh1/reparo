@@ -355,9 +355,12 @@ export default function ServiceDashboard() {
     async function load() {
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) { window.location.href = '/auth/login'; return }
+      // Verifică rolul — doar service_owner poate accesa dashboard-ul
+      const { data: prof } = await supabase.from('profiles').select('*').eq('id', user.id).single()
+      if (prof?.role === 'user') { window.location.href = '/home'; return }
       let { data: svc } = await supabase.from('services').select('*').eq('owner_id', user.id).single()
       if (!svc) {
-        const { data: prof } = await supabase.from('profiles').select('*').eq('id', user.id).single()
+        // Creează service doar dacă userul are rol de service_owner
         const { data: newSvc } = await supabase.from('services').insert({owner_id:user.id,name:prof?.full_name||'Service-ul meu',city:prof?.city||'București',is_active:true,plan:'free'}).select().single()
         svc = newSvc
       }
@@ -822,8 +825,12 @@ export default function ServiceDashboard() {
                       </div>
                     </button>
                     {pf.is_dismantling&&(
-                      <div style={{marginTop:8,padding:'10px 14px',background:'#fef3c7',borderRadius:10,border:'1px solid #d9770620',fontSize:12,color:'#92400e'}}>
-                        🔩 Ca parc dezmembrări, poți adăuga piese și vehicule în secțiunea <strong>Anunțuri</strong>. Profilul tău va apărea în categoria Dezmembrări.
+                      <div style={{marginTop:8,padding:'12px 14px',background:'#fef3c7',borderRadius:10,border:'1px solid #d9770620',fontSize:12,color:'#92400e'}}>
+                        <div style={{marginBottom:8}}>🔩 Ca parc dezmembrări, poți adăuga piese și vehicule în secțiunea <strong>Anunțuri</strong>. Profilul tău va apărea în categoria Dezmembrări.</div>
+                        <a href="/dezmembrari-abonamente" target="_blank"
+                          style={{display:'inline-flex',alignItems:'center',gap:6,padding:'7px 14px',background:'#d97706',color:'#fff',borderRadius:50,fontSize:12,fontWeight:700,textDecoration:'none',fontFamily:"'Sora',sans-serif"}}>
+                          📦 Vezi abonamente speciale pentru dezmembrări →
+                        </a>
                       </div>
                     )}
                   </div>
@@ -1509,15 +1516,22 @@ export default function ServiceDashboard() {
                   <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:16}}>
                     <h3 style={{fontFamily:"'Sora',sans-serif",fontWeight:700,fontSize:15,color:S.navy}}>💳 Plan abonament</h3>
                     {service?.plan_expires_at&&<div style={{fontSize:12,color:S.muted}}>Expiră: {new Date(service.plan_expires_at).toLocaleDateString('ro-RO')}</div>}
+                    {service?.is_dismantling&&(
+                      <a href="/dezmembrari-abonamente" target="_blank"
+                        style={{display:'inline-flex',alignItems:'center',gap:5,padding:'5px 12px',background:'#fef3c7',color:'#92400e',border:'1px solid #d9770630',borderRadius:50,fontSize:11,fontWeight:700,textDecoration:'none',fontFamily:"'Sora',sans-serif"}}>
+                        🔩 Abonamente Dezmembrări →
+                      </a>
+                    )}
                   </div>
                   <div className="settings-plans" style={{display:'grid',gridTemplateColumns:'repeat(3,1fr)',gap:12}}>
                     {[
-                      {plan:'free',label:'Free',price:'0',period:'',color:S.muted,features:['Profil public basic','10 cereri/lună','Fără badge verificat']},
-                      {plan:'basic',label:'Basic',price:'99',period:'/lună',color:S.blue,features:['Cereri nelimitate','Notificări instant','Badge verificat','Statistici de bază']},
-                      {plan:'pro',label:'Pro',price:'199',period:'/lună',color:S.amber,features:['Tot din Basic','Prioritate în căutări','Badge Pro ⭐','Statistici avansate','Suport dedicat']},
+                      {plan:'free',label:'Free',price:'0',period:'',color:S.muted,features:['Profil public basic','Cereri limitate','Notificări in-app','Fără badge verificat','Statistici de bază']},
+                      {plan:'basic',label:'Basic',price:'99',period:'/lună',color:S.blue,features:['Cereri nelimitate','Notificări instant + email','Badge ✓ Verificat','Statistici avansate','Prioritate medie în căutări','Suport prin email']},
+                      {plan:'pro',label:'Pro',price:'199',period:'/lună',color:S.amber,features:['Tot din Basic','Prioritate maximă în căutări','Badge Pro ⭐','Promovare inclusă 7 zile/lună','Statistici complete','Suport dedicat prioritar','API integrare externe']},
                     ].map(p=>(
                       <div key={p.plan} style={{borderRadius:14,padding:16,border:`2px solid ${service?.plan===p.plan?p.color:S.border}`,background:service?.plan===p.plan?p.plan==='pro'?S.amberBg:p.plan==='basic'?'#eaf3ff':S.bg:S.white,position:'relative',transition:'all .2s'}}>
                         {service?.plan===p.plan&&<div style={{position:'absolute',top:-1,right:12,background:p.color,color:'#fff',fontSize:10,fontWeight:700,padding:'3px 10px',borderRadius:'0 0 8px 8px',fontFamily:"'Sora',sans-serif"}}>ACTIV</div>}
+                        {p.plan==='pro'&&service?.plan!=='pro'&&<div style={{position:'absolute',top:-1,left:12,background:'#7c3aed',color:'#fff',fontSize:10,fontWeight:700,padding:'3px 10px',borderRadius:'0 0 8px 8px',fontFamily:"'Sora',sans-serif"}}>RECOMANDAT</div>}
                         <div style={{fontFamily:"'Sora',sans-serif",fontWeight:700,fontSize:13,color:S.navy,marginBottom:6}}>{p.label}</div>
                         <div style={{display:'flex',alignItems:'baseline',gap:3,marginBottom:12}}>
                           <span style={{fontFamily:"'Sora',sans-serif",fontWeight:800,fontSize:26,color:p.color}}>{p.price} RON</span>
@@ -1532,12 +1546,16 @@ export default function ServiceDashboard() {
                           <button
                             onClick={async()=>{
                               const res = await fetch('/api/stripe/checkout',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({type:'subscription',plan:p.plan,service_id:service?.id})})
-                              const {url} = await res.json()
+                              const {url,error} = await res.json()
                               if(url) window.location.href=url
+                              else alert(error||'Stripe nu este configurat încă. Adaugă STRIPE_SECRET_KEY în Vercel.')
                             }}
                             style={{...btn('primary'),width:'100%',justifyContent:'center',marginTop:12,fontSize:12,background:p.color,boxShadow:`0 2px 8px ${p.color}40`}}>
                             Upgrade la {p.label} →
                           </button>
+                        )}
+                        {service?.plan===p.plan&&p.plan==='free'&&(
+                          <div style={{marginTop:12,fontSize:11,color:S.muted,textAlign:'center',lineHeight:1.5}}>Upgrade pentru mai multe funcții</div>
                         )}
                         {service?.plan===p.plan&&p.plan!=='free'&&(
                           <div style={{marginTop:12,fontSize:12,color:p.color,fontWeight:600,textAlign:'center'}}>✅ Planul tău curent</div>

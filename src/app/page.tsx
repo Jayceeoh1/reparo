@@ -282,10 +282,23 @@ export default function LandingPage() {
               </div>
             ))}
           </div>
+
+          {/* Banner dezmembrari */}
+          <div style={{marginTop:24,background:'#fef3c7',borderRadius:16,border:'1px solid rgba(217,119,6,0.2)',padding:'20px 24px',display:'flex',alignItems:'center',justifyContent:'space-between',gap:16,flexWrap:'wrap'}}>
+            <div style={{display:'flex',alignItems:'center',gap:14}}>
+              <span style={{fontSize:32}}>🔩</span>
+              <div>
+                <div style={{fontFamily:"'Sora',sans-serif",fontWeight:700,fontSize:15,color:'#92400e',marginBottom:3}}>Ești parc de dezmembrări?</div>
+                <div style={{fontSize:13,color:'#b45309'}}>Avem planuri speciale pentru tine — publică piese, primești cereri de ofertă direct.</div>
+              </div>
+            </div>
+            <a href="/dezmembrari-abonamente"
+              style={{display:'inline-flex',alignItems:'center',gap:6,padding:'11px 22px',background:'#d97706',color:'#fff',borderRadius:50,fontSize:13,fontWeight:700,textDecoration:'none',fontFamily:"'Sora',sans-serif",whiteSpace:'nowrap',boxShadow:'0 4px 12px rgba(217,119,6,0.3)',flexShrink:0}}>
+              Vezi abonamente dezmembrări →
+            </a>
+          </div>
         </div>
       </section>
-
-      {/* ── FAQ ── */}
       <section id="faq" className="lp-section" style={{background:S.white}}>
         <div style={{maxWidth:720,margin:'0 auto'}}>
           <div style={{textAlign:'center',marginBottom:40}}>
