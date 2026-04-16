@@ -46,13 +46,15 @@ export default function CreateListingPage() {
   const supabase = createClient()
 
   useEffect(() => {
-    supabase.auth.getUser().then(({data:{user}}) => {
+    async function load() {
+      const { data: { user } } = await supabase.auth.getUser()
       if (!user) { window.location.href = '/auth/login'; return }
       setUser(user)
       // Verificăm dacă userul are un service — doar service-urile pot adăuga anunțuri
       const { data: svc } = await supabase.from('services').select('id').eq('owner_id', user.id).single()
       if (!svc) { window.location.href = '/home'; return }
-    })
+    }
+    load()
   }, [])
 
   async function uploadPhoto(file) {
