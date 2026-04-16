@@ -312,39 +312,6 @@ export default function HomeClient() {
         </div>
       </footer>
 
-      {/* ══ BOTTOM NAV MOBIL ══ */}
-      <nav className="mob-bottom-nav">
-        <div className="mob-bottom-nav-inner">
-          {/* Acasă */}
-          <a href="/home" className="bnav-item active">
-            <span className="bnav-icon">🏠</span>
-            <span className="bnav-label">Acasă</span>
-          </a>
-          {/* Favorite */}
-          <a href="/favorite" className="bnav-item">
-            <span className="bnav-icon">❤️</span>
-            <span className="bnav-label">Favorite</span>
-          </a>
-          {/* Cere ofertă — buton central */}
-          <div className="bnav-cta">
-            <button className="bnav-cta-btn" onClick={() => { setModalOpen(true); setModalStep(0); setSubmitDone(false) }}>
-              ✦
-            </button>
-            <span className="bnav-cta-label">Ofertă</span>
-          </div>
-          {/* RCA */}
-          <a href="/itp-rca?tab=rca" className="bnav-item">
-            <span className="bnav-icon">📄</span>
-            <span className="bnav-label">RCA</span>
-          </a>
-          {/* Cont */}
-          <a href="/account" className="bnav-item">
-            <span className="bnav-icon">👤</span>
-            <span className="bnav-label">Cont</span>
-          </a>
-        </div>
-      </nav>
-
       {/* ══ MODAL CERERE OFERTĂ ══ */}
       {modalOpen && (
         <div onClick={e => { if (e.target === e.currentTarget) setModalOpen(false) }}

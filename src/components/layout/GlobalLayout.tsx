@@ -586,16 +586,16 @@ export default function GlobalLayout({ children }) {
               {href:'/home',label:'Acasă',icon:(active)=>(
                 <svg width="20" height="20" viewBox="0 0 24 24" fill={active?'#1a56db':'none'} stroke={active?'#1a56db':'#9ca3af'} strokeWidth="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
               )},
+              {href:'/favorite',label:'Favorite',icon:(active)=>(
+                <svg width="20" height="20" viewBox="0 0 24 24" fill={active?'#1a56db':'none'} stroke={active?'#1a56db':'#9ca3af'} strokeWidth="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+              )},
               {href:'/search',label:'Caută',icon:(active)=>(
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke={active?'#1a56db':'#9ca3af'} strokeWidth="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
-              )},
-              {href:'/listing',label:'Piese',icon:(active)=>(
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke={active?'#1a56db':'#9ca3af'} strokeWidth="2"><rect x="1" y="3" width="15" height="13" rx="1"/><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>
               )},
               {href:'/itp-rca',label:'ITP & RCA',icon:(active)=>(
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke={active?'#1a56db':'#9ca3af'} strokeWidth="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
               )},
-              {href:user?'/account':'/auth/login',label:user?'Contul meu':'Cont',icon:(active)=>(
+              {href:user?'/account':'/auth/login',label:user?'Cont':'Intră',icon:(active)=>(
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke={active?'#1a56db':'#9ca3af'} strokeWidth="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
               )},
             ].map(item=>{
@@ -807,20 +807,20 @@ export default function GlobalLayout({ children }) {
             {href:'/home',label:'Acasă',icon:(active)=>(
               <svg width="20" height="20" viewBox="0 0 24 24" fill={active?'#1a56db':'none'} stroke={active?'#1a56db':'#9ca3af'} strokeWidth="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
             )},
+            {href:'/favorite',label:'Favorite',icon:(active)=>(
+              <svg width="20" height="20" viewBox="0 0 24 24" fill={active?'#1a56db':'none'} stroke={active?'#1a56db':'#9ca3af'} strokeWidth="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+            )},
             {href:'/search',label:'Caută',icon:(active)=>(
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke={active?'#1a56db':'#9ca3af'} strokeWidth="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
-            )},
-            {href:'/listing',label:'Piese',icon:(active)=>(
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke={active?'#1a56db':'#9ca3af'} strokeWidth="2"><rect x="1" y="3" width="15" height="13" rx="1"/><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>
             )},
             {href:'/itp-rca',label:'ITP & RCA',icon:(active)=>(
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke={active?'#1a56db':'#9ca3af'} strokeWidth="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
             )},
-            {href:user?'/account':'/auth/login',label:user?'Contul meu':'Intră',icon:(active)=>(
+            {href:user?'/account':'/auth/login',label:user?'Cont':'Intră',icon:(active)=>(
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke={active?'#1a56db':'#9ca3af'} strokeWidth="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
             )},
           ].map(item=>{
-            const active = pathname===item.href || (item.href!=='/home' && pathname?.startsWith(item.href.split('?')[0]))
+            const active = pathname===item.href
             return (
               <a key={item.href} href={item.href}
                 style={{flex:1,display:'flex',flexDirection:'column',alignItems:'center',gap:3,textDecoration:'none',padding:'6px 4px',borderRadius:12,background:active?'#eaf3ff':'transparent',transition:'background .15s'}}>
