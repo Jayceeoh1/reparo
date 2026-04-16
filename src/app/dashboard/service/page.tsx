@@ -1516,12 +1516,6 @@ export default function ServiceDashboard() {
                   <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:16}}>
                     <h3 style={{fontFamily:"'Sora',sans-serif",fontWeight:700,fontSize:15,color:S.navy}}>💳 Plan abonament</h3>
                     {service?.plan_expires_at&&<div style={{fontSize:12,color:S.muted}}>Expiră: {new Date(service.plan_expires_at).toLocaleDateString('ro-RO')}</div>}
-                    {service?.is_dismantling&&(
-                      <a href="/dezmembrari-abonamente" target="_blank"
-                        style={{display:'inline-flex',alignItems:'center',gap:5,padding:'5px 12px',background:'#fef3c7',color:'#92400e',border:'1px solid #d9770630',borderRadius:50,fontSize:11,fontWeight:700,textDecoration:'none',fontFamily:"'Sora',sans-serif"}}>
-                        🔩 Abonamente Dezmembrări →
-                      </a>
-                    )}
                   </div>
                   <div className="settings-plans" style={{display:'grid',gridTemplateColumns:'repeat(3,1fr)',gap:12}}>
                     {[
@@ -1563,6 +1557,21 @@ export default function ServiceDashboard() {
                       </div>
                     ))}
                   </div>
+                </div>
+
+                {/* Banner Dezmembrari — mereu vizibil */}
+                <div style={{...card(),background:'#fef3c7',border:'1px solid rgba(217,119,6,0.2)',display:'flex',alignItems:'center',justifyContent:'space-between',gap:12,flexWrap:'wrap'}}>
+                  <div style={{display:'flex',alignItems:'center',gap:12}}>
+                    <span style={{fontSize:28}}>🔩</span>
+                    <div>
+                      <div style={{fontFamily:"'Sora',sans-serif",fontWeight:700,fontSize:13,color:'#92400e',marginBottom:2}}>Ești parc de dezmembrări?</div>
+                      <div style={{fontSize:12,color:'#b45309',lineHeight:1.5}}>Avem abonamente speciale cu funcții dedicate: generator piese, relistare automată, ofertare nelimitată.</div>
+                    </div>
+                  </div>
+                  <a href="/dezmembrari-abonamente" target="_blank"
+                    style={{display:'inline-flex',alignItems:'center',gap:6,padding:'9px 18px',background:'#d97706',color:'#fff',borderRadius:50,fontSize:12,fontWeight:700,textDecoration:'none',fontFamily:"'Sora',sans-serif",whiteSpace:'nowrap',flexShrink:0}}>
+                    Vezi abonamente →
+                  </a>
                 </div>
 
                 {/* Promovare */}
