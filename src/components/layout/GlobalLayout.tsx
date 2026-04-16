@@ -146,8 +146,8 @@ export default function GlobalLayout({ children }) {
           @media (max-width: 768px) {
             .hide-mob { display: none !important; }
             .mob-only { display: flex !important; }
-            .mob-bottom { display: flex !important; }
-            body { padding-bottom: 72px; }
+            .mob-bottom { display: block !important; }
+            body { padding-bottom: 88px; }
           }
         `}</style>
         <nav style={{position:'sticky',top:0,zIndex:100,background:'rgba(255,255,255,0.92)',backdropFilter:'blur(12px)',borderBottom:'1px solid var(--border)'}}>
@@ -579,32 +579,40 @@ export default function GlobalLayout({ children }) {
         </div>
       )}
 
-      {/* Mobile bottom nav - Varianta 2: pill activ */}
-        <div className="mob-bottom" style={{position:'fixed',bottom:0,left:0,right:0,background:'rgba(255,255,255,0.97)',backdropFilter:'blur(12px)',borderTop:'1px solid #e5e7eb',zIndex:99,paddingBottom:'env(safe-area-inset-bottom,0px)'}}>
-          <div style={{display:'flex',padding:'6px 8px 10px',gap:4,maxWidth:500,margin:'0 auto'}}>
+      {/* Mobile bottom nav - Varianta 3: floating card */}
+        <div className="mob-bottom" style={{position:'fixed',bottom:0,left:0,right:0,zIndex:99,padding:'0 12px 16px',paddingBottom:'calc(16px + env(safe-area-inset-bottom,0px))'}}>
+          <div style={{background:'#fff',borderRadius:20,border:'1px solid #ebebf0',display:'flex',alignItems:'flex-end',padding:'8px 8px 10px',gap:0,boxShadow:'0 -2px 24px rgba(10,31,68,0.08)'}}>
             {[
               {href:'/home',label:'Acasă',icon:(active)=>(
-                <svg width="20" height="20" viewBox="0 0 24 24" fill={active?'#1a56db':'none'} stroke={active?'#1a56db':'#9ca3af'} strokeWidth="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+                <svg width="20" height="20" viewBox="0 0 24 24" fill={active?'#1a56db':'none'} stroke={active?'none':'#c4cdd8'} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M12 3L2 10v11h7v-6h6v6h7V10z"/></svg>
               )},
               {href:'/favorite',label:'Favorite',icon:(active)=>(
-                <svg width="20" height="20" viewBox="0 0 24 24" fill={active?'#1a56db':'none'} stroke={active?'#1a56db':'#9ca3af'} strokeWidth="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke={active?'#1a56db':'#c4cdd8'} strokeWidth="1.8" strokeLinecap="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
               )},
-              {href:'/search',label:'Caută',icon:(active)=>(
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke={active?'#1a56db':'#9ca3af'} strokeWidth="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+              {href:'__oferta__',label:'Ofertă',icon:()=>null},
+              {href:'/itp-rca',label:'RCA',icon:(active)=>(
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke={active?'#1a56db':'#c4cdd8'} strokeWidth="1.8" strokeLinecap="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><polyline points="9 12 11 14 15 10"/></svg>
               )},
-              {href:'/itp-rca',label:'ITP & RCA',icon:(active)=>(
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke={active?'#1a56db':'#9ca3af'} strokeWidth="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
-              )},
-              {href:user?'/account':'/auth/login',label:user?'Cont':'Intră',icon:(active)=>(
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke={active?'#1a56db':'#9ca3af'} strokeWidth="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+              {href:user?'/account':'/auth/login',label:'Cont',icon:(active)=>(
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke={active?'#1a56db':'#c4cdd8'} strokeWidth="1.8" strokeLinecap="round"><circle cx="12" cy="7" r="4"/><path d="M4 21v-1a8 8 0 0 1 16 0v1"/></svg>
               )},
             ].map(item=>{
-              const active = pathname===item.href||(item.href!=='/home'&&pathname?.startsWith(item.href.split('?')[0]))
+              if(item.href==='__oferta__') return (
+                <div key="oferta" style={{flex:1,display:'flex',flexDirection:'column',alignItems:'center',gap:4}}>
+                  <button onClick={()=>window.dispatchEvent(new CustomEvent('open-quote-modal'))}
+                    style={{width:56,height:56,background:'#1a56db',borderRadius:'50%',display:'flex',alignItems:'center',justifyContent:'center',marginTop:-30,border:'4px solid #f5f7fa',boxShadow:'0 6px 18px rgba(26,86,219,.3)',cursor:'pointer',outline:'none',flexShrink:0}}>
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2.5" strokeLinecap="round"><path d="M12 5v14M5 12h14"/></svg>
+                  </button>
+                  <span style={{fontSize:10,fontWeight:700,color:'#1a56db'}}>Ofertă</span>
+                </div>
+              )
+              const active = pathname===item.href
               return (
-                <a key={item.href} href={item.href}
-                  style={{flex:1,display:'flex',flexDirection:'column',alignItems:'center',gap:3,textDecoration:'none',padding:'6px 4px',borderRadius:12,background:active?'#eaf3ff':'transparent',transition:'background .15s'}}>
-                  {item.icon(active)}
-                  <span style={{fontSize:10,fontWeight:active?600:400,color:active?'#1a56db':'#9ca3af',fontFamily:"'DM Sans',sans-serif",whiteSpace:'nowrap'}}>{item.label}</span>
+                <a key={item.href} href={item.href} style={{flex:1,display:'flex',flexDirection:'column',alignItems:'center',gap:4,textDecoration:'none',padding:'4px 0'}}>
+                  <div style={{width:36,height:36,borderRadius:12,display:'flex',alignItems:'center',justifyContent:'center',background:active?'#eef3ff':'transparent'}}>
+                    {item.icon(active)}
+                  </div>
+                  <span style={{fontSize:10,fontWeight:active?700:400,color:active?'#1a56db':'#c4cdd8'}}>{item.label}</span>
                 </a>
               )
             })}
@@ -800,32 +808,40 @@ export default function GlobalLayout({ children }) {
         </div>
       )}
 
-      {/* Mobile bottom nav - Varianta 2: pill activ */}
-      <div className="mob-bottom" style={{position:'fixed',bottom:0,left:0,right:0,background:'rgba(255,255,255,0.97)',backdropFilter:'blur(12px)',borderTop:'1px solid #e5e7eb',zIndex:90,paddingBottom:'env(safe-area-inset-bottom,0px)'}}>
-        <div style={{display:'flex',padding:'6px 8px 10px',gap:4,maxWidth:500,margin:'0 auto'}}>
+      {/* Mobile bottom nav - Varianta 3: floating card */}
+      <div className="mob-bottom" style={{position:'fixed',bottom:0,left:0,right:0,zIndex:90,padding:'0 12px 16px',paddingBottom:'calc(16px + env(safe-area-inset-bottom,0px))'}}>
+        <div style={{background:'#fff',borderRadius:20,border:'1px solid #ebebf0',display:'flex',alignItems:'flex-end',padding:'8px 8px 10px',gap:0,boxShadow:'0 -2px 24px rgba(10,31,68,0.08)'}}>
           {[
             {href:'/home',label:'Acasă',icon:(active)=>(
-              <svg width="20" height="20" viewBox="0 0 24 24" fill={active?'#1a56db':'none'} stroke={active?'#1a56db':'#9ca3af'} strokeWidth="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+              <svg width="20" height="20" viewBox="0 0 24 24" fill={active?'#1a56db':'none'} stroke={active?'none':'#c4cdd8'} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M12 3L2 10v11h7v-6h6v6h7V10z"/></svg>
             )},
             {href:'/favorite',label:'Favorite',icon:(active)=>(
-              <svg width="20" height="20" viewBox="0 0 24 24" fill={active?'#1a56db':'none'} stroke={active?'#1a56db':'#9ca3af'} strokeWidth="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke={active?'#1a56db':'#c4cdd8'} strokeWidth="1.8" strokeLinecap="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
             )},
-            {href:'/search',label:'Caută',icon:(active)=>(
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke={active?'#1a56db':'#9ca3af'} strokeWidth="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+            {href:'__oferta__',label:'Ofertă',icon:()=>null},
+            {href:'/itp-rca',label:'RCA',icon:(active)=>(
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke={active?'#1a56db':'#c4cdd8'} strokeWidth="1.8" strokeLinecap="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><polyline points="9 12 11 14 15 10"/></svg>
             )},
-            {href:'/itp-rca',label:'ITP & RCA',icon:(active)=>(
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke={active?'#1a56db':'#9ca3af'} strokeWidth="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
-            )},
-            {href:user?'/account':'/auth/login',label:user?'Cont':'Intră',icon:(active)=>(
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke={active?'#1a56db':'#9ca3af'} strokeWidth="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+            {href:user?'/account':'/auth/login',label:'Cont',icon:(active)=>(
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke={active?'#1a56db':'#c4cdd8'} strokeWidth="1.8" strokeLinecap="round"><circle cx="12" cy="7" r="4"/><path d="M4 21v-1a8 8 0 0 1 16 0v1"/></svg>
             )},
           ].map(item=>{
+            if(item.href==='__oferta__') return (
+              <div key="oferta" style={{flex:1,display:'flex',flexDirection:'column',alignItems:'center',gap:4}}>
+                <button onClick={()=>window.dispatchEvent(new CustomEvent('open-quote-modal'))}
+                  style={{width:56,height:56,background:'#1a56db',borderRadius:'50%',display:'flex',alignItems:'center',justifyContent:'center',marginTop:-30,border:'4px solid #f5f7fa',boxShadow:'0 6px 18px rgba(26,86,219,.3)',cursor:'pointer',outline:'none',flexShrink:0}}>
+                  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2.5" strokeLinecap="round"><path d="M12 5v14M5 12h14"/></svg>
+                </button>
+                <span style={{fontSize:10,fontWeight:700,color:'#1a56db'}}>Ofertă</span>
+              </div>
+            )
             const active = pathname===item.href
             return (
-              <a key={item.href} href={item.href}
-                style={{flex:1,display:'flex',flexDirection:'column',alignItems:'center',gap:3,textDecoration:'none',padding:'6px 4px',borderRadius:12,background:active?'#eaf3ff':'transparent',transition:'background .15s'}}>
-                {item.icon(active)}
-                <span style={{fontSize:10,fontWeight:active?600:400,color:active?'#1a56db':'#9ca3af',fontFamily:"'DM Sans',sans-serif",whiteSpace:'nowrap'}}>{item.label}</span>
+              <a key={item.href} href={item.href} style={{flex:1,display:'flex',flexDirection:'column',alignItems:'center',gap:4,textDecoration:'none',padding:'4px 0'}}>
+                <div style={{width:36,height:36,borderRadius:12,display:'flex',alignItems:'center',justifyContent:'center',background:active?'#eef3ff':'transparent'}}>
+                  {item.icon(active)}
+                </div>
+                <span style={{fontSize:10,fontWeight:active?700:400,color:active?'#1a56db':'#c4cdd8'}}>{item.label}</span>
               </a>
             )
           })}
