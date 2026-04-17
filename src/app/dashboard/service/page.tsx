@@ -515,9 +515,9 @@ export default function ServiceDashboard() {
           .dash-sidebar{transform:translateX(-100%);position:fixed!important;z-index:200!important;height:100vh!important;top:0!important;width:260px!important}
           .dash-sidebar.open{transform:translateX(0)!important}
           .dash-overlay{display:block!important}
-          .dash-main{padding:14px 12px!important;padding-bottom:80px!important}
+          .dash-main{padding:14px 12px!important}
           .dash-hamburger{display:flex!important}
-          @media(max-width:768px){.dash-hamburger{display:none!important}}
+          @media(max-width:768px){.dash-hamburger{display:none!important}.dash-main{padding-bottom:92px!important}}
           .dash-hero{padding:16px!important;border-radius:14px!important}
           .dash-hero h1{font-size:18px!important}
           .dash-stats{grid-template-columns:repeat(2,1fr)!important;gap:8px!important}

@@ -159,66 +159,53 @@ export default function GlobalLayout({ children }) {
   if (isDashOnly) return (
     <>
       {children}
-      {/* Drawer mobile pentru dashboard */}
-      {drawerOpen&&(
-        <div onClick={()=>setDrawerOpen(false)} style={{position:'fixed',inset:0,background:'rgba(10,18,30,0.6)',zIndex:3000,display:'flex'}}>
-          <div onClick={e=>e.stopPropagation()} style={{width:280,background:'#fff',height:'100%',overflowY:'auto',display:'flex',flexDirection:'column'}}>
-            <div style={{padding:'20px 24px',borderBottom:'1px solid #e5e7eb',display:'flex',alignItems:'center',justifyContent:'space-between'}}>
-              <div style={{fontFamily:"'Sora',sans-serif",fontWeight:800,fontSize:16,color:'#0a1f44'}}>Reparo</div>
-              <button onClick={()=>setDrawerOpen(false)} style={{background:'none',border:'none',cursor:'pointer',fontSize:20,color:'#6b7280'}}>✕</button>
-            </div>
-            {user&&(
-              <div style={{padding:'16px 24px',borderBottom:'1px solid #e5e7eb'}}>
-                <div style={{fontWeight:700,fontSize:14,color:'#0a1f44'}}>{profile?.full_name||user.email}</div>
-                <div style={{fontSize:12,color:'#6b7280',marginTop:2}}>{user.email}</div>
-              </div>
-            )}
-            <div style={{flex:1,padding:'8px 0'}}>
-              {[
-                {href:'/dashboard/service',label:'🏠 Acasă'},
-                {href:'/dashboard/service?tab=Cereri',label:'📋 Cereri'},
-                {href:'/dashboard/service?tab=Programări',label:'📅 Programări'},
-                {href:'/dashboard/service?tab=Anunțuri',label:'📦 Anunțuri'},
-                {href:'/dashboard/service?tab=Recenzii',label:'⭐ Recenzii'},
-                {href:'/dashboard/service?tab=Setări',label:'⚙️ Setări'},
-              ].map(item=>(
-                <a key={item.href} href={item.href} onClick={()=>setDrawerOpen(false)}
-                  style={{display:'block',padding:'13px 24px',fontSize:14,fontWeight:500,color:'#0a1f44',textDecoration:'none',borderBottom:'1px solid #f3f4f6'}}>
-                  {item.label}
+      <style>{`
+        .dash-mob-nav{display:none}
+        @media(max-width:768px){
+          .dash-mob-nav{display:block!important}
+          .mob-bottom-dash{display:flex!important}
+        }
+      `}</style>
+      {/* Exact same bottom nav as homepage */}
+      <div className="dash-mob-nav" style={{display:'none'}}>
+        <div className="mob-bottom-dash" style={{display:'none',position:'fixed',bottom:0,left:0,right:0,zIndex:99,padding:'0 12px 16px',paddingBottom:'calc(16px + env(safe-area-inset-bottom,0px))'}}>
+          <div style={{background:'#fff',borderRadius:20,border:'1px solid #ebebf0',display:'flex',alignItems:'flex-end',padding:'8px 8px 10px',gap:0,boxShadow:'0 -2px 24px rgba(10,31,68,0.08)'}}>
+            {[
+              {href:'__menu__',label:'Meniu'},
+              {href:'/dashboard/service',label:'Acasă',icon:(active)=>(<svg width="20" height="20" viewBox="0 0 24 24" fill={active?'#1a56db':'none'} stroke={active?'none':'#c4cdd8'} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M12 3L2 10v11h7v-6h6v6h7V10z"/></svg>)},
+              {href:'__oferta__',label:'Ofertă',icon:()=>null},
+              {href:'/dashboard/service?tab=Cereri',label:'Cereri',icon:(active)=>(<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke={active?'#1a56db':'#c4cdd8'} strokeWidth="1.8" strokeLinecap="round"><path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2"/><rect x="9" y="3" width="6" height="4" rx="1"/></svg>)},
+              {href:'/dashboard/service?tab=Setări',label:'Setări',icon:(active)=>(<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke={active?'#1a56db':'#c4cdd8'} strokeWidth="1.8" strokeLinecap="round"><circle cx="12" cy="12" r="3"/><path d="M12 2v2m0 16v2M4.93 4.93l1.41 1.41m11.32 11.32 1.41 1.41M2 12h2m16 0h2M4.93 19.07l1.41-1.41m11.32-11.32 1.41-1.41"/></svg>)},
+            ].map(item=>{
+              if(item.href==='__menu__') return (
+                <div key="menu" style={{flex:1,display:'flex',flexDirection:'column',alignItems:'center',gap:4,cursor:'pointer',padding:'4px 0'}}
+                  onClick={()=>window.dispatchEvent(new CustomEvent('dash-open-sidebar'))}>
+                  <div style={{width:36,height:36,borderRadius:12,display:'flex',alignItems:'center',justifyContent:'center',background:'transparent'}}>
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#c4cdd8" strokeWidth="1.8" strokeLinecap="round"><path d="M4 6h16M4 12h16M4 18h16"/></svg>
+                  </div>
+                  <span style={{fontSize:10,fontWeight:400,color:'#c4cdd8'}}>Meniu</span>
+                </div>
+              )
+              if(item.href==='__oferta__') return (
+                <div key="oferta" style={{flex:1,display:'flex',flexDirection:'column',alignItems:'center',gap:4}}>
+                  <button onClick={()=>window.dispatchEvent(new CustomEvent('open-quote-modal'))}
+                    style={{width:56,height:56,background:'#1a56db',borderRadius:'50%',display:'flex',alignItems:'center',justifyContent:'center',marginTop:-24,border:'4px solid #fff',boxShadow:'0 6px 18px rgba(26,86,219,.3)',cursor:'pointer',outline:'none',flexShrink:0}}>
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2.5" strokeLinecap="round"><path d="M12 5v14M5 12h14"/></svg>
+                  </button>
+                  <span style={{fontSize:10,fontWeight:700,color:'#1a56db'}}>Ofertă</span>
+                </div>
+              )
+              const active = pathname===item.href || (item.href.includes('?tab=') && typeof window!=='undefined' && window.location.search.includes(item.href.split('?')[1]))
+              return (
+                <a key={item.href} href={item.href} style={{flex:1,display:'flex',flexDirection:'column',alignItems:'center',gap:4,textDecoration:'none',padding:'4px 0'}}>
+                  <div style={{width:36,height:36,borderRadius:12,display:'flex',alignItems:'center',justifyContent:'center',background:active?'#eef3ff':'transparent'}}>
+                    {item.icon(active)}
+                  </div>
+                  <span style={{fontSize:10,fontWeight:active?700:400,color:active?'#1a56db':'#c4cdd8'}}>{item.label}</span>
                 </a>
-              ))}
-            </div>
-            <div style={{padding:'16px 24px',borderTop:'1px solid #e5e7eb'}}>
-              <button onClick={async()=>{await supabase.auth.signOut();window.location.href='/home'}}
-                style={{width:'100%',padding:'10px',background:'#f1f5f9',color:'#475569',border:'none',borderRadius:10,fontSize:13,fontWeight:600,cursor:'pointer'}}>
-                Ieși din cont
-              </button>
-            </div>
+              )
+            })}
           </div>
-        </div>
-      )}
-      {/* Bottom nav mobile pentru dashboard */}
-      <style>{`.dash-mob-nav{display:none}@media(max-width:768px){.dash-mob-nav{display:flex!important}}`}</style>
-      <div className="dash-mob-nav" style={{position:'fixed',bottom:0,left:0,right:0,zIndex:200,background:'#0a1f44',borderTop:'1px solid rgba(255,255,255,0.1)',padding:'8px 0',paddingBottom:'calc(8px + env(safe-area-inset-bottom,0px))'}}>
-        <div style={{display:'flex',alignItems:'center',justifyContent:'space-around',width:'100%'}}>
-          <button onClick={()=>window.dispatchEvent(new CustomEvent('dash-open-sidebar'))} style={{background:'none',border:'none',cursor:'pointer',display:'flex',flexDirection:'column',alignItems:'center',gap:3,padding:'4px 12px'}}>
-            <div style={{display:'flex',flexDirection:'column',gap:3}}>
-              {[0,1,2].map(i=><span key={i} style={{display:'block',width:18,height:2,background:'rgba(255,255,255,0.8)',borderRadius:2}}/>)}
-            </div>
-            <span style={{fontSize:10,color:'rgba(255,255,255,0.6)'}}>Meniu</span>
-          </button>
-          {[
-            {href:'/dashboard/service',label:'Acasă',icon:'🏠'},
-            {href:'/dashboard/service',label:'Cereri',icon:'📋',tab:'Cereri'},
-            {href:'/dashboard/service',label:'Calendar',icon:'📅',tab:'Programări'},
-            {href:'/dashboard/service',label:'Setări',icon:'⚙️',tab:'Setări'},
-          ].map(item=>(
-            <a key={item.label} href={item.tab?`${item.href}?tab=${encodeURIComponent(item.tab)}`:item.href}
-              style={{display:'flex',flexDirection:'column',alignItems:'center',gap:3,padding:'4px 12px',textDecoration:'none'}}>
-              <span style={{fontSize:18}}>{item.icon}</span>
-              <span style={{fontSize:10,color:'rgba(255,255,255,0.6)'}}>{item.label}</span>
-            </a>
-          ))}
         </div>
       </div>
     </>
