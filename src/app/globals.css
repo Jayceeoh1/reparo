@@ -317,3 +317,72 @@ body {
   .section-pad { padding: 32px 16px !important; }
   .section-pad-lg { padding: 40px 16px !important; }
 }
+
+/* ═══════════════════════════════
+   RESPONSIVE GLOBAL — TOATE PAGINILE
+═══════════════════════════════ */
+
+/* Padding safe pe mobile pentru orice container cu padding mare */
+@media (max-width: 640px) {
+
+  /* Toate grid-urile 2-coloane devin 1 coloana */
+  [style*="gridTemplateColumns:'1fr 1fr'"],
+  [style*='gridTemplateColumns:"1fr 1fr"'] {
+    grid-template-columns: 1fr !important;
+  }
+
+  /* Padding lateral minim 16px pe orice container */
+  [style*="padding:'0 24px"],
+  [style*="padding:'40px 24px"],
+  [style*="padding:'48px 24px"],
+  [style*="padding:'60px 24px"] {
+    padding-left: 16px !important;
+    padding-right: 16px !important;
+  }
+
+  /* Card padding mic pe mobile */
+  [style*="padding:28"],
+  [style*="padding:'40px 48px"] {
+    padding: 18px !important;
+  }
+
+  /* Termeni / Confidentialitate */
+  .legal-card { padding: 20px 16px !important; }
+
+  /* Contact grid */
+  .cnt-grid { grid-template-columns: 1fr !important; }
+
+  /* Blog grid */
+  .blog-grid { grid-template-columns: 1fr !important; }
+
+  /* Despre stats */
+  .despre-stats { grid-template-columns: 1fr 1fr !important; }
+  .despre-team { grid-template-columns: 1fr !important; }
+
+  /* Service public profile */
+  .svc-profile-grid { grid-template-columns: 1fr !important; }
+  .svc-profile-sidebar { position: relative !important; top: 0 !important; }
+
+  /* Piese oferta */
+  .pi-grid-3 { grid-template-columns: 1fr !important; }
+  .pi-grid-2 { grid-template-columns: 1fr !important; }
+
+  /* Listing detail */
+  .listing-detail-grid { grid-template-columns: 1fr !important; }
+  .listing-detail-sidebar { position: relative !important; top: 0 !important; }
+
+  /* Dashboard service sidebar hidden on mobile */
+  .dash-sidebar { display: none !important; }
+  .dash-main { margin-left: 0 !important; }
+}
+
+/* ═══════════════════════════════
+   TABLET (641px - 900px)
+═══════════════════════════════ */
+@media (min-width: 641px) and (max-width: 900px) {
+  .pi-grid-3 { grid-template-columns: 1fr 1fr !important; }
+  .svc-profile-grid { grid-template-columns: 1fr !important; }
+  .svc-profile-sidebar { position: relative !important; top: 0 !important; }
+  .listing-detail-grid { grid-template-columns: 1fr !important; }
+  .listing-detail-sidebar { position: relative !important; top: 0 !important; }
+}

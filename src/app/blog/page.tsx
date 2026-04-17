@@ -34,7 +34,7 @@ export default function BlogPage() {
         </div>
 
         {/* Featured post */}
-        <div className="post-card" style={{background:S.navy,borderRadius:20,padding:'36px',marginBottom:24,cursor:'pointer',transition:'all .2s',display:'grid',gridTemplateColumns:'1fr auto',gap:24,alignItems:'center'}}>
+        <div className="post-card" style={{background:S.navy,borderRadius:20,padding:'36px',marginBottom:24,cursor:'pointer',transition:'all .2s',display:'grid',gridTemplateColumns:'1fr',gap:24,alignItems:'center'}}>
           <div>
             <div style={{display:'inline-block',background:'rgba(245,158,11,0.2)',color:S.yellow,fontSize:11,fontWeight:700,padding:'3px 10px',borderRadius:50,marginBottom:12,fontFamily:"'Sora',sans-serif"}}>📌 Articol recomandat</div>
             <h2 style={{fontFamily:"'Sora',sans-serif",fontWeight:800,fontSize:24,color:'#fff',marginBottom:10,letterSpacing:-0.3}}>{POSTS[0].title}</h2>
@@ -47,7 +47,7 @@ export default function BlogPage() {
         </div>
 
         {/* Grid */}
-        <div style={{display:'grid',gridTemplateColumns:'repeat(3,1fr)',gap:16}}>
+        <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fit,minmax(260px,1fr))',gap:16}}>
           {POSTS.slice(1).map(post=>(
             <div key={post.slug} className="post-card" style={{background:S.white,borderRadius:16,border:`1px solid ${S.border}`,padding:20,cursor:'pointer',transition:'all .2s',boxShadow:'0 2px 8px rgba(10,31,68,0.04)'}}>
               <div style={{width:48,height:48,background:'#eaf3ff',borderRadius:12,display:'flex',alignItems:'center',justifyContent:'center',fontSize:22,marginBottom:14}}>{post.icon}</div>

@@ -26,7 +26,7 @@ export default function ContactPage() {
         <p style={{color:'rgba(255,255,255,0.6)',fontSize:16,maxWidth:400,margin:'0 auto'}}>Suntem aici să te ajutăm. Răspundem în maxim 24 de ore.</p>
       </div>
 
-      <div style={{maxWidth:900,margin:'0 auto',padding:'0 24px 60px',display:'grid',gridTemplateColumns:'1fr 1fr',gap:20}}>
+      <div style={{maxWidth:900,margin:'0 auto',padding:'0 24px 60px',display:'grid',gridTemplateColumns:'repeat(auto-fit,minmax(280px,1fr))',gap:20}}>
         {/* Info */}
         <div>
           <div style={{background:S.white,borderRadius:20,border:`1px solid ${S.border}`,padding:28,boxShadow:'0 2px 12px rgba(10,31,68,0.06)',marginBottom:14}}>

@@ -23,7 +23,7 @@ export default function CarierePage() {
         {/* Beneficii */}
         <div style={{background:S.white,borderRadius:20,border:`1px solid ${S.border}`,padding:'32px',marginBottom:24,boxShadow:'0 2px 12px rgba(10,31,68,0.06)'}}>
           <h2 style={{fontFamily:"'Sora',sans-serif",fontWeight:700,fontSize:20,color:S.navy,marginBottom:20}}>De ce Reparo?</h2>
-          <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:16}}>
+          <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fit,minmax(240px,1fr))',gap:16}}>
             {[
               {icon:'🏠',title:'Remote-first',desc:'Lucrezi de oriunde din România'},
               {icon:'📈',title:'Stock options',desc:'Ești co-proprietar al succesului'},

@@ -22,7 +22,7 @@ export default function DesprePage() {
         </div>
 
         {/* Stats */}
-        <div style={{display:'grid',gridTemplateColumns:'repeat(4,1fr)',gap:14,marginBottom:20}}>
+        <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fit,minmax(140px,1fr))',gap:14,marginBottom:20}}>
           {[['2026','Anul fondării'],['2.400+','Service-uri'],['48.000+','Cereri trimise'],['4.8★','Rating mediu']].map(([v,l])=>(
             <div key={l} style={{background:S.white,borderRadius:16,border:`1px solid ${S.border}`,padding:'24px 16px',textAlign:'center',boxShadow:'0 2px 8px rgba(10,31,68,0.04)'}}>
               <div style={{fontFamily:"'Sora',sans-serif",fontWeight:800,fontSize:28,color:S.blue,marginBottom:4}}>{v}</div>
@@ -34,7 +34,7 @@ export default function DesprePage() {
         {/* Valori */}
         <div style={{background:S.white,borderRadius:20,border:`1px solid ${S.border}`,padding:'40px',marginBottom:20,boxShadow:'0 2px 12px rgba(10,31,68,0.06)'}}>
           <h2 style={{fontFamily:"'Sora',sans-serif",fontWeight:800,fontSize:24,color:S.navy,marginBottom:24}}>Valorile noastre</h2>
-          <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:20}}>
+          <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fit,minmax(260px,1fr))',gap:20}}>
             {[
               {icon:'🎯',title:'Transparență totală',desc:'Prețuri clare, fără comisioane ascunse. Ce vezi este ce plătești.'},
               {icon:'🤝',title:'Parteneriat real',desc:'Succesul service-urilor partenere este succesul nostru.'},

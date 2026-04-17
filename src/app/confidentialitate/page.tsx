@@ -6,7 +6,7 @@ export default function ConfidentialitatePage() {
     <div style={{fontFamily:"'DM Sans',sans-serif",background:S.bg,minHeight:'100vh'}}>
       <style>{`@import url('https://fonts.googleapis.com/css2?family=Sora:wght@700;800&family=DM+Sans:wght@400;500;600&display=swap')`}</style>
       <div style={{maxWidth:760,margin:'0 auto',padding:'48px 24px'}}>
-        <div style={{background:S.white,borderRadius:20,border:`1px solid ${S.border}`,padding:'40px 48px',boxShadow:'0 2px 20px rgba(10,31,68,0.06)'}}>
+        <div style={{background:S.white,borderRadius:20,border:`1px solid ${S.border}`,padding:'clamp(20px,4vw,40px) clamp(16px,4vw,48px)',boxShadow:'0 2px 20px rgba(10,31,68,0.06)'}}>
           <div style={{marginBottom:32}}>
             <a href="/" style={{fontSize:13,color:S.blue,textDecoration:'none',fontWeight:600}}>← Înapoi la Reparo</a>
             <h1 style={{fontFamily:"'Sora',sans-serif",fontWeight:800,fontSize:32,color:S.navy,margin:'16px 0 8px',letterSpacing:-0.5}}>Politica de Confidențialitate</h1>
