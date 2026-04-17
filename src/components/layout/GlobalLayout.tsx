@@ -15,7 +15,8 @@ const NAV_TABS = [
   { label: 'Anvelope', href: '/search?category=anvelope' },
   { label: 'Tractări', href: '/search?category=tractari' },
 ]
-const EXCLUDED = ['/auth/login', '/auth/register', '/dashboard/service', '/despre', '/blog', '/cariere', '/contact', '/termeni', '/confidentialitate', '/cookies']
+const EXCLUDED = ['/auth/login', '/auth/register', '/despre', '/blog', '/cariere', '/contact', '/termeni', '/confidentialitate', '/cookies']
+const DASH_ONLY = ['/dashboard/service']
 const CITIES = ['Toate orașele','Alba Iulia','Alexandria','Arad','Bacău','Baia Mare','Bistrița','Botoșani','Brăila','Brașov','București','Buzău','Cluj-Napoca','Constanța','Craiova','Deva','Focșani','Galați','Iași','Miercurea Ciuc','Oradea','Piatra Neamț','Pitești','Ploiești','Râmnicu Vâlcea','Satu Mare','Sibiu','Slatina','Slobozia','Suceava','Târgoviște','Târgu Jiu','Târgu Mureș','Timișoara','Tulcea','Zalău']
 
 const CAR_BRANDS = [
@@ -83,6 +84,7 @@ export default function GlobalLayout({ children }) {
   const pathname = usePathname()
   const supabase = createClient()
   const isExcluded = pathname === '/' || EXCLUDED.some(p => pathname?.startsWith(p))
+  const isDashOnly = DASH_ONLY.some(p => pathname?.startsWith(p))
   const isActive = (href) => pathname === href || (href !== '/home' && pathname?.startsWith(href.split('?')[0]))
 
   useEffect(() => {
@@ -153,6 +155,74 @@ export default function GlobalLayout({ children }) {
   }, [unreadCount])
 
   if (isExcluded) return <>{children}</>
+
+  if (isDashOnly) return (
+    <>
+      {children}
+      {/* Drawer mobile pentru dashboard */}
+      {drawerOpen&&(
+        <div onClick={()=>setDrawerOpen(false)} style={{position:'fixed',inset:0,background:'rgba(10,18,30,0.6)',zIndex:3000,display:'flex'}}>
+          <div onClick={e=>e.stopPropagation()} style={{width:280,background:'#fff',height:'100%',overflowY:'auto',display:'flex',flexDirection:'column'}}>
+            <div style={{padding:'20px 24px',borderBottom:'1px solid #e5e7eb',display:'flex',alignItems:'center',justifyContent:'space-between'}}>
+              <div style={{fontFamily:"'Sora',sans-serif",fontWeight:800,fontSize:16,color:'#0a1f44'}}>Reparo</div>
+              <button onClick={()=>setDrawerOpen(false)} style={{background:'none',border:'none',cursor:'pointer',fontSize:20,color:'#6b7280'}}>✕</button>
+            </div>
+            {user&&(
+              <div style={{padding:'16px 24px',borderBottom:'1px solid #e5e7eb'}}>
+                <div style={{fontWeight:700,fontSize:14,color:'#0a1f44'}}>{profile?.full_name||user.email}</div>
+                <div style={{fontSize:12,color:'#6b7280',marginTop:2}}>{user.email}</div>
+              </div>
+            )}
+            <div style={{flex:1,padding:'8px 0'}}>
+              {[
+                {href:'/dashboard/service',label:'🏠 Acasă'},
+                {href:'/dashboard/service?tab=Cereri',label:'📋 Cereri'},
+                {href:'/dashboard/service?tab=Programări',label:'📅 Programări'},
+                {href:'/dashboard/service?tab=Anunțuri',label:'📦 Anunțuri'},
+                {href:'/dashboard/service?tab=Recenzii',label:'⭐ Recenzii'},
+                {href:'/dashboard/service?tab=Setări',label:'⚙️ Setări'},
+              ].map(item=>(
+                <a key={item.href} href={item.href} onClick={()=>setDrawerOpen(false)}
+                  style={{display:'block',padding:'13px 24px',fontSize:14,fontWeight:500,color:'#0a1f44',textDecoration:'none',borderBottom:'1px solid #f3f4f6'}}>
+                  {item.label}
+                </a>
+              ))}
+            </div>
+            <div style={{padding:'16px 24px',borderTop:'1px solid #e5e7eb'}}>
+              <button onClick={async()=>{await supabase.auth.signOut();window.location.href='/home'}}
+                style={{width:'100%',padding:'10px',background:'#f1f5f9',color:'#475569',border:'none',borderRadius:10,fontSize:13,fontWeight:600,cursor:'pointer'}}>
+                Ieși din cont
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+      {/* Bottom nav mobile pentru dashboard */}
+      <style>{`.dash-mob-nav{display:none}@media(max-width:768px){.dash-mob-nav{display:flex!important}}`}</style>
+      <div className="dash-mob-nav" style={{position:'fixed',bottom:0,left:0,right:0,zIndex:200,background:'#0a1f44',borderTop:'1px solid rgba(255,255,255,0.1)',padding:'8px 0',paddingBottom:'calc(8px + env(safe-area-inset-bottom,0px))'}}>
+        <div style={{display:'flex',alignItems:'center',justifyContent:'space-around',width:'100%'}}>
+          <button onClick={()=>setDrawerOpen(o=>!o)} style={{background:'none',border:'none',cursor:'pointer',display:'flex',flexDirection:'column',alignItems:'center',gap:3,padding:'4px 12px'}}>
+            <div style={{display:'flex',flexDirection:'column',gap:3}}>
+              {[0,1,2].map(i=><span key={i} style={{display:'block',width:18,height:2,background:'rgba(255,255,255,0.8)',borderRadius:2}}/>)}
+            </div>
+            <span style={{fontSize:10,color:'rgba(255,255,255,0.6)'}}>Meniu</span>
+          </button>
+          {[
+            {href:'/dashboard/service',label:'Acasă',icon:'🏠'},
+            {href:'/dashboard/service',label:'Cereri',icon:'📋',tab:'Cereri'},
+            {href:'/dashboard/service',label:'Calendar',icon:'📅',tab:'Programări'},
+            {href:'/dashboard/service',label:'Setări',icon:'⚙️',tab:'Setări'},
+          ].map(item=>(
+            <a key={item.label} href={item.tab?`${item.href}?tab=${encodeURIComponent(item.tab)}`:item.href}
+              style={{display:'flex',flexDirection:'column',alignItems:'center',gap:3,padding:'4px 12px',textDecoration:'none'}}>
+              <span style={{fontSize:18}}>{item.icon}</span>
+              <span style={{fontSize:10,color:'rgba(255,255,255,0.6)'}}>{item.label}</span>
+            </a>
+          ))}
+        </div>
+      </div>
+    </>
+  )
 
   return (
     <>
