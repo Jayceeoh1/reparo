@@ -1,7 +1,6 @@
 // @ts-nocheck
 'use client'
 import React, { useEffect, useState, useRef } from 'react'
-import { useSearchParams } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 
 const S = {
@@ -305,8 +304,7 @@ function MapPicker({ address, city, onAddressChange }) {
 }
 
 export default function ServiceDashboard() {
-  const searchParams = useSearchParams()
-  const [tab, setTab] = useState(searchParams?.get('tab') || 'Acasă')
+  const [tab, setTab] = useState('Acasă')
   const [service, setService] = useState(null)
   const [requests, setRequests] = useState([])
   const [appointments, setAppointments] = useState([])
@@ -332,11 +330,14 @@ export default function ServiceDashboard() {
   const supabase = createClient()
   const today = new Date().toISOString().split('T')[0]
 
-  // Sync tab from URL query param
+  // Sync tab from URL query param (reads ?tab= on mount)
   useEffect(() => {
-    const t = searchParams?.get('tab')
-    if (t) setTab(t)
-  }, [searchParams])
+    if (typeof window !== 'undefined') {
+      const params = new URLSearchParams(window.location.search)
+      const t = params.get('tab')
+      if (t) setTab(t)
+    }
+  }, [])
 
   // Listen for mobile hamburger from GlobalLayout bottom nav
   useEffect(() => {
