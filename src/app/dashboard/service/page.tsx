@@ -1,6 +1,7 @@
 // @ts-nocheck
 'use client'
 import React, { useEffect, useState, useRef } from 'react'
+import { useSearchParams } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 
 const S = {
@@ -304,7 +305,8 @@ function MapPicker({ address, city, onAddressChange }) {
 }
 
 export default function ServiceDashboard() {
-  const [tab, setTab] = useState('Acasă')
+  const searchParams = useSearchParams()
+  const [tab, setTab] = useState(searchParams?.get('tab') || 'Acasă')
   const [service, setService] = useState(null)
   const [requests, setRequests] = useState([])
   const [appointments, setAppointments] = useState([])
@@ -329,6 +331,19 @@ export default function ServiceDashboard() {
   const [pf, setPf] = useState({name:'',description:'',phone:'',email:'',website:'',facebook_url:'',address:'',city:'',county:'',postal_code:'',brands_accepted:[],fuel_types:[],min_year_accepted:'',is_authorized_rar:false,has_itp:false,warranty_months:'0',is_multibrand:true,is_dismantling:false,opening_hours:{Lu:'08:00-18:00',Ma:'08:00-18:00',Mi:'08:00-18:00',Jo:'08:00-18:00',Vi:'08:00-18:00',Sâ:'09:00-14:00',Du:'Închis'}})
   const supabase = createClient()
   const today = new Date().toISOString().split('T')[0]
+
+  // Sync tab from URL query param
+  useEffect(() => {
+    const t = searchParams?.get('tab')
+    if (t) setTab(t)
+  }, [searchParams])
+
+  // Listen for mobile hamburger from GlobalLayout bottom nav
+  useEffect(() => {
+    const handler = () => setSidebarOpen(o => !o)
+    window.addEventListener('dash-open-sidebar', handler)
+    return () => window.removeEventListener('dash-open-sidebar', handler)
+  }, [])
 
   async function addManualAppointment() {
     if (!newApt.scheduled_date||!newApt.scheduled_time) return
@@ -500,6 +515,8 @@ export default function ServiceDashboard() {
           .dash-sidebar.open{transform:translateX(0)!important}
           .dash-overlay{display:block!important}
           .dash-main{padding:14px 12px!important;padding-bottom:80px!important}
+          .dash-hamburger{display:flex!important}
+          @media(max-width:768px){.dash-hamburger{display:none!important}}
           .dash-hero{padding:16px!important;border-radius:14px!important}
           .dash-hero h1{font-size:18px!important}
           .dash-stats{grid-template-columns:repeat(2,1fr)!important;gap:8px!important}
@@ -528,7 +545,7 @@ export default function ServiceDashboard() {
 
       {/* TOP BAR */}
       <div style={{background:S.navy,height:56,display:'flex',alignItems:'center',padding:'0 24px',position:'sticky',top:0,zIndex:100,gap:12}}>
-        <button onClick={()=>setSidebarOpen(o=>!o)} style={{background:'none',border:'none',cursor:'pointer',padding:4,display:'flex',flexDirection:'column',gap:4,flexShrink:0}}>
+        <button onClick={()=>setSidebarOpen(o=>!o)} className="dash-hamburger" style={{background:'none',border:'none',cursor:'pointer',padding:4,display:'flex',flexDirection:'column',gap:4,flexShrink:0}}>
           {[0,1,2].map(i=><span key={i} style={{display:'block',width:18,height:2,background:'rgba(255,255,255,0.7)',borderRadius:2}}/>)}
         </button>
         <a href="/home" style={{display:'flex',alignItems:'center',gap:7,textDecoration:'none',flexShrink:0}}>

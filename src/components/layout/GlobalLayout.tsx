@@ -201,7 +201,7 @@ export default function GlobalLayout({ children }) {
       <style>{`.dash-mob-nav{display:none}@media(max-width:768px){.dash-mob-nav{display:flex!important}}`}</style>
       <div className="dash-mob-nav" style={{position:'fixed',bottom:0,left:0,right:0,zIndex:200,background:'#0a1f44',borderTop:'1px solid rgba(255,255,255,0.1)',padding:'8px 0',paddingBottom:'calc(8px + env(safe-area-inset-bottom,0px))'}}>
         <div style={{display:'flex',alignItems:'center',justifyContent:'space-around',width:'100%'}}>
-          <button onClick={()=>setDrawerOpen(o=>!o)} style={{background:'none',border:'none',cursor:'pointer',display:'flex',flexDirection:'column',alignItems:'center',gap:3,padding:'4px 12px'}}>
+          <button onClick={()=>window.dispatchEvent(new CustomEvent('dash-open-sidebar'))} style={{background:'none',border:'none',cursor:'pointer',display:'flex',flexDirection:'column',alignItems:'center',gap:3,padding:'4px 12px'}}>
             <div style={{display:'flex',flexDirection:'column',gap:3}}>
               {[0,1,2].map(i=><span key={i} style={{display:'block',width:18,height:2,background:'rgba(255,255,255,0.8)',borderRadius:2}}/>)}
             </div>
