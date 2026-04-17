@@ -45,10 +45,15 @@ export default function ServiceProfilePage({ params }: { params: { id: string } 
   async function submitReview() {
     if (!user) { window.location.href = '/auth/login'; return }
     setSubmittingReview(true)
-    const { data } = await supabase.from('reviews').insert({
+    const { data, error } = await supabase.from('reviews').insert({
       service_id: params.id, user_id: user.id,
       rating: reviewForm.rating, title: reviewForm.title, body: reviewForm.body,
     }).select('*, profiles(full_name)').single()
+    if (error) {
+      alert('Eroare la salvare recenzie: ' + error.message)
+      setSubmittingReview(false)
+      return
+    }
     if (data) setReviews(prev => [data, ...prev])
     setShowReviewForm(false)
     setReviewForm({ rating: 5, title: '', body: '' })
