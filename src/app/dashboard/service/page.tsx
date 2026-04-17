@@ -324,6 +324,9 @@ export default function ServiceDashboard() {
   const [showAddApt, setShowAddApt] = useState(false)
   const [newApt, setNewApt] = useState({client_name:'',car_info:'',scheduled_date:'',scheduled_time:'',duration_min:'60',work_description:'',notes:''})
   const [addingApt, setAddingApt] = useState(false)
+  const [pf, setPf] = useState({name:'',description:'',phone:'',email:'',website:'',facebook_url:'',address:'',city:'',county:'',postal_code:'',brands_accepted:[],fuel_types:[],min_year_accepted:'',is_authorized_rar:false,has_itp:false,warranty_months:'0',is_multibrand:true,is_dismantling:false,opening_hours:{Lu:'08:00-18:00',Ma:'08:00-18:00',Mi:'08:00-18:00',Jo:'08:00-18:00',Vi:'08:00-18:00',Sâ:'09:00-14:00',Du:'Închis'}})
+  const supabase = createClient()
+  const today = new Date().toISOString().split('T')[0]
 
   async function addManualAppointment() {
     if (!newApt.scheduled_date||!newApt.scheduled_time) return
@@ -347,10 +350,6 @@ export default function ServiceDashboard() {
     }
     setAddingApt(false)
   }
-  const [pf, setPf] = useState({name:'',description:'',phone:'',email:'',website:'',facebook_url:'',address:'',city:'',county:'',postal_code:'',brands_accepted:[],fuel_types:[],min_year_accepted:'',is_authorized_rar:false,has_itp:false,warranty_months:'0',is_multibrand:true,is_dismantling:false,opening_hours:{Lu:'08:00-18:00',Ma:'08:00-18:00',Mi:'08:00-18:00',Jo:'08:00-18:00',Vi:'08:00-18:00',Sâ:'09:00-14:00',Du:'Închis'}})
-  const supabase = createClient()
-  const today = new Date().toISOString().split('T')[0]
-
   useEffect(() => {
     async function load() {
       const { data: { user } } = await supabase.auth.getUser()
