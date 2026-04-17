@@ -160,52 +160,43 @@ export default function GlobalLayout({ children }) {
     <>
       {children}
       <style>{`
-        .dash-mob-nav{display:none}
-        @media(max-width:768px){
-          .dash-mob-nav{display:block!important}
-          .mob-bottom-dash{display:flex!important}
-        }
+        .mob-bottom-dash{display:none!important}
+        @media(max-width:768px){.mob-bottom-dash{display:block!important}}
       `}</style>
-      {/* Exact same bottom nav as homepage */}
-      <div className="dash-mob-nav" style={{display:'none'}}>
-        <div className="mob-bottom-dash" style={{display:'none',position:'fixed',bottom:0,left:0,right:0,zIndex:99,padding:'0 12px 16px',paddingBottom:'calc(16px + env(safe-area-inset-bottom,0px))'}}>
-          <div style={{background:'#fff',borderRadius:20,border:'1px solid #ebebf0',display:'flex',alignItems:'flex-end',padding:'8px 8px 10px',gap:0,boxShadow:'0 -2px 24px rgba(10,31,68,0.08)'}}>
-            {[
-              {href:'__menu__',label:'Meniu'},
-              {href:'/dashboard/service',label:'Acasă',icon:(active)=>(<svg width="20" height="20" viewBox="0 0 24 24" fill={active?'#1a56db':'none'} stroke={active?'none':'#c4cdd8'} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M12 3L2 10v11h7v-6h6v6h7V10z"/></svg>)},
-              {href:'__oferta__',label:'Ofertă',icon:()=>null},
-              {href:'/dashboard/service?tab=Cereri',label:'Cereri',icon:(active)=>(<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke={active?'#1a56db':'#c4cdd8'} strokeWidth="1.8" strokeLinecap="round"><path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2"/><rect x="9" y="3" width="6" height="4" rx="1"/></svg>)},
-              {href:'/dashboard/service?tab=Setări',label:'Setări',icon:(active)=>(<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke={active?'#1a56db':'#c4cdd8'} strokeWidth="1.8" strokeLinecap="round"><circle cx="12" cy="12" r="3"/><path d="M12 2v2m0 16v2M4.93 4.93l1.41 1.41m11.32 11.32 1.41 1.41M2 12h2m16 0h2M4.93 19.07l1.41-1.41m11.32-11.32 1.41-1.41"/></svg>)},
-            ].map(item=>{
-              if(item.href==='__menu__') return (
-                <div key="menu" style={{flex:1,display:'flex',flexDirection:'column',alignItems:'center',gap:4,cursor:'pointer',padding:'4px 0'}}
-                  onClick={()=>window.dispatchEvent(new CustomEvent('dash-open-sidebar'))}>
-                  <div style={{width:36,height:36,borderRadius:12,display:'flex',alignItems:'center',justifyContent:'center',background:'transparent'}}>
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#c4cdd8" strokeWidth="1.8" strokeLinecap="round"><path d="M4 6h16M4 12h16M4 18h16"/></svg>
-                  </div>
-                  <span style={{fontSize:10,fontWeight:400,color:'#c4cdd8'}}>Meniu</span>
-                </div>
-              )
-              if(item.href==='__oferta__') return (
-                <div key="oferta" style={{flex:1,display:'flex',flexDirection:'column',alignItems:'center',gap:4}}>
-                  <button onClick={()=>window.dispatchEvent(new CustomEvent('open-quote-modal'))}
-                    style={{width:56,height:56,background:'#1a56db',borderRadius:'50%',display:'flex',alignItems:'center',justifyContent:'center',marginTop:-24,border:'4px solid #fff',boxShadow:'0 6px 18px rgba(26,86,219,.3)',cursor:'pointer',outline:'none',flexShrink:0}}>
-                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2.5" strokeLinecap="round"><path d="M12 5v14M5 12h14"/></svg>
-                  </button>
-                  <span style={{fontSize:10,fontWeight:700,color:'#1a56db'}}>Ofertă</span>
-                </div>
-              )
-              const active = pathname===item.href || (item.href.includes('?tab=') && typeof window!=='undefined' && window.location.search.includes(item.href.split('?')[1]))
-              return (
-                <a key={item.href} href={item.href} style={{flex:1,display:'flex',flexDirection:'column',alignItems:'center',gap:4,textDecoration:'none',padding:'4px 0'}}>
-                  <div style={{width:36,height:36,borderRadius:12,display:'flex',alignItems:'center',justifyContent:'center',background:active?'#eef3ff':'transparent'}}>
-                    {item.icon(active)}
-                  </div>
-                  <span style={{fontSize:10,fontWeight:active?700:400,color:active?'#1a56db':'#c4cdd8'}}>{item.label}</span>
-                </a>
-              )
-            })}
+      <div className="mob-bottom-dash" style={{position:'fixed',bottom:0,left:0,right:0,zIndex:99,padding:'0 12px 16px',paddingBottom:'calc(16px + env(safe-area-inset-bottom,0px))'}}>
+        <div style={{background:'#fff',borderRadius:20,border:'1px solid #ebebf0',display:'flex',alignItems:'flex-end',padding:'8px 8px 10px',gap:0,boxShadow:'0 -2px 24px rgba(10,31,68,0.08)'}}>
+          <div style={{flex:1,display:'flex',flexDirection:'column',alignItems:'center',gap:4,cursor:'pointer',padding:'4px 0'}}
+            onClick={()=>window.dispatchEvent(new CustomEvent('dash-open-sidebar'))}>
+            <div style={{width:36,height:36,borderRadius:12,display:'flex',alignItems:'center',justifyContent:'center'}}>
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#c4cdd8" strokeWidth="1.8" strokeLinecap="round"><path d="M4 6h16M4 12h16M4 18h16"/></svg>
+            </div>
+            <span style={{fontSize:10,fontWeight:400,color:'#c4cdd8'}}>Meniu</span>
           </div>
+          <a href="/dashboard/service" style={{flex:1,display:'flex',flexDirection:'column',alignItems:'center',gap:4,textDecoration:'none',padding:'4px 0'}}>
+            <div style={{width:36,height:36,borderRadius:12,display:'flex',alignItems:'center',justifyContent:'center',background:pathname==='/dashboard/service'&&(!pathname.includes('tab'))?'#eef3ff':'transparent'}}>
+              <svg width="20" height="20" viewBox="0 0 24 24" fill={pathname==='/dashboard/service'?'#1a56db':'none'} stroke={pathname==='/dashboard/service'?'none':'#c4cdd8'} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M12 3L2 10v11h7v-6h6v6h7V10z"/></svg>
+            </div>
+            <span style={{fontSize:10,fontWeight:400,color:'#c4cdd8'}}>Acasă</span>
+          </a>
+          <div style={{flex:1,display:'flex',flexDirection:'column',alignItems:'center',gap:4}}>
+            <button onClick={()=>window.dispatchEvent(new CustomEvent('open-quote-modal'))}
+              style={{width:56,height:56,background:'#1a56db',borderRadius:'50%',display:'flex',alignItems:'center',justifyContent:'center',marginTop:-24,border:'4px solid #fff',boxShadow:'0 6px 18px rgba(26,86,219,.3)',cursor:'pointer',outline:'none',flexShrink:0}}>
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2.5" strokeLinecap="round"><path d="M12 5v14M5 12h14"/></svg>
+            </button>
+            <span style={{fontSize:10,fontWeight:700,color:'#1a56db'}}>Ofertă</span>
+          </div>
+          <a href="/dashboard/service?tab=Cereri" style={{flex:1,display:'flex',flexDirection:'column',alignItems:'center',gap:4,textDecoration:'none',padding:'4px 0'}}>
+            <div style={{width:36,height:36,borderRadius:12,display:'flex',alignItems:'center',justifyContent:'center'}}>
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#c4cdd8" strokeWidth="1.8" strokeLinecap="round"><path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2"/><rect x="9" y="3" width="6" height="4" rx="1"/></svg>
+            </div>
+            <span style={{fontSize:10,fontWeight:400,color:'#c4cdd8'}}>Cereri</span>
+          </a>
+          <a href="/dashboard/service?tab=Setări" style={{flex:1,display:'flex',flexDirection:'column',alignItems:'center',gap:4,textDecoration:'none',padding:'4px 0'}}>
+            <div style={{width:36,height:36,borderRadius:12,display:'flex',alignItems:'center',justifyContent:'center'}}>
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#c4cdd8" strokeWidth="1.8" strokeLinecap="round"><circle cx="12" cy="12" r="3"/><path d="M12 2v2m0 16v2M4.93 4.93l1.41 1.41m11.32 11.32 1.41 1.41M2 12h2m16 0h2M4.93 19.07l1.41-1.41m11.32-11.32 1.41-1.41"/></svg>
+            </div>
+            <span style={{fontSize:10,fontWeight:400,color:'#c4cdd8'}}>Setări</span>
+          </a>
         </div>
       </div>
     </>
