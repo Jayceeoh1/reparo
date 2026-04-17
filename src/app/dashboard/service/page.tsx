@@ -517,6 +517,7 @@ export default function ServiceDashboard() {
         .apt-btn:hover{border-color:${S.blue}!important;color:${S.blue}!important}
         @media(max-width:768px){
           .dash-main{padding:14px 12px!important;padding-bottom:100px!important}
+          .apt-layout{grid-template-columns:1fr!important}
           .dash-hero{padding:16px!important;border-radius:14px!important}
           .dash-hero h1{font-size:18px!important}
           .dash-stats{grid-template-columns:repeat(2,1fr)!important;gap:8px!important}
@@ -1200,7 +1201,7 @@ export default function ServiceDashboard() {
                 </div>
               )}
 
-              <div style={{display:'grid',gridTemplateColumns:'300px 1fr',gap:16}}>
+              <div className="apt-layout" style={{display:'grid',gridTemplateColumns:'300px 1fr',gap:16}}>
                 {/* Mini calendar */}
                 <div>
                   <div style={card({marginBottom:12})}>
