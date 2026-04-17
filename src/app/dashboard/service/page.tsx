@@ -512,12 +512,11 @@ export default function ServiceDashboard() {
         .card-hover:hover{border-color:${S.blueLight}!important;box-shadow:0 4px 20px rgba(26,86,219,0.1)!important}
         .apt-btn:hover{border-color:${S.blue}!important;color:${S.blue}!important}
         @media(max-width:768px){
-          .dash-sidebar{transform:translateX(-100%);position:fixed!important;z-index:200!important;height:100vh!important;top:0!important;width:260px!important}
+          .dash-sidebar{transform:translateX(-100%);position:fixed!important;z-index:200!important;height:100vh!important;top:0!important;width:260px!important;transition:transform .25s ease!important}
           .dash-sidebar.open{transform:translateX(0)!important}
           .dash-overlay{display:block!important}
-          .dash-main{padding:14px 12px!important}
-          .dash-hamburger{display:flex!important}
-          @media(max-width:768px){.dash-hamburger{display:none!important}.dash-main{padding-bottom:92px!important}}
+          .dash-main{padding:14px 12px!important;padding-bottom:92px!important}
+          .dash-hamburger{display:none!important}
           .dash-hero{padding:16px!important;border-radius:14px!important}
           .dash-hero h1{font-size:18px!important}
           .dash-stats{grid-template-columns:repeat(2,1fr)!important;gap:8px!important}
@@ -601,7 +600,7 @@ export default function ServiceDashboard() {
         </aside>
 
         {/* Overlay mobile */}
-        {sidebarOpen&&<div onClick={()=>setSidebarOpen(false)} style={{position:'fixed',inset:0,background:'rgba(10,31,68,0.4)',zIndex:199,display:'none'}} className="dash-overlay"/>}
+        {sidebarOpen&&<div onClick={()=>setSidebarOpen(false)} style={{position:'fixed',inset:0,background:'rgba(10,31,68,0.4)',zIndex:199}} className="dash-overlay"/>}
 
         {/* MAIN */}
         <main className="dash-main" style={{flex:1,overflowY:'auto',padding:'24px',minWidth:0}}>
