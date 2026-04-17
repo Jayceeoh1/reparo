@@ -474,18 +474,16 @@ export default function ServiceDashboard() {
     {name:'Setări',icon:'⚙️',badge:null},
   ]
 
-  if (loading) return (
-    <div style={{minHeight:'100vh',display:'flex',alignItems:'center',justifyContent:'center',background:S.bg,fontFamily:"'DM Sans',sans-serif"}}>
-      <div style={{textAlign:'center'}}>
-        <div style={{width:40,height:40,border:`3px solid ${S.blue}`,borderTopColor:'transparent',borderRadius:'50%',animation:'spin 1s linear infinite',margin:'0 auto 12px'}}/>
-        <div style={{color:S.muted,fontSize:14}}>Se încarcă...</div>
-        <style>{`@keyframes spin{to{transform:rotate(360deg)}}`}</style>
-      </div>
-    </div>
-  )
-
   return (
     <div style={{minHeight:'100vh',background:S.bg,fontFamily:"'DM Sans',sans-serif",display:'flex',flexDirection:'column'}}>
+      {loading&&(
+        <div style={{position:'fixed',inset:0,background:S.bg,display:'flex',alignItems:'center',justifyContent:'center',zIndex:9999}}>
+          <div style={{textAlign:'center'}}>
+            <div style={{width:40,height:40,border:`3px solid ${S.blue}`,borderTopColor:'transparent',borderRadius:'50%',animation:'spin 1s linear infinite',margin:'0 auto 12px'}}/>
+            <div style={{color:S.muted,fontSize:14}}>Se încarcă...</div>
+          </div>
+        </div>
+      )}
       <style>{`
         @keyframes spin{to{transform:rotate(360deg)}}
         .dash-input:focus{border-color:${S.blue}!important;box-shadow:0 0 0 3px rgba(26,86,219,0.1)!important}
