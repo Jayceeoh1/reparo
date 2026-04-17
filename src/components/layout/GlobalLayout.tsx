@@ -67,6 +67,7 @@ const CAR_MODELS: Record<string, string[]> = {
 export default function GlobalLayout({ children }) {
   const [user, setUser] = useState(null)
   const [profile, setProfile] = useState(null)
+  const [hasService, setHasService] = useState(false)
   const [drawerOpen, setDrawerOpen] = useState(false)
   const [notifOpen, setNotifOpen] = useState(false)
   const notifRef = useRef(null)
@@ -96,9 +97,30 @@ export default function GlobalLayout({ children }) {
   useEffect(() => {
     supabase.auth.getUser().then(({ data: { user } }) => {
       setUser(user)
-      if (user) supabase.from('profiles').select('role,full_name').eq('id', user.id).single().then(({ data }) => setProfile(data))
+      if (user) {
+        supabase.from('profiles').select('role,full_name').eq('id', user.id).single().then(({ data }) => {
+          setProfile(data)
+          if (data?.role !== 'user') {
+            supabase.from('services').select('id').eq('owner_id', user.id).single().then(({ data: svc }) => setHasService(!!svc))
+          }
+        })
+      }
     })
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_e, s) => setUser(s?.user ?? null))
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_e, s) => {
+      const u = s?.user ?? null
+      setUser(u)
+      if (u) {
+        supabase.from('profiles').select('role').eq('id', u.id).single().then(({ data }) => {
+          if (data?.role === 'user') {
+            setHasService(false)
+          } else {
+            supabase.from('services').select('id').eq('owner_id', u.id).single().then(({ data: svc }) => setHasService(!!svc))
+          }
+        })
+      } else {
+        setHasService(false)
+      }
+    })
     return () => subscription.unsubscribe()
   }, [])
 
@@ -254,20 +276,29 @@ export default function GlobalLayout({ children }) {
               )}
               {user?(
                 <>
-                  <a href="/account" style={{padding:'8px 14px',borderRadius:50,fontSize:13,fontWeight:600,color:'var(--navy)',textDecoration:'none',fontFamily:"'Sora',sans-serif",transition:'color .15s'}}
-                    onMouseEnter={e=>e.currentTarget.style.color='var(--blue)'}
-                    onMouseLeave={e=>e.currentTarget.style.color='var(--navy)'}>Contul meu</a>
+                  {/* Contul meu — doar pentru clienti */}
+                  {!hasService&&(
+                    <a href="/account" style={{padding:'8px 14px',borderRadius:50,fontSize:13,fontWeight:600,color:'var(--navy)',textDecoration:'none',fontFamily:"'Sora',sans-serif",transition:'color .15s'}}
+                      onMouseEnter={e=>e.currentTarget.style.color='var(--blue)'}
+                      onMouseLeave={e=>e.currentTarget.style.color='var(--navy)'}>Contul meu</a>
+                  )}
                   <a href="/messages" title="Mesaje"
                     style={{width:36,height:36,borderRadius:10,background:'#f0f6ff',border:'1.5px solid var(--border)',cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'center',fontSize:17,textDecoration:'none',transition:'background .15s'}}
                     onMouseEnter={e=>e.currentTarget.style.background='#dbeafe'}
                     onMouseLeave={e=>e.currentTarget.style.background='#f0f6ff'}>
                     💬
                   </a>
-                  <a href="/oferte" style={{padding:'8px 14px',borderRadius:50,fontSize:13,fontWeight:600,color:'var(--navy)',textDecoration:'none',fontFamily:"'Sora',sans-serif"}}
-                    onMouseEnter={e=>e.currentTarget.style.color='var(--blue)'}
-                    onMouseLeave={e=>e.currentTarget.style.color='var(--navy)'}>Oferte</a>
-                  {profile?.role==='service'&&(
-                    <a href="/dashboard/service" style={{padding:'8px 16px',borderRadius:50,fontSize:13,fontWeight:600,background:'var(--bg)',color:'var(--blue)',textDecoration:'none',border:'1.5px solid var(--blue)',fontFamily:"'Sora',sans-serif"}}>Dashboard</a>
+                  {/* Oferte — doar pentru clienti */}
+                  {!hasService&&(
+                    <a href="/oferte" style={{padding:'8px 14px',borderRadius:50,fontSize:13,fontWeight:600,color:'var(--navy)',textDecoration:'none',fontFamily:"'Sora',sans-serif"}}
+                      onMouseEnter={e=>e.currentTarget.style.color='var(--blue)'}
+                      onMouseLeave={e=>e.currentTarget.style.color='var(--navy)'}>Oferte</a>
+                  )}
+                  {/* Dashboard — doar pentru service */}
+                  {hasService&&(
+                    <a href="/dashboard/service" style={{padding:'8px 16px',borderRadius:50,fontSize:13,fontWeight:700,background:'#eaf3ff',color:'var(--blue)',textDecoration:'none',border:'1.5px solid var(--blue)',fontFamily:"'Sora',sans-serif"}}>
+                      Dashboard →
+                    </a>
                   )}
                   <button onClick={async()=>{await supabase.auth.signOut();window.location.href='/home'}}
                     style={{padding:'9px 18px',borderRadius:10,fontSize:13,fontWeight:600,background:'#f1f5f9',color:'#475569',border:'none',cursor:'pointer',fontFamily:"'DM Sans',sans-serif",transition:'background .15s'}}
@@ -282,12 +313,6 @@ export default function GlobalLayout({ children }) {
                   <a href="/auth/register" style={{padding:'9px 20px',borderRadius:10,fontSize:13,fontWeight:700,color:'#fff',textDecoration:'none',background:'var(--navy)',fontFamily:"'Sora',sans-serif",letterSpacing:'-0.1px'}}>Înregistrare</a>
                 </>
               )}
-              <a href="/listing/create"
-                style={{display:'inline-flex',alignItems:'center',gap:5,padding:'9px 18px',borderRadius:10,fontSize:13,fontWeight:600,background:'#f0f6ff',color:'var(--blue)',textDecoration:'none',fontFamily:"'DM Sans',sans-serif",transition:'background .15s'}}
-                onMouseEnter={e=>e.currentTarget.style.background='#dbeafe'}
-                onMouseLeave={e=>e.currentTarget.style.background='#f0f6ff'}>
-                + Adaugă anunț
-              </a>
               <a href="/home" onClick={e=>{e.preventDefault();window.dispatchEvent(new CustomEvent('open-quote-modal'))}}
                 style={{display:'inline-flex',alignItems:'center',gap:6,padding:'9px 20px',borderRadius:10,fontSize:13,fontWeight:700,background:'var(--navy)',color:'#fff',textDecoration:'none',fontFamily:"'Sora',sans-serif",transition:'background .15s'}}
                 onMouseEnter={e=>e.currentTarget.style.background='#1a3a6b'}
