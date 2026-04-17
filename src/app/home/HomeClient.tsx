@@ -189,7 +189,10 @@ export default function HomeClient() {
         {/* Anunțuri piese */}
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14 }}>
           <h2 className="section-title" style={{ fontSize: 17, fontWeight: 700, color: S.navy, fontFamily: "'Sora',sans-serif", letterSpacing: -0.3 }}>Anunțuri</h2>
-          <a href="/listing" style={{ fontSize: 13, color: S.blue, textDecoration: 'none', fontWeight: 600 }}>Vezi toate →</a>
+          <div style={{display:'flex',gap:10,alignItems:'center'}}>
+            <a href="/piese-oferta" style={{ fontSize: 13, color: '#d97706', textDecoration: 'none', fontWeight: 600 }}>🔩 Cere ofertă →</a>
+            <a href="/listing" style={{ fontSize: 13, color: S.blue, textDecoration: 'none', fontWeight: 600 }}>Vezi toate →</a>
+          </div>
         </div>
 
         {loadingListings ? (
@@ -208,12 +211,19 @@ export default function HomeClient() {
               {listings.map(l => {
                 const coverImg = l.listing_media?.find(m => m.is_cover)?.url || l.listing_media?.[0]?.url
                 const daysAgo = Math.floor((new Date().getTime() - new Date(l.created_at).getTime()) / (1000 * 60 * 60 * 24))
+                const promoted = l.is_promoted && l.promoted_until && new Date(l.promoted_until) > new Date()
                 return (
                   <div key={l.id} onClick={() => window.location.href = `/listing/${l.id}`} className="listing-card"
-                    style={{ background: '#fff', borderRadius: 14, border: `1px solid ${S.border}`, overflow: 'hidden', cursor: 'pointer', transition: 'all .2s', boxShadow: '0 2px 8px rgba(10,31,68,0.04)' }}>
-                    <div className="listing-card-img" style={{ height: 130, background: '#eaf3ff', position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' }}>
+                    style={{ background: '#fff', borderRadius: 14, border: `2px solid ${promoted ? S.yellow : S.border}`, overflow: 'hidden', cursor: 'pointer', transition: 'all .2s', boxShadow: promoted ? '0 4px 16px rgba(245,158,11,0.15)' : '0 2px 8px rgba(10,31,68,0.04)', position: 'relative' }}>
+                    {/* Banner TOP */}
+                    {promoted && (
+                      <div style={{ background: S.yellow, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 4, padding: '4px 0' }}>
+                        <svg width="10" height="10" viewBox="0 0 12 12" fill="white"><path d="M6 1l1.3 2.6 2.9.4-2.1 2 .5 2.9L6 7.5l-2.6 1.4.5-2.9-2.1-2 2.9-.4z"/></svg>
+                        <span style={{ fontSize: 10, fontWeight: 700, color: '#fff', letterSpacing: 1, fontFamily: "'Sora',sans-serif" }}>TOP</span>
+                      </div>
+                    )}
+                    <div className="listing-card-img" style={{ height: promoted ? 110 : 130, background: promoted ? '#fef3c7' : '#eaf3ff', position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' }}>
                       {coverImg ? <img src={coverImg} alt={l.title} style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : <span style={{ fontSize: 40 }}>📦</span>}
-                      {l.is_promoted && <span style={{ position: 'absolute', top: 8, left: 8, background: S.yellow, color: '#fff', fontSize: 10, fontWeight: 700, padding: '3px 8px', borderRadius: 6, fontFamily: "'Sora',sans-serif" }}>TOP</span>}
                       <button onClick={e => { e.stopPropagation(); toggleFav(l.id) }}
                         style={{ position: 'absolute', top: 8, right: 8, width: 28, height: 28, background: 'rgba(255,255,255,0.92)', borderRadius: '50%', border: 'none', cursor: 'pointer', fontSize: 14, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                         {favorites.has(l.id) ? '❤️' : '🤍'}
@@ -232,6 +242,7 @@ export default function HomeClient() {
                   </div>
                 )
               })}
+            </div>
             </div>
 
           </>
@@ -288,7 +299,7 @@ export default function HomeClient() {
               </div>
             </div>
             {[
-              { title: 'PLATFORMĂ', links: [['Cum funcționează', '/despre'], ['Caută service', '/search'], ['Cerere ofertă', '/home'], ['ITP', '/itp-rca'], ['Piese & Dezmembrări', '/listing']] },
+              { title: 'PLATFORMĂ', links: [['Cum funcționează', '/despre'], ['Caută service', '/search'], ['Cerere ofertă', '/home'], ['ITP', '/itp-rca'], ['Piese & Dezmembrări', '/listing'],['Cere ofertă piese', '/piese-oferta']] },
               { title: 'SERVICE-URI', links: [['Înregistrare', '/auth/register'], ['Dashboard', '/dashboard/service'], ['Planuri', '/auth/register'], ['Promovare', '/auth/register'], ['Suport', '/contact']] },
               { title: 'COMPANIE', links: [['Despre Reparo', '/despre'], ['Blog auto', '/blog'], ['Cariere', '/cariere'], ['Contact', '/contact'], ['Presă', '/contact']] },
             ].map(col => (

@@ -58,7 +58,7 @@ function ListingsContent() {
 
   async function loadListings() {
     setLoading(true)
-    let q = supabase.from('listings').select('id, title, price, city, category, condition, created_at, is_promoted, negotiable, listing_media(url, is_cover)').eq('status','activ')
+    let q = supabase.from('listings').select('id, title, price, city, category, condition, created_at, is_promoted, promoted_until, negotiable, listing_media(url, is_cover)').eq('status','activ')
     if (activeCategory!=='toate') q = q.eq('category', activeCategory)
     if (sortBy==='pret_asc') q = q.order('price',{ascending:true})
     else if (sortBy==='pret_desc') q = q.order('price',{ascending:false})
@@ -153,6 +153,20 @@ function ListingsContent() {
 
         </div>
 
+        {/* Banner cere oferta piese */}
+        <div style={{background:`linear-gradient(135deg,${S.navy} 0%,#1a3a6b 100%)`,borderRadius:16,padding:'16px 20px',marginBottom:20,display:'flex',alignItems:'center',justifyContent:'space-between',gap:12,flexWrap:'wrap'}}>
+          <div style={{display:'flex',alignItems:'center',gap:12}}>
+            <span style={{fontSize:28}}>🔩</span>
+            <div>
+              <div style={{fontFamily:"'Sora',sans-serif",fontWeight:700,fontSize:14,color:'#fff',marginBottom:2}}>Nu găsești piesa de care ai nevoie?</div>
+              <div style={{fontSize:12,color:'rgba(255,255,255,0.6)'}}>Trimite o cerere și parcurile de dezmembrări îți răspund cu oferte</div>
+            </div>
+          </div>
+          <a href="/piese-oferta" style={{display:'inline-flex',alignItems:'center',gap:6,padding:'10px 20px',background:S.yellow,color:'#fff',borderRadius:50,fontSize:13,fontWeight:700,textDecoration:'none',fontFamily:"'Sora',sans-serif",whiteSpace:'nowrap',boxShadow:'0 4px 12px rgba(245,158,11,0.35)',flexShrink:0}}>
+            Cere ofertă piese →
+          </a>
+        </div>
+
         {/* Categorii */}
         <div style={{display:'flex',gap:8,marginBottom:20,overflowX:'auto',paddingBottom:4}}>
           {CATEGORIES.map(c=>(
@@ -197,17 +211,23 @@ function ListingsContent() {
               const coverImg = l.listing_media?.find(m=>m.is_cover)?.url||l.listing_media?.[0]?.url
               const cond = CONDITIONS.find(c=>c.key===l.condition)
               const daysAgo = Math.floor((new Date().getTime()-new Date(l.created_at).getTime())/(1000*60*60*24))
+              const promoted = l.is_promoted && l.promoted_until && new Date(l.promoted_until) > new Date()
               return (
                 <a key={l.id} href={`/listing/${l.id}`} className="listing-card"
-                  style={{background:S.white,borderRadius:14,border:`1px solid ${S.border}`,overflow:'hidden',cursor:'pointer',transition:'all .2s',textDecoration:'none',color:'inherit',display:'block',boxShadow:'0 2px 8px rgba(10,31,68,0.04)'}}>
-                  {/* Image */}
-                  <div style={{height:150,background:'#eaf3ff',position:'relative',display:'flex',alignItems:'center',justifyContent:'center',overflow:'hidden'}}>
+                  style={{background:S.white,borderRadius:14,border:`2px solid ${promoted?S.yellow:S.border}`,overflow:'hidden',cursor:'pointer',transition:'all .2s',textDecoration:'none',color:'inherit',display:'block',boxShadow:promoted?'0 4px 16px rgba(245,158,11,0.15)':'0 2px 8px rgba(10,31,68,0.04)'}}>
+                  {/* Banner TOP */}
+                  {promoted&&(
+                    <div style={{background:S.yellow,display:'flex',alignItems:'center',justifyContent:'center',gap:4,padding:'4px 0'}}>
+                      <svg width="10" height="10" viewBox="0 0 12 12" fill="white"><path d="M6 1l1.3 2.6 2.9.4-2.1 2 .5 2.9L6 7.5l-2.6 1.4.5-2.9-2.1-2 2.9-.4z"/></svg>
+                      <span style={{fontSize:10,fontWeight:700,color:'#fff',letterSpacing:1,fontFamily:"'Sora',sans-serif"}}>TOP</span>
+                    </div>
+                  )}
+                  <div style={{height:promoted?126:150,background:promoted?'#fef3c7':'#eaf3ff',position:'relative',display:'flex',alignItems:'center',justifyContent:'center',overflow:'hidden'}}>
                     {coverImg?(
                       <img src={coverImg} alt={l.title} style={{width:'100%',height:'100%',objectFit:'cover'}}/>
                     ):(
                       <span style={{fontSize:44}}>{CATEGORIES.find(c=>c.key===l.category)?.icon||'📦'}</span>
                     )}
-                    {l.is_promoted&&<span style={{position:'absolute',top:8,left:8,background:S.yellow,color:'#fff',fontSize:10,fontWeight:700,padding:'3px 8px',borderRadius:6,fontFamily:"'Sora',sans-serif"}}>TOP</span>}
                     {cond&&<span style={{...pill(cond.bg,cond.color),position:'absolute',top:8,right:8,fontSize:10}}>{cond.label}</span>}
                     <button onClick={e=>{e.stopPropagation();toggleFav(l.id)}}
                       style={{position:'absolute',bottom:8,right:8,width:30,height:30,background:'rgba(255,255,255,0.92)',borderRadius:'50%',border:'none',cursor:'pointer',fontSize:14,display:'flex',alignItems:'center',justifyContent:'center',boxShadow:'0 1px 4px rgba(0,0,0,0.1)'}}>
