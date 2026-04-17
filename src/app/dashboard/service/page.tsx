@@ -1380,6 +1380,7 @@ export default function ServiceDashboard() {
                 ))
               }
             </div>
+          </div>
           )}
 
           {/* ══ OFERTE TRIMISE ══ */}
