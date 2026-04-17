@@ -395,7 +395,7 @@ export default function GlobalLayout({ children }) {
               <div style={{borderTop:'1px solid var(--border)',margin:'8px 0'}}/>
               {user?(
                 <>
-                  <a href="/account" onClick={()=>setDrawerOpen(false)} style={{display:'block',padding:'13px 24px',fontSize:15,fontWeight:600,color:'var(--blue)',textDecoration:'none',fontFamily:"'Sora',sans-serif"}}>Contul meu</a>
+                  <a href={hasService?'/dashboard/service':'/account'} onClick={()=>setDrawerOpen(false)} style={{display:'block',padding:'13px 24px',fontSize:15,fontWeight:600,color:'var(--blue)',textDecoration:'none',fontFamily:"'Sora',sans-serif"}}>{hasService?'Dashboard':'Contul meu'}</a>
                   <a href="/messages" onClick={()=>setDrawerOpen(false)} style={{display:'block',padding:'13px 24px',fontSize:15,fontWeight:500,color:'var(--navy)',textDecoration:'none'}}>💬 Mesaje</a>
                   <a href="/oferte" onClick={()=>setDrawerOpen(false)} style={{display:'block',padding:'13px 24px',fontSize:15,fontWeight:500,color:'var(--navy)',textDecoration:'none',fontFamily:"'DM Sans',sans-serif"}}>Ofertele mele</a>
                   {profile?.role==='service'&&<a href="/dashboard/service" onClick={()=>setDrawerOpen(false)} style={{display:'block',padding:'13px 24px',fontSize:15,fontWeight:500,color:'var(--navy)',textDecoration:'none'}}>Dashboard service</a>}
@@ -621,7 +621,7 @@ export default function GlobalLayout({ children }) {
               {href:'/itp-rca',label:'RCA',icon:(active)=>(
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke={active?'#1a56db':'#c4cdd8'} strokeWidth="1.8" strokeLinecap="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><polyline points="9 12 11 14 15 10"/></svg>
               )},
-              {href:user?'/account':'/auth/login',label:'Cont',icon:(active)=>(
+              {href:user?(hasService?'/dashboard/service':'/account'):'/auth/login',label:'Cont',icon:(active)=>(
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke={active?'#1a56db':'#c4cdd8'} strokeWidth="1.8" strokeLinecap="round"><circle cx="12" cy="7" r="4"/><path d="M4 21v-1a8 8 0 0 1 16 0v1"/></svg>
               )},
             ].map(item=>{
@@ -853,7 +853,7 @@ export default function GlobalLayout({ children }) {
             {href:'/itp-rca',label:'RCA',icon:(active)=>(
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke={active?'#1a56db':'#c4cdd8'} strokeWidth="1.8" strokeLinecap="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><polyline points="9 12 11 14 15 10"/></svg>
             )},
-            {href:user?'/account':'/auth/login',label:'Cont',icon:(active)=>(
+            {href:user?(hasService?'/dashboard/service':'/account'):'/auth/login',label:'Cont',icon:(active)=>(
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke={active?'#1a56db':'#c4cdd8'} strokeWidth="1.8" strokeLinecap="round"><circle cx="12" cy="7" r="4"/><path d="M4 21v-1a8 8 0 0 1 16 0v1"/></svg>
             )},
           ].map(item=>{

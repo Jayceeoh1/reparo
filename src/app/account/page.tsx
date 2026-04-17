@@ -66,6 +66,11 @@ export default function AccountPage() {
         supabase.from('car_documents').select('*, cars(brand, model, plate_number)').eq('user_id', user.id).order('expires_at', {ascending:true}),
         supabase.from('quote_requests').select('*, offers(id, price_total, status, services(name))').eq('user_id', user.id).order('created_at', {ascending:false}),
       ])
+      // Dacă e service owner, redirect la dashboard
+      if (prof.data?.role && prof.data.role !== 'user') {
+        window.location.href = '/dashboard/service'
+        return
+      }
       setProfile(prof.data)
       setProfileForm({full_name:prof.data?.full_name||'',phone:prof.data?.phone||'',city:prof.data?.city||''})
       setCars(carsData.data||[])
