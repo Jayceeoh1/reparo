@@ -1401,7 +1401,7 @@ export default function ServiceDashboard() {
           {/* ══ ANUNTURI ══ */}
           {tab==='Anunțuri'&&(
             <div>
-              <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:20}}>
+              <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:20,flexWrap:'wrap',gap:10}}>
                 <div>
                   <h1 style={{fontFamily:"'Sora',sans-serif",fontWeight:800,fontSize:22,color:S.navy,marginBottom:4}}>Anunțurile mele</h1>
                   <p style={{color:S.muted,fontSize:13}}>Piese, accesorii sau alte produse auto pe care le vinzi.</p>
@@ -1410,8 +1410,156 @@ export default function ServiceDashboard() {
                   + Adaugă anunț
                 </a>
               </div>
+
+              <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fit,minmax(280px,1fr))',gap:14,marginBottom:20}}>
+
+                {/* Generator dezmembrari */}
+                <div style={card()}>
+                  <div style={{display:'flex',alignItems:'center',gap:10,marginBottom:12}}>
+                    <div style={{width:40,height:40,background:'#fef3c7',borderRadius:12,display:'flex',alignItems:'center',justifyContent:'center',fontSize:20}}>🔩</div>
+                    <div>
+                      <div style={{fontFamily:"'Sora',sans-serif",fontWeight:700,fontSize:14,color:S.navy}}>Generator dezmembrări</div>
+                      <div style={{fontSize:12,color:S.muted}}>Generează automat anunțuri pentru toate piesele</div>
+                    </div>
+                  </div>
+                  <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:8,marginBottom:10}}>
+                    {[{k:'gen_brand',l:'Marcă',p:'ex: BMW'},{k:'gen_model',l:'Model',p:'ex: Seria 5'},{k:'gen_year',l:'An',p:'2015'},{k:'gen_vin',l:'VIN (opț.)',p:'17 caractere'}].map(f=>(
+                      <div key={f.k}>
+                        <label style={label}>{f.l}</label>
+                        <input className="dash-input" value={pf[f.k]||''} onChange={e=>setPf(p=>({...p,[f.k]:e.target.value}))} placeholder={f.p} style={{...input,fontSize:12}}/>
+                      </div>
+                    ))}
+                  </div>
+                  <button onClick={async()=>{
+                    if(!pf.gen_brand||!pf.gen_model){alert('Completează marca și modelul!');return}
+                    if(!service||!user) return
+                    const piese=[
+                      'Motor complet','Cutie viteze manuală','Alternator','Electromotor',
+                      'Compresor AC','Radiator apă','Radiator AC','Pompă apă','Turbină',
+                      'Injectoare set','Pompă injecție','Calculator motor',
+                      'Ușă față stânga','Ușă față dreapta','Ușă spate stânga','Ușă spate dreapta',
+                      'Capotă față','Portbagaj','Bară față','Bară spate',
+                      'Aripă față stânga','Aripă față dreapta',
+                      'Far față stânga','Far față dreapta','Stop spate stânga','Stop spate dreapta',
+                      'Planetară stânga','Planetară dreapta','Amortizor față stânga','Amortizor față dreapta',
+                      'Fuzetă față stânga','Fuzetă față dreapta',
+                      'Volan','Airbag volan','Airbag pasager','Centuri siguranță set',
+                      'Bloc instrumente bord','Radio original','Geam față','Geam spate',
+                    ]
+                    const inserts=piese.map(p=>({
+                      user_id:user.id,
+                      title:`${p} ${pf.gen_brand} ${pf.gen_model}${pf.gen_year?' '+pf.gen_year:''}`,
+                      description:`${p} demontat de pe ${pf.gen_brand} ${pf.gen_model}${pf.gen_year?' ('+pf.gen_year+')':''}${pf.gen_vin?' · VIN: '+pf.gen_vin:''}. Piesă originală testată, în stare bună de funcționare.`,
+                      category:'piese',condition:'folosit',
+                      city:service.city||'București',
+                      status:'activ',
+                    }))
+                    const{error}=await supabase.from('listings').insert(inserts)
+                    if(error){alert('Eroare: '+error.message);return}
+                    alert(`✅ ${piese.length} anunțuri generate! Editează prețurile din "Gestionează anunțuri".`)
+                    setPf(p=>({...p,gen_brand:'',gen_model:'',gen_year:'',gen_vin:''}))
+                  }} style={{...btn('primary'),width:'100%',justifyContent:'center',background:'#d97706',boxShadow:'0 2px 8px rgba(217,119,6,0.3)',fontSize:13}}>
+                    ⚡ Generează 40 anunțuri automat
+                  </button>
+                </div>
+
+                {/* Import CSV */}
+                <div style={card()}>
+                  <div style={{display:'flex',alignItems:'center',gap:10,marginBottom:12}}>
+                    <div style={{width:40,height:40,background:'#eaf3ff',borderRadius:12,display:'flex',alignItems:'center',justifyContent:'center',fontSize:20}}>📊</div>
+                    <div>
+                      <div style={{fontFamily:"'Sora',sans-serif",fontWeight:700,fontSize:14,color:S.navy}}>Import CSV / XML</div>
+                      <div style={{fontSize:12,color:S.muted}}>Importă stocul din fișier direct pe platformă</div>
+                    </div>
+                  </div>
+                  <div style={{background:S.bg,borderRadius:10,padding:'10px 12px',marginBottom:10,fontSize:11,color:S.muted,lineHeight:1.7}}>
+                    <div style={{fontWeight:700,color:S.navy,marginBottom:4}}>Format CSV acceptat:</div>
+                    <code style={{fontSize:10,color:S.blue}}>titlu, pret, categorie, oras, stare, descriere</code>
+                    <div style={{marginTop:4}}>Prima linie = antet. Câmpurile opționale pot fi goale.</div>
+                  </div>
+                  <input type="file" accept=".csv,.txt" id="csv-upload" style={{display:'none'}}
+                    onChange={async(e)=>{
+                      const file=e.target.files?.[0]; if(!file||!service||!user) return
+                      const text=await file.text()
+                      const lines=text.split('\n').filter(l=>l.trim())
+                      const headers=lines[0].split(',').map(h=>h.trim().toLowerCase().replace(/"/g,''))
+                      const rows=lines.slice(1)
+                      const inserts=rows.map(row=>{
+                        const cols=row.split(',').map(c=>c.trim().replace(/"/g,''))
+                        const get=(name)=>cols[headers.indexOf(name)]||''
+                        return {
+                          user_id:user.id,
+                          title:get('titlu')||get('title')||get('denumire')||cols[0]||'Piesă auto',
+                          price:parseFloat(get('pret')||get('price'))||null,
+                          category:get('categorie')||get('category')||'piese',
+                          city:get('oras')||get('city')||service.city||'București',
+                          condition:get('stare')||get('condition')||'folosit',
+                          description:get('descriere')||get('description')||'',
+                          status:'activ',
+                        }
+                      }).filter(r=>r.title&&r.title.length>1)
+                      if(inserts.length===0){alert('Nu s-au găsit rânduri valide.');return}
+                      const{error}=await supabase.from('listings').insert(inserts)
+                      if(error){alert('Eroare import: '+error.message);return}
+                      alert(`✅ ${inserts.length} anunțuri importate!`)
+                      e.target.value=''
+                    }}/>
+                  <button onClick={()=>document.getElementById('csv-upload')?.click()}
+                    style={{...btn('ghost'),width:'100%',justifyContent:'center',marginBottom:8,fontSize:13}}>
+                    📂 Alege fișier CSV
+                  </button>
+                  <a href={'data:text/csv;charset=utf-8,titlu%2Cpret%2Ccategorie%2Coras%2Cstare%2Cdescriere%0AUsa%20fata%20stanga%20BMW%20E60%2C850%2Cpiese%2CBucuresti%2Cfolosit%2CPiesa%20originala'}
+                    download="model_import_reparo.csv"
+                    style={{display:'block',textAlign:'center',fontSize:12,color:S.blue,textDecoration:'none',fontWeight:600}}>
+                    ⬇ Descarcă model CSV
+                  </a>
+                </div>
+
+                {/* Relistare automata */}
+                <div style={card()}>
+                  <div style={{display:'flex',alignItems:'center',gap:10,marginBottom:12}}>
+                    <div style={{width:40,height:40,background:'#dcfce7',borderRadius:12,display:'flex',alignItems:'center',justifyContent:'center',fontSize:20}}>🔄</div>
+                    <div>
+                      <div style={{fontFamily:"'Sora',sans-serif",fontWeight:700,fontSize:14,color:S.navy}}>Relistare automată</div>
+                      <div style={{fontSize:12,color:S.muted}}>Anunțurile urcă automat în top</div>
+                    </div>
+                  </div>
+                  <div style={{marginBottom:12}}>
+                    {[
+                      {plan:'free',label:'Plan Free',interval:'Indisponibil',active:false,has:false},
+                      {plan:'basic',label:'Plan Basic',interval:'La 24 ore',active:service?.plan==='basic',has:service?.plan==='basic'||service?.plan==='pro'},
+                      {plan:'pro',label:'Plan Pro',interval:'La 6 ore',active:service?.plan==='pro',has:service?.plan==='pro'},
+                    ].map(p=>(
+                      <div key={p.plan} style={{display:'flex',alignItems:'center',justifyContent:'space-between',padding:'8px 12px',borderRadius:8,background:p.active?'#dcfce7':S.bg,marginBottom:6,border:`1px solid ${p.active?S.green:S.border}`}}>
+                        <div>
+                          <div style={{fontSize:12,fontWeight:600,color:S.navy}}>{p.label}</div>
+                          <div style={{fontSize:11,color:S.muted}}>{p.interval}</div>
+                        </div>
+                        {p.active?<span style={{fontSize:11,fontWeight:700,color:S.green}}>✅ Activ</span>
+                          :p.has?<span style={{fontSize:11,color:S.blue}}>Inclus</span>
+                          :<span style={{fontSize:11,color:S.muted}}>—</span>}
+                      </div>
+                    ))}
+                  </div>
+                  {service?.plan==='free'?(
+                    <button onClick={async()=>{
+                      const res=await fetch('/api/stripe/checkout',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({type:'subscription',plan:'basic',service_id:service?.id})})
+                      const{url}=await res.json()
+                      if(url) window.location.href=url
+                    }} style={{...btn('primary'),width:'100%',justifyContent:'center',fontSize:13}}>
+                      Upgrade pentru relistare →
+                    </button>
+                  ):(
+                    <div style={{background:'#dcfce7',borderRadius:10,padding:'10px 14px',fontSize:12,color:'#166534',fontWeight:600}}>
+                      ✅ Relistarea automată este activă
+                    </div>
+                  )}
+                </div>
+
+              </div>
+
               <a href="/anunturile-mele"
-                style={{display:'flex',alignItems:'center',gap:16,padding:20,background:S.white,borderRadius:16,border:`1.5px solid ${S.border}`,textDecoration:'none',marginBottom:12,transition:'border-color .2s'}}
+                style={{display:'flex',alignItems:'center',gap:16,padding:20,background:S.white,borderRadius:16,border:`1.5px solid ${S.border}`,textDecoration:'none',transition:'border-color .2s'}}
                 onMouseEnter={e=>e.currentTarget.style.borderColor=S.blue}
                 onMouseLeave={e=>e.currentTarget.style.borderColor=S.border}>
                 <div style={{width:52,height:52,background:'#eaf3ff',borderRadius:14,display:'flex',alignItems:'center',justifyContent:'center',fontSize:26}}>📋</div>
