@@ -443,7 +443,10 @@ export default function ServiceDashboard() {
     if (!service) return
     const existing = offerings.map(o=>o.name)
     const toAdd = catItems.filter(s=>!existing.includes(s))
-    if (toAdd.length===0) { alert('Toate serviciile din această categorie sunt deja adăugate!'); return }
+    if (toAdd.length===0) {
+      alert('Toate serviciile din această categorie sunt deja adăugate.')
+      return
+    }
     const inserts = toAdd.map(name=>({name, service_id:service.id, is_active:true}))
     const {data, error} = await supabase.from('service_offerings').insert(inserts).select()
     if (error) { alert('Eroare: ' + error.message); return }
@@ -965,12 +968,14 @@ export default function ServiceDashboard() {
                 <div style={{display:'flex',flexWrap:'wrap',gap:8}}>
                   {SERVICE_CATEGORIES.map(cat=>{
                     const allAdded = cat.items.every(s=>offerings.some(o=>o.name===s))
+                    const addedCount = cat.items.filter(s=>offerings.some(o=>o.name===s)).length
                     return (
                       <button key={cat.cat} onClick={()=>addWholeCategory(cat.items)}
-                        disabled={allAdded}
-                        style={{display:'inline-flex',alignItems:'center',gap:6,padding:'7px 14px',borderRadius:50,border:`1.5px solid ${allAdded?S.border:'#1a56db30'}`,background:allAdded?S.bg:'#eaf3ff',color:allAdded?S.muted:S.blue,fontSize:12,fontWeight:600,cursor:allAdded?'not-allowed':'pointer',transition:'all .15s',opacity:allAdded?.6:1}}>
+                        style={{display:'inline-flex',alignItems:'center',gap:6,padding:'7px 14px',borderRadius:50,border:`1.5px solid ${allAdded?S.green+'50':'#1a56db30'}`,background:allAdded?S.greenBg:'#eaf3ff',color:allAdded?S.green:S.blue,fontSize:12,fontWeight:600,cursor:'pointer',transition:'all .15s'}}>
                         {allAdded?'✓ ':''}{cat.cat}
-                        {!allAdded&&<span style={{background:S.blue,color:'#fff',borderRadius:50,padding:'1px 7px',fontSize:10,fontWeight:700}}>{cat.items.length}</span>}
+                        <span style={{background:allAdded?S.green:S.blue,color:'#fff',borderRadius:50,padding:'1px 7px',fontSize:10,fontWeight:700}}>
+                          {addedCount}/{cat.items.length}
+                        </span>
                       </button>
                     )
                   })}
