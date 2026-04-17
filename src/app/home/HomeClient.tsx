@@ -243,7 +243,6 @@ export default function HomeClient() {
                 )
               })}
             </div>
-            </div>
 
           </>
         )}
