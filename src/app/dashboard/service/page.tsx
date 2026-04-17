@@ -246,6 +246,8 @@ function MapPicker({ address, city, onAddressChange }) {
     setTimeout(() => setSaved(false), 2500)
   }
 
+
+
   return (
     <div>
       {/* Search */}
@@ -457,21 +459,23 @@ export default function ServiceDashboard() {
     setOfferings(prev=>prev.filter(o=>o.id!==id))
   }
 
+  const TABS = [
+    {name:'Acasă',badge:null},
+    {name:'Profil public',badge:(!pf.description||!pf.phone||!pf.address)?'!':null},
+    {name:'Servicii oferite',badge:offerings.length||null},
+    {name:'Cereri',badge:requests.length||null},
+    {name:'Programări',badge:appointments.filter(a=>['in_asteptare','confirmata','in_lucru'].includes(aptStatuses[a.id]||a.status)).length||null},
+    {name:'Oferte trimise',badge:offers.filter(o=>o.status==='trimisa').length||null},
+    {name:'Anunțuri',badge:null},
+    {name:'Recenzii',badge:reviews.length||null},
+    {name:'Setări',badge:null},
+  ]
+
   const firstDay = (() => { const d=new Date(calMonth.getFullYear(),calMonth.getMonth(),1).getDay(); return d===0?6:d-1 })()
   const daysInMonth = new Date(calMonth.getFullYear(),calMonth.getMonth()+1,0).getDate()
   const aptsForDay = (day) => { const ds=`${calMonth.getFullYear()}-${String(calMonth.getMonth()+1).padStart(2,'0')}-${String(day).padStart(2,'0')}`; return appointments.filter(a=>a.scheduled_date===ds) }
 
-  const TABS = [
-    {name:'Acasă',icon:'🏠',badge:null},
-    {name:'Profil public',icon:'🏪',badge:(!pf.description||!pf.phone||!pf.address)?'!':null},
-    {name:'Servicii oferite',icon:'🔧',badge:offerings.length||null},
-    {name:'Cereri',icon:'📋',badge:requests.length||null},
-    {name:'Programări',icon:'📅',badge:appointments.filter(a=>['in_asteptare','confirmata','in_lucru'].includes(aptStatuses[a.id]||a.status)).length||null},
-    {name:'Oferte trimise',icon:'💬',badge:offers.filter(o=>o.status==='trimisa').length||null},
-    {name:'Anunțuri',icon:'📦',badge:null},
-    {name:'Recenzii',icon:'⭐',badge:reviews.length||null},
-    {name:'Setări',icon:'⚙️',badge:null},
-  ]
+
 
   return (
     <div style={{minHeight:'100vh',background:S.bg,fontFamily:"'DM Sans',sans-serif",display:'flex',flexDirection:'column'}}>
