@@ -1012,44 +1012,38 @@ export default function ServiceDashboard() {
           {tab==='Cereri'&&(
             <div>
               <h1 style={{fontFamily:"'Sora',sans-serif",fontWeight:800,fontSize:18,color:S.navy,marginBottom:16}}>Cereri în {service?.city}</h1>
-
-              {/* Modal detalii cerere pe mobile */}
-              {selectedReq&&(
-                <div onClick={e=>{if(e.target===e.currentTarget)setSelectedReq(null)}}
-                  style={{position:'fixed',inset:0,background:'rgba(10,18,30,0.5)',zIndex:500,display:'flex',alignItems:'flex-end',justifyContent:'center'}}
-                  className="req-modal-overlay">
-                  <div style={{background:S.white,borderRadius:'20px 20px 0 0',width:'100%',maxWidth:640,maxHeight:'90vh',overflowY:'auto',padding:20}}
-                    className="req-modal-inner">
-                    <div style={{display:'flex',justifyContent:'space-between',alignItems:'flex-start',marginBottom:16}}>
-                      <h2 style={{fontFamily:"'Sora',sans-serif",fontWeight:700,fontSize:16,color:S.navy}}>Detalii cerere</h2>
-                      <button onClick={()=>setSelectedReq(null)} style={{background:'none',border:'none',cursor:'pointer',color:S.muted,fontSize:22,lineHeight:1}}>✕</button>
+              <div style={{display:'flex',gap:16}}>
+                <div style={{width:300,flexShrink:0}}>
+                  {requests.length===0
+                    ?<div style={{...card(),textAlign:'center',padding:'40px 16px',color:S.muted}}>
+                      <div style={{fontSize:36,marginBottom:10}}>📭</div>
+                      <div style={{fontWeight:600,marginBottom:4}}>Nicio cerere activă</div>
+                      <div style={{fontSize:12}}>Vei fi notificat când apar cereri noi.</div>
                     </div>
-                {requests.length===0?<div style={{...card(),textAlign:'center',padding:'40px 16px',color:S.muted}}>
-                  <div style={{fontSize:36,marginBottom:10}}>📭</div>
-                  <div style={{fontWeight:600,marginBottom:4}}>Nicio cerere activă</div>
-                  <div style={{fontSize:12}}>Vei fi notificat când apar cereri noi.</div>
-                </div>:
-                  requests.map(r=>(
-                    <button key={r.id} onClick={()=>setSelectedReq(r)} className="card-hover"
-                      style={{...card({padding:14,marginBottom:8}),width:'100%',textAlign:'left',cursor:'pointer',border:`1.5px solid ${selectedReq?.id===r.id?S.blue:S.border}`,background:selectedReq?.id===r.id?'#eaf3ff':S.white}}>
-                      <div style={{display:'flex',justifyContent:'space-between',marginBottom:8}}>
-                        <div>
-                          <div style={{fontWeight:700,fontSize:13,color:S.navy}}>{r.car_brand} {r.car_model} {r.car_year?`(${r.car_year})`:''}</div>
-                          <div style={{fontSize:11,color:S.muted,marginTop:1}}>{r.car_fuel}{r.car_km?` · ${r.car_km.toLocaleString()} km`:''}</div>
+                    :requests.map(r=>(
+                      <button key={r.id} onClick={()=>setSelectedReq(r)} className="card-hover"
+                        style={{...card({padding:14,marginBottom:8}),width:'100%',textAlign:'left',cursor:'pointer',border:`1.5px solid ${selectedReq?.id===r.id?S.blue:S.border}`,background:selectedReq?.id===r.id?'#eaf3ff':S.white}}>
+                        <div style={{display:'flex',justifyContent:'space-between',marginBottom:8}}>
+                          <div>
+                            <div style={{fontWeight:700,fontSize:13,color:S.navy}}>{r.car_brand} {r.car_model} {r.car_year?`(${r.car_year})`:''}</div>
+                            <div style={{fontSize:11,color:S.muted,marginTop:1}}>{r.car_fuel}{r.car_km?` · ${r.car_km.toLocaleString()} km`:''}</div>
+                          </div>
+                          <span style={pill(r.urgency==='urgent'?S.redBg:r.urgency==='saptamana'?S.amberBg:S.greenBg,r.urgency==='urgent'?S.red:r.urgency==='saptamana'?S.amber:S.green,'')}>{r.urgency}</span>
                         </div>
-                        <span style={pill(r.urgency==='urgent'?S.redBg:r.urgency==='saptamana'?S.amberBg:S.greenBg,r.urgency==='urgent'?S.red:r.urgency==='saptamana'?S.amber:S.green,'')}>{r.urgency}</span>
-                      </div>
-                      <div style={{display:'flex',flexWrap:'wrap',gap:4,marginBottom:6}}>
-                        {r.services?.slice(0,3).map(s=><span key={s} style={pill('#eaf3ff',S.blue,'')}>{s}</span>)}
-                        {(r.services?.length||0)>3&&<span style={pill(S.bg,S.muted,'')}>+{r.services.length-3}</span>}
-                      </div>
-                      <div style={{display:'flex',justifyContent:'space-between',alignItems:'center'}}>
-                        <div style={{fontSize:11,color:S.muted}}>{new Date(r.created_at).toLocaleDateString('ro-RO')}</div>
-                        {r.contact_name&&<div style={{fontSize:11,fontWeight:600,color:S.navy}}>👤 {r.contact_name}</div>}
-                      </div>
-                    </button>
-                  ))
-                }
+                        <div style={{display:'flex',flexWrap:'wrap',gap:4,marginBottom:6}}>
+                          {r.services?.slice(0,3).map(s=><span key={s} style={pill('#eaf3ff',S.blue,'')}>{s}</span>)}
+                          {(r.services?.length||0)>3&&<span style={pill(S.bg,S.muted,'')}>+{r.services.length-3}</span>}
+                        </div>
+                        <div style={{display:'flex',justifyContent:'space-between',alignItems:'center'}}>
+                          <div style={{fontSize:11,color:S.muted}}>{new Date(r.created_at).toLocaleDateString('ro-RO')}</div>
+                          {r.contact_name&&<div style={{fontSize:11,fontWeight:600,color:S.navy}}>👤 {r.contact_name}</div>}
+                        </div>
+                      </button>
+                    ))
+                  }
+                </div>
+                {selectedReq&&(
+                  <div style={{flex:1,minWidth:0}}>
                   <div style={card({marginBottom:12})}>
                     {/* Contact client */}
                     <div style={{background:'#eaf3ff',borderRadius:12,padding:'12px 16px',marginBottom:14,border:'1px solid rgba(26,86,219,0.15)'}}>
@@ -1153,13 +1147,13 @@ export default function ServiceDashboard() {
                         <button onClick={sendOffer} style={{...btn('yellow'),width:'100%',justifyContent:'center',padding:'12px',fontSize:14}}>✉️ Trimite oferta</button>
                       </div>
                     )}
+
                   </div>
                 </div>
               )}
+              </div>
             </div>
           )}
-
-          {/* ══ PROGRAMARI ══ */}
           {tab==='Programări'&&(
             <div>
               <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:20,flexWrap:'wrap',gap:10}}>
