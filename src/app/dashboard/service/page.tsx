@@ -516,11 +516,7 @@ export default function ServiceDashboard() {
         .card-hover:hover{border-color:${S.blueLight}!important;box-shadow:0 4px 20px rgba(26,86,219,0.1)!important}
         .apt-btn:hover{border-color:${S.blue}!important;color:${S.blue}!important}
         @media(max-width:768px){
-          .dash-sidebar{transform:translateX(-100%);position:fixed!important;z-index:200!important;height:100vh!important;top:0!important;width:260px!important;transition:transform .25s ease!important}
-          .dash-sidebar.open{transform:translateX(0)!important}
-          .dash-overlay{display:block!important}
-          .dash-main{padding:14px 12px!important;padding-bottom:92px!important}
-          .dash-hamburger{display:none!important}
+          .dash-main{padding:14px 12px!important;padding-bottom:100px!important}
           .dash-hero{padding:16px!important;border-radius:14px!important}
           .dash-hero h1{font-size:18px!important}
           .dash-stats{grid-template-columns:repeat(2,1fr)!important;gap:8px!important}
@@ -547,67 +543,8 @@ export default function ServiceDashboard() {
         }
       `}</style>
 
-      {/* TOP BAR */}
-      <div style={{background:S.navy,height:56,display:'flex',alignItems:'center',padding:'0 24px',position:'sticky',top:0,zIndex:100,gap:12}}>
-        <button onClick={()=>setSidebarOpen(o=>!o)} className="dash-hamburger" style={{background:'none',border:'none',cursor:'pointer',padding:4,display:'flex',flexDirection:'column',gap:4,flexShrink:0}}>
-          {[0,1,2].map(i=><span key={i} style={{display:'block',width:18,height:2,background:'rgba(255,255,255,0.7)',borderRadius:2}}/>)}
-        </button>
-        <a href="/home" style={{display:'flex',alignItems:'center',gap:7,textDecoration:'none',flexShrink:0}}>
-          <div style={{width:28,height:28,background:S.blue,borderRadius:8,display:'flex',alignItems:'center',justifyContent:'center',fontWeight:800,fontSize:14,color:'#fff',fontFamily:"'Sora',sans-serif"}}>R</div>
-          <span style={{fontFamily:"'Sora',sans-serif",fontWeight:700,fontSize:16,color:'#fff'}}>Reparo</span>
-        </a>
-        <div style={{width:1,height:20,background:'rgba(255,255,255,0.15)'}}/>
-        <span style={{fontSize:12,color:'rgba(255,255,255,0.4)',fontFamily:"'Sora',sans-serif",fontWeight:600,letterSpacing:0.5}}>DASHBOARD SERVICE</span>
-        <div style={{marginLeft:'auto',display:'flex',alignItems:'center',gap:12}}>
-          {service?.id && <a href={`/service/${service.id}`} target="_blank" style={{fontSize:12,color:'rgba(255,255,255,0.5)',textDecoration:'none',display:'flex',alignItems:'center',gap:4}}>👁️ <span style={{display:'none'}}>Profil public</span></a>}
-          <button onClick={async()=>{await supabase.auth.signOut();window.location.href='/home'}} style={{fontSize:12,color:'rgba(255,255,255,0.4)',background:'none',border:'none',cursor:'pointer',fontFamily:"'DM Sans',sans-serif"}}>Ieși</button>
-        </div>
-      </div>
-
-      <div style={{display:'flex',flex:1,overflow:'hidden',position:'relative'}}>
-
-        {/* SIDEBAR — Dark Navy */}
-        <aside className={`dash-sidebar${mounted && sidebarOpen?' open':''}`}
-          style={{width:220,background:'#0a1f44',display:'flex',flexDirection:'column',flexShrink:0,transition:'transform .25s',overflow:'hidden auto'}}>
-          
-          {/* Service info */}
-          <div style={{padding:'20px 16px 16px',borderBottom:'1px solid rgba(255,255,255,0.08)'}}>
-            <div style={{width:44,height:44,background:'rgba(26,86,219,0.3)',border:'1.5px solid rgba(26,86,219,0.5)',borderRadius:12,display:'flex',alignItems:'center',justifyContent:'center',fontSize:22,marginBottom:12}}>🔧</div>
-            <div style={{fontSize:10,color:'rgba(255,255,255,0.35)',fontWeight:700,textTransform:'uppercase',letterSpacing:1.5,fontFamily:"'Sora',sans-serif",marginBottom:4}}>Service</div>
-            <div style={{fontSize:14,fontWeight:700,color:'#fff',fontFamily:"'Sora',sans-serif",marginBottom:2}}>{service?.name||'—'}</div>
-            <div style={{fontSize:12,color:'rgba(255,255,255,0.45)',marginBottom:10}}>{service?.city}</div>
-            <span style={{display:'inline-flex',alignItems:'center',padding:'3px 10px',borderRadius:50,background:service?.plan==='pro'?'rgba(245,158,11,0.2)':'rgba(255,255,255,0.08)',color:service?.plan==='pro'?S.yellow:'rgba(255,255,255,0.45)',fontSize:11,fontWeight:700,fontFamily:"'Sora',sans-serif"}}>
-              {service?.plan==='pro'?'⭐ Pro':'🔓 Free'}
-            </span>
-          </div>
-
-          {/* Nav */}
-          <nav style={{padding:'10px 10px',flex:1}}>
-            {TABS.map(t=>(
-              <button key={t.name}
-                onClick={()=>{setTab(t.name);setSidebarOpen(false)}}
-                style={{width:'100%',display:'flex',alignItems:'center',gap:10,padding:'10px 12px',borderRadius:10,border:'none',cursor:'pointer',marginBottom:2,transition:'all .15s',
-                  background:tab===t.name?'rgba(26,86,219,0.25)':'transparent',
-                  color:tab===t.name?'#fff':'rgba(255,255,255,0.5)',
-                  fontFamily:"'DM Sans',sans-serif",fontSize:13,fontWeight:tab===t.name?600:400,
-                  borderRight:tab===t.name?`2px solid ${S.blue}`:'2px solid transparent'}}>
-                <span style={{fontSize:15}}>{t.icon}</span>
-                <span style={{flex:1,textAlign:'left'}}>{t.name}</span>
-                {t.badge&&<span style={{background:tab===t.name?S.blue:'rgba(255,255,255,0.15)',color:'#fff',borderRadius:50,padding:'2px 7px',fontSize:10,fontWeight:700}}>{t.badge}</span>}
-              </button>
-            ))}
-          </nav>
-
-          <div style={{padding:'10px',borderTop:'1px solid rgba(255,255,255,0.08)'}}>
-            <a href="/home" style={{display:'flex',alignItems:'center',gap:8,padding:'10px 12px',borderRadius:10,color:'rgba(255,255,255,0.4)',textDecoration:'none',fontSize:13,fontFamily:"'DM Sans',sans-serif"}}>🏠 Înapoi la site</a>
-          </div>
-        </aside>
-
-        {/* Overlay mobile */}
-        {sidebarOpen&&<div onClick={()=>setSidebarOpen(false)} style={{position:'fixed',inset:0,background:'rgba(10,31,68,0.4)',zIndex:199}} className="dash-overlay"/>}
-
-        {/* MAIN */}
-        <main className="dash-main" style={{flex:1,overflowY:'auto',padding:'24px',minWidth:0}}>
+          {/* MAIN */}
+        <div className="dash-main" style={{overflowY:'auto',padding:'24px',minWidth:0,paddingBottom:'100px'}}>
 
           {/* ══ ACASĂ ══ */}
           {tab==='Acasă'&&(
@@ -1872,8 +1809,7 @@ export default function ServiceDashboard() {
             </div>
           )}
 
-        </main>
-      </div>
+        </div>
     </div>
   )
 }

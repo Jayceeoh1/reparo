@@ -16,7 +16,7 @@ const NAV_TABS = [
   { label: 'Tractări', href: '/search?category=tractari' },
 ]
 const EXCLUDED = ['/auth/login', '/auth/register', '/despre', '/blog', '/cariere', '/contact', '/termeni', '/confidentialitate', '/cookies']
-const DASH_ONLY = ['/dashboard/service']
+const DASH_ONLY = []
 const CITIES = ['Toate orașele','Alba Iulia','Alexandria','Arad','Bacău','Baia Mare','Bistrița','Botoșani','Brăila','Brașov','București','Buzău','Cluj-Napoca','Constanța','Craiova','Deva','Focșani','Galați','Iași','Miercurea Ciuc','Oradea','Piatra Neamț','Pitești','Ploiești','Râmnicu Vâlcea','Satu Mare','Sibiu','Slatina','Slobozia','Suceava','Târgoviște','Târgu Jiu','Târgu Mureș','Timișoara','Tulcea','Zalău']
 
 const CAR_BRANDS = [
@@ -156,48 +156,6 @@ export default function GlobalLayout({ children }) {
 
   if (isExcluded) return <>{children}</>
 
-  if (isDashOnly) return (
-    <>
-      {children}
-      <style>{`.mob-bottom-dash{display:none}@media(max-width:768px){.mob-bottom-dash{display:block}}`}</style>
-      <div className="mob-bottom-dash" style={{position:'fixed',bottom:0,left:0,right:0,zIndex:99,padding:'0 12px 16px',paddingBottom:'calc(16px + env(safe-area-inset-bottom,0px))'}}>
-        <div style={{background:'#fff',borderRadius:20,border:'1px solid #ebebf0',display:'flex',alignItems:'flex-end',padding:'8px 8px 10px',boxShadow:'0 -2px 24px rgba(10,31,68,0.08)'}}>
-          <button onClick={()=>window.dispatchEvent(new CustomEvent('dash-open-sidebar'))}
-            style={{flex:1,display:'flex',flexDirection:'column',alignItems:'center',gap:4,background:'none',border:'none',cursor:'pointer',padding:'4px 0'}}>
-            <div style={{width:36,height:36,borderRadius:12,display:'flex',alignItems:'center',justifyContent:'center'}}>
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#c4cdd8" strokeWidth="1.8" strokeLinecap="round"><path d="M4 6h16M4 12h16M4 18h16"/></svg>
-            </div>
-            <span style={{fontSize:10,color:'#c4cdd8'}}>Meniu</span>
-          </button>
-          <a href="/dashboard/service" style={{flex:1,display:'flex',flexDirection:'column',alignItems:'center',gap:4,textDecoration:'none',padding:'4px 0'}}>
-            <div style={{width:36,height:36,borderRadius:12,display:'flex',alignItems:'center',justifyContent:'center'}}>
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#c4cdd8" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M12 3L2 10v11h7v-6h6v6h7V10z"/></svg>
-            </div>
-            <span style={{fontSize:10,color:'#c4cdd8'}}>Acasă</span>
-          </a>
-          <div style={{flex:1,display:'flex',flexDirection:'column',alignItems:'center',gap:4}}>
-            <button onClick={()=>window.dispatchEvent(new CustomEvent('open-quote-modal'))}
-              style={{width:56,height:56,background:'#1a56db',borderRadius:'50%',display:'flex',alignItems:'center',justifyContent:'center',marginTop:-24,border:'4px solid #fff',boxShadow:'0 6px 18px rgba(26,86,219,.3)',cursor:'pointer',outline:'none'}}>
-              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2.5" strokeLinecap="round"><path d="M12 5v14M5 12h14"/></svg>
-            </button>
-            <span style={{fontSize:10,fontWeight:700,color:'#1a56db'}}>Ofertă</span>
-          </div>
-          <a href="/dashboard/service?tab=Cereri" style={{flex:1,display:'flex',flexDirection:'column',alignItems:'center',gap:4,textDecoration:'none',padding:'4px 0'}}>
-            <div style={{width:36,height:36,borderRadius:12,display:'flex',alignItems:'center',justifyContent:'center'}}>
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#c4cdd8" strokeWidth="1.8" strokeLinecap="round"><path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2"/><rect x="9" y="3" width="6" height="4" rx="1"/></svg>
-            </div>
-            <span style={{fontSize:10,color:'#c4cdd8'}}>Cereri</span>
-          </a>
-          <a href="/dashboard/service?tab=Setări" style={{flex:1,display:'flex',flexDirection:'column',alignItems:'center',gap:4,textDecoration:'none',padding:'4px 0'}}>
-            <div style={{width:36,height:36,borderRadius:12,display:'flex',alignItems:'center',justifyContent:'center'}}>
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#c4cdd8" strokeWidth="1.8" strokeLinecap="round"><circle cx="12" cy="12" r="3"/><path d="M12 2v2m0 16v2M4.93 4.93l1.41 1.41m11.32 11.32 1.41 1.41M2 12h2m16 0h2M4.93 19.07l1.41-1.41m11.32-11.32 1.41-1.41"/></svg>
-            </div>
-            <span style={{fontSize:10,color:'#c4cdd8'}}>Setări</span>
-          </a>
-        </div>
-      </div>
-    </>
-  )
 
   return (
     <>
@@ -440,10 +398,29 @@ export default function GlobalLayout({ children }) {
               <div style={{borderTop:'1px solid var(--border)',margin:'8px 0'}}/>
               {user?(
                 <>
-                  <a href={hasService?'/dashboard/service':'/account'} onClick={()=>setDrawerOpen(false)} style={{display:'block',padding:'13px 24px',fontSize:15,fontWeight:600,color:'var(--blue)',textDecoration:'none',fontFamily:"'Sora',sans-serif"}}>{hasService?'Dashboard':'Contul meu'}</a>
+                  {hasService?(
+                    <>
+                      <div style={{padding:'8px 24px 4px',fontSize:11,fontWeight:700,color:'var(--muted)',textTransform:'uppercase',letterSpacing:1}}>Dashboard</div>
+                      {[
+                        {href:'/dashboard/service',label:'🏠 Acasă'},
+                        {href:'/dashboard/service?tab=Cereri',label:'📋 Cereri'},
+                        {href:'/dashboard/service?tab=Programări',label:'📅 Programări'},
+                        {href:'/dashboard/service?tab=Oferte trimise',label:'💬 Oferte trimise'},
+                        {href:'/dashboard/service?tab=Anunțuri',label:'📦 Anunțuri'},
+                        {href:'/dashboard/service?tab=Recenzii',label:'⭐ Recenzii'},
+                        {href:'/dashboard/service?tab=Setări',label:'⚙️ Setări'},
+                      ].map(item=>(
+                        <a key={item.href} href={item.href} onClick={()=>setDrawerOpen(false)}
+                          style={{display:'block',padding:'11px 24px',fontSize:14,fontWeight:500,color:'var(--navy)',textDecoration:'none'}}>
+                          {item.label}
+                        </a>
+                      ))}
+                      <div style={{borderTop:'1px solid var(--border)',margin:'8px 0'}}/>
+                    </>
+                  ):(
+                    <a href="/account" onClick={()=>setDrawerOpen(false)} style={{display:'block',padding:'13px 24px',fontSize:15,fontWeight:600,color:'var(--blue)',textDecoration:'none',fontFamily:"'Sora',sans-serif"}}>Contul meu</a>
+                  )}
                   <a href="/messages" onClick={()=>setDrawerOpen(false)} style={{display:'block',padding:'13px 24px',fontSize:15,fontWeight:500,color:'var(--navy)',textDecoration:'none'}}>💬 Mesaje</a>
-                  <a href="/oferte" onClick={()=>setDrawerOpen(false)} style={{display:'block',padding:'13px 24px',fontSize:15,fontWeight:500,color:'var(--navy)',textDecoration:'none',fontFamily:"'DM Sans',sans-serif"}}>Ofertele mele</a>
-                  {profile?.role==='service'&&<a href="/dashboard/service" onClick={()=>setDrawerOpen(false)} style={{display:'block',padding:'13px 24px',fontSize:15,fontWeight:500,color:'var(--navy)',textDecoration:'none'}}>Dashboard service</a>}
                   <button onClick={async()=>{await supabase.auth.signOut();window.location.href='/home'}}
                     style={{display:'block',width:'100%',textAlign:'left',padding:'13px 24px',fontSize:15,color:'var(--muted)',background:'none',border:'none',cursor:'pointer',fontFamily:"'DM Sans',sans-serif"}}>
                     Ieși din cont
