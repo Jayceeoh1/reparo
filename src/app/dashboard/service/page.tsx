@@ -323,6 +323,7 @@ export default function ServiceDashboard() {
   const [profileSaved, setProfileSaved] = useState(false)
   const [newOffering, setNewOffering] = useState({name:'',price_from:'',price_to:'',duration_min:'',description:''})
   const [sidebarOpen, setSidebarOpen] = useState(false)
+  const [mounted, setMounted] = useState(false)
   const [showAddApt, setShowAddApt] = useState(false)
   const [newApt, setNewApt] = useState({client_name:'',car_info:'',scheduled_date:'',scheduled_time:'',duration_min:'60',work_description:'',notes:''})
   const [addingApt, setAddingApt] = useState(false)
@@ -341,7 +342,10 @@ export default function ServiceDashboard() {
 
   // Listen for mobile hamburger from GlobalLayout bottom nav
   useEffect(() => {
-    const handler = () => setSidebarOpen(o => !o)
+    setMounted(true)
+    const handler = () => {
+      setSidebarOpen(o => !o)
+    }
     window.addEventListener('dash-open-sidebar', handler)
     return () => window.removeEventListener('dash-open-sidebar', handler)
   }, [])
@@ -563,7 +567,7 @@ export default function ServiceDashboard() {
       <div style={{display:'flex',flex:1,overflow:'hidden',position:'relative'}}>
 
         {/* SIDEBAR — Dark Navy */}
-        <aside className={`dash-sidebar${sidebarOpen?' open':''}`}
+        <aside className={`dash-sidebar${mounted && sidebarOpen?' open':''}`}
           style={{width:220,background:'#0a1f44',display:'flex',flexDirection:'column',flexShrink:0,transition:'transform .25s',overflow:'hidden auto'}}>
           
           {/* Service info */}
