@@ -614,7 +614,8 @@ export default function ServiceDashboard() {
         {sidebarOpen&&<div onClick={()=>setSidebarOpen(false)} style={{position:'fixed',inset:0,background:'rgba(10,31,68,0.4)',zIndex:199}} className="dash-overlay"/>}
 
         {/* MAIN */}
-        <div className="dash-main" style={{overflowY:'auto',padding:'24px',minWidth:0,paddingBottom:'100px'}}>
+        <div className="dash-main" style={{overflowY:'auto',padding:'24px',minWidth:0,paddingBottom:'100px',flex:1}}>
+          <div style={{maxWidth:1100,margin:'0 auto'}}>
 
           {/* ══ ACASĂ ══ */}
           {tab==='Acasă'&&(
@@ -1880,6 +1881,7 @@ export default function ServiceDashboard() {
           )}
 
         </div>
+          </div>
         </div>
     </div>
   )
