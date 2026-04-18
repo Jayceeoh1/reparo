@@ -615,7 +615,7 @@ export default function ServiceDashboard() {
 
         {/* MAIN */}
         <div className="dash-main" style={{overflowY:'auto',padding:'24px',minWidth:0,paddingBottom:'100px',flex:1}}>
-          <div style={{maxWidth:1100,margin:'0 auto'}}>
+          <div style={{maxWidth:1400,margin:'0 auto'}}>
 
           {/* ══ ACASĂ ══ */}
           {tab==='Acasă'&&(
