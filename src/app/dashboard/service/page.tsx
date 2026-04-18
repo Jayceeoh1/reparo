@@ -1454,7 +1454,9 @@ export default function ServiceDashboard() {
 
               <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fit,minmax(280px,1fr))',gap:14,marginBottom:20}}>
 
-                {/* Generator dezmembrari */}
+                {/* Generator dezmembrari — COMING SOON */}
+                <div style={{position:'relative',borderRadius:16,overflow:'hidden'}}>
+                  <div style={{filter:'blur(3px)',pointerEvents:'none',userSelect:'none',opacity:0.6}}>
                 <div style={card()}>
                   <div style={{display:'flex',alignItems:'center',gap:10,marginBottom:12}}>
                     <div style={{width:40,height:40,background:'#fef3c7',borderRadius:12,display:'flex',alignItems:'center',justifyContent:'center',fontSize:20}}>🔩</div>
@@ -1503,8 +1505,17 @@ export default function ServiceDashboard() {
                     ⚡ Generează 40 anunțuri automat
                   </button>
                 </div>
+                  </div>{/* end blur wrapper */}
+                  {/* Coming Soon overlay */}
+                  <div style={{position:'absolute',inset:0,display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',gap:8}}>
+                    <div style={{background:'rgba(10,31,68,0.85)',borderRadius:12,padding:'10px 20px',textAlign:'center',backdropFilter:'blur(4px)'}}>
+                      <div style={{fontSize:18,marginBottom:4}}>🔜</div>
+                      <div style={{fontFamily:"'Sora',sans-serif",fontWeight:700,fontSize:13,color:'#fff'}}>În curând</div>
+                      <div style={{fontSize:11,color:'rgba(255,255,255,0.6)',marginTop:2}}>Funcție în dezvoltare</div>
+                    </div>
+                  </div>
+                </div>{/* end coming soon container */}
 
-                {/* Import CSV */}
                 <div style={card()}>
                   <div style={{display:'flex',alignItems:'center',gap:10,marginBottom:12}}>
                     <div style={{width:40,height:40,background:'#eaf3ff',borderRadius:12,display:'flex',alignItems:'center',justifyContent:'center',fontSize:20}}>📊</div>
