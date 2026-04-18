@@ -480,15 +480,15 @@ export default function ServiceDashboard() {
   }
 
   const TABS = [
-    {name:'Acasă',badge:null},
-    {name:'Profil public',badge:(!pf.description||!pf.phone||!pf.address)?'!':null},
-    {name:'Servicii oferite',badge:offerings.length||null},
-    {name:'Cereri',badge:requests.length||null},
-    {name:'Programări',badge:appointments.filter(a=>['in_asteptare','confirmata','in_lucru'].includes(aptStatuses[a.id]||a.status)).length||null},
-    {name:'Oferte trimise',badge:offers.filter(o=>o.status==='trimisa').length||null},
-    {name:'Anunțuri',badge:null},
-    {name:'Recenzii',badge:reviews.length||null},
-    {name:'Setări',badge:null},
+    {name:'Acasă',icon:'🏠',badge:null},
+    {name:'Profil public',icon:'🏪',badge:(!pf.description||!pf.phone||!pf.address)?'!':null},
+    {name:'Servicii oferite',icon:'🔧',badge:offerings.length||null},
+    {name:'Cereri',icon:'📋',badge:requests.length||null},
+    {name:'Programări',icon:'📅',badge:appointments.filter(a=>['in_asteptare','confirmata','in_lucru'].includes(aptStatuses[a.id]||a.status)).length||null},
+    {name:'Oferte trimise',icon:'💬',badge:offers.filter(o=>o.status==='trimisa').length||null},
+    {name:'Anunțuri',icon:'📦',badge:null},
+    {name:'Recenzii',icon:'⭐',badge:reviews.length||null},
+    {name:'Setări',icon:'⚙️',badge:null},
   ]
 
   const firstDay = (() => { const d=new Date(calMonth.getFullYear(),calMonth.getMonth(),1).getDay(); return d===0?6:d-1 })()
@@ -518,6 +518,8 @@ export default function ServiceDashboard() {
         @media(max-width:768px){
           .dash-main{padding:14px 12px!important;padding-bottom:100px!important}
           .apt-layout{grid-template-columns:1fr!important}
+          .dash-sidebar{display:none!important}
+          .dash-overlay{display:none!important}
           .dash-hero{padding:16px!important;border-radius:14px!important}
           .dash-hero h1{font-size:18px!important}
           .dash-stats{grid-template-columns:repeat(2,1fr)!important;gap:8px!important}
@@ -544,7 +546,54 @@ export default function ServiceDashboard() {
         }
       `}</style>
 
-          {/* MAIN */}
+      <div style={{display:'flex',flex:1,overflow:'hidden',position:'relative'}}>
+
+        {/* SIDEBAR — Desktop only */}
+        <aside className={`dash-sidebar${mounted && sidebarOpen?' open':''}`}
+          style={{width:220,background:'#0a1f44',display:'flex',flexDirection:'column',flexShrink:0,transition:'transform .25s',overflow:'hidden auto'}}>
+
+          {/* Service info */}
+          <div style={{padding:'20px 16px 16px',borderBottom:'1px solid rgba(255,255,255,0.08)'}}>
+            <div style={{width:44,height:44,background:'rgba(26,86,219,0.3)',border:'1.5px solid rgba(26,86,219,0.4)',borderRadius:12,display:'flex',alignItems:'center',justifyContent:'center',marginBottom:10}}>
+              <span style={{fontSize:20}}>🔧</span>
+            </div>
+            <div style={{fontSize:10,color:'rgba(255,255,255,0.35)',fontWeight:700,textTransform:'uppercase',letterSpacing:1,marginBottom:4}}>Service</div>
+            <div style={{fontSize:14,fontWeight:700,color:'#fff',fontFamily:"'Sora',sans-serif",marginBottom:2}}>{service?.name||'Service'}</div>
+            <div style={{fontSize:12,color:'rgba(255,255,255,0.45)',marginBottom:10}}>{service?.city||''}</div>
+            <span style={{display:'inline-flex',alignItems:'center',padding:'3px 10px',borderRadius:50,background:'rgba(245,158,11,0.15)',border:'1px solid rgba(245,158,11,0.3)',fontSize:11,fontWeight:700,color:'#f59e0b',fontFamily:"'Sora',sans-serif"}}>
+              {service?.plan==='pro'?'⭐ Pro':'🔓 Free'}
+            </span>
+          </div>
+
+          {/* Nav */}
+          <nav style={{padding:'10px',flex:1}}>
+            {TABS.map(t=>(
+              <button key={t.name}
+                onClick={()=>{setTab(t.name);setSidebarOpen(false)}}
+                className={`tab-btn${tab===t.name?' active':''}`}
+                style={{
+                  width:'100%',display:'flex',alignItems:'center',gap:10,padding:'10px 12px',
+                  borderRadius:10,marginBottom:2,cursor:'pointer',border:'none',textAlign:'left',
+                  background:tab===t.name?'rgba(26,86,219,0.25)':'transparent',
+                  color:tab===t.name?'#fff':'rgba(255,255,255,0.5)',
+                  fontFamily:"'DM Sans',sans-serif",fontSize:13,fontWeight:tab===t.name?600:400,
+                  borderRight:tab===t.name?`2px solid ${S.blue}`:'2px solid transparent'}}>
+                <span style={{fontSize:15}}>{t.icon}</span>
+                <span style={{flex:1,textAlign:'left'}}>{t.name}</span>
+                {t.badge&&<span style={{background:tab===t.name?S.blue:'rgba(255,255,255,0.15)',color:'#fff',fontSize:10,fontWeight:700,padding:'1px 6px',borderRadius:50,minWidth:18,textAlign:'center'}}>{t.badge}</span>}
+              </button>
+            ))}
+          </nav>
+
+          <div style={{padding:'10px',borderTop:'1px solid rgba(255,255,255,0.08)'}}>
+            <a href="/home" style={{display:'flex',alignItems:'center',gap:8,padding:'10px 12px',borderRadius:10,color:'rgba(255,255,255,0.4)',textDecoration:'none',fontSize:13,fontFamily:"'DM Sans',sans-serif"}}>🏠 Înapoi la site</a>
+          </div>
+        </aside>
+
+        {/* Overlay mobile */}
+        {sidebarOpen&&<div onClick={()=>setSidebarOpen(false)} style={{position:'fixed',inset:0,background:'rgba(10,31,68,0.4)',zIndex:199}} className="dash-overlay"/>}
+
+        {/* MAIN */}
         <div className="dash-main" style={{overflowY:'auto',padding:'24px',minWidth:0,paddingBottom:'100px'}}>
 
           {/* ══ ACASĂ ══ */}
@@ -1810,6 +1859,7 @@ export default function ServiceDashboard() {
             </div>
           )}
 
+        </div>
         </div>
     </div>
   )
