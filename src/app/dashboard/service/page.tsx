@@ -1620,10 +1620,17 @@ export default function ServiceDashboard() {
                   ):(
                     <div>
                       <button onClick={async()=>{
+                        if(!service?.plan||service.plan==='free'){
+                          setRelistResult({upgrade:true})
+                          return
+                        }
                         setRelistLoading(true); setRelistResult(null)
                         try {
                           const{data:myListings}=await supabase.from('listings').select('id').eq('user_id',user?.id).eq('status','activ')
-                          if(!myListings||myListings.length===0){setRelistResult({info:'Nu ai anunțuri active de relistat.'});setRelistLoading(false);return}
+                          if(!myListings||myListings.length===0){
+                            setRelistResult({info:'Nu ai anunțuri active. Adaugă primul anunț și apoi poți relista.'})
+                            setRelistLoading(false);return
+                          }
                           const ids=myListings.map(l=>l.id)
                           const{error}=await supabase.from('listings').update({updated_at:new Date().toISOString()}).in('id',ids)
                           if(error){setRelistResult({error:error.message});setRelistLoading(false);return}
@@ -1636,7 +1643,19 @@ export default function ServiceDashboard() {
                       </button>
                       {relistResult?.success&&<div style={{background:S.greenBg,color:S.green,borderRadius:8,padding:'8px 12px',fontSize:12,fontWeight:600,textAlign:'center'}}>✅ {relistResult.success} anunțuri urcate în top!</div>}
                       {relistResult?.error&&<div style={{background:S.redBg,color:S.red,borderRadius:8,padding:'8px 12px',fontSize:12,fontWeight:600,textAlign:'center'}}>❌ {relistResult.error}</div>}
-                      {relistResult?.info&&<div style={{background:S.bg,color:S.muted,borderRadius:8,padding:'8px 12px',fontSize:12,textAlign:'center'}}>{relistResult.info}</div>}
+                      {relistResult?.info&&<div style={{background:S.bg,color:S.muted,borderRadius:8,padding:'10px 12px',fontSize:12,textAlign:'center'}}>
+                        {relistResult.info}
+                        <a href="/listing/create" style={{display:'block',marginTop:6,color:S.blue,fontWeight:700,textDecoration:'none'}}>+ Adaugă primul anunț →</a>
+                      </div>}
+                      {relistResult?.upgrade&&<div style={{background:S.amberBg,borderRadius:8,padding:'10px 12px',fontSize:12,textAlign:'center'}}>
+                        <div style={{fontWeight:700,color:S.amber,marginBottom:4}}>⭐ Necesită plan plătit</div>
+                        <div style={{color:S.muted,marginBottom:8}}>Relistarea automată e disponibilă pe planurile Basic și Pro.</div>
+                        <button onClick={async()=>{
+                          const res=await fetch('/api/stripe/checkout',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({type:'subscription',plan:'basic',service_id:service?.id})})
+                          const{url}=await res.json()
+                          if(url) window.location.href=url
+                        }} style={{...btn('primary'),fontSize:12,padding:'7px 16px'}}>Upgrade la Basic →</button>
+                      </div>}
                     </div>
                   )}
                 </div>
