@@ -305,6 +305,7 @@ function MapPicker({ address, city, onAddressChange }) {
 
 export default function ServiceDashboard() {
   const [tab, setTab] = useState('Acasă')
+  const [user, setUser] = useState(null)
   const [service, setService] = useState(null)
   const [requests, setRequests] = useState([])
   const [appointments, setAppointments] = useState([])
@@ -324,6 +325,10 @@ export default function ServiceDashboard() {
   const [newOffering, setNewOffering] = useState({name:'',price_from:'',price_to:'',duration_min:'',description:''})
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const [mounted, setMounted] = useState(false)
+  const [csvLoading, setCsvLoading] = useState(false)
+  const [csvResult, setCsvResult] = useState(null)
+  const [relistLoading, setRelistLoading] = useState(false)
+  const [relistResult, setRelistResult] = useState(null)
   const [showAddApt, setShowAddApt] = useState(false)
   const [newApt, setNewApt] = useState({client_name:'',car_info:'',scheduled_date:'',scheduled_time:'',duration_min:'60',work_description:'',notes:''})
   const [addingApt, setAddingApt] = useState(false)
@@ -376,6 +381,7 @@ export default function ServiceDashboard() {
     async function load() {
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) { window.location.href = '/auth/login'; return }
+      setUser(user)
       // Verifică rolul — doar service_owner poate accesa dashboard-ul
       const { data: prof } = await supabase.from('profiles').select('*').eq('id', user.id).single()
       if (prof?.role === 'user') { window.location.href = '/home'; return }
@@ -1532,34 +1538,44 @@ export default function ServiceDashboard() {
                   <input type="file" accept=".csv,.txt" id="csv-upload" style={{display:'none'}}
                     onChange={async(e)=>{
                       const file=e.target.files?.[0]; if(!file||!service||!user) return
-                      const text=await file.text()
-                      const lines=text.split('\n').filter(l=>l.trim())
-                      const headers=lines[0].split(',').map(h=>h.trim().toLowerCase().replace(/"/g,''))
-                      const rows=lines.slice(1)
-                      const inserts=rows.map(row=>{
-                        const cols=row.split(',').map(c=>c.trim().replace(/"/g,''))
-                        const get=(name)=>cols[headers.indexOf(name)]||''
-                        return {
-                          user_id:user.id,
-                          title:get('titlu')||get('title')||get('denumire')||cols[0]||'Piesă auto',
-                          price:parseFloat(get('pret')||get('price'))||null,
-                          category:get('categorie')||get('category')||'piese',
-                          city:get('oras')||get('city')||service.city||'București',
-                          condition:get('stare')||get('condition')||'folosit',
-                          description:get('descriere')||get('description')||'',
-                          status:'activ',
-                        }
-                      }).filter(r=>r.title&&r.title.length>1)
-                      if(inserts.length===0){alert('Nu s-au găsit rânduri valide.');return}
-                      const{error}=await supabase.from('listings').insert(inserts)
-                      if(error){alert('Eroare import: '+error.message);return}
-                      alert(`✅ ${inserts.length} anunțuri importate!`)
-                      e.target.value=''
+                      setCsvLoading(true); setCsvResult(null)
+                      try {
+                        const text=await file.text()
+                        const lines=text.split('\n').filter(l=>l.trim())
+                        if(lines.length<2){setCsvResult({error:'Fișierul e gol sau are doar antet.'});setCsvLoading(false);return}
+                        const headers=lines[0].split(',').map(h=>h.trim().toLowerCase().replace(/"/g,''))
+                        const rows=lines.slice(1)
+                        const inserts=rows.map(row=>{
+                          const cols=row.split(',').map(c=>c.trim().replace(/"/g,''))
+                          const get=(name)=>cols[headers.indexOf(name)]||''
+                          return {
+                            user_id:user.id,
+                            title:get('titlu')||get('title')||get('denumire')||cols[0]||'Piesă auto',
+                            price:parseFloat(get('pret')||get('price'))||null,
+                            category:get('categorie')||get('category')||'piese',
+                            city:get('oras')||get('city')||service.city||'București',
+                            condition:get('stare')||get('condition')||'folosit',
+                            description:get('descriere')||get('description')||'',
+                            status:'activ',
+                          }
+                        }).filter(r=>r.title&&r.title.length>1)
+                        if(inserts.length===0){setCsvResult({error:'Nu s-au găsit rânduri valide în fișier.'});setCsvLoading(false);return}
+                        const{error}=await supabase.from('listings').insert(inserts)
+                        if(error){setCsvResult({error:error.message});setCsvLoading(false);return}
+                        setCsvResult({success:inserts.length})
+                        e.target.value=''
+                      } catch(err) {
+                        setCsvResult({error:'Eroare la citirea fișierului.'})
+                      }
+                      setCsvLoading(false)
                     }}/>
-                  <button onClick={()=>document.getElementById('csv-upload')?.click()}
-                    style={{...btn('ghost'),width:'100%',justifyContent:'center',marginBottom:8,fontSize:13}}>
-                    📂 Alege fișier CSV
+                  <button onClick={()=>{setCsvResult(null);document.getElementById('csv-upload')?.click()}}
+                    disabled={csvLoading}
+                    style={{...btn('ghost'),width:'100%',justifyContent:'center',marginBottom:8,fontSize:13,opacity:csvLoading?.6:1}}>
+                    {csvLoading?'⏳ Se importă...':'📂 Alege fișier CSV'}
                   </button>
+                  {csvResult?.success&&<div style={{background:S.greenBg,color:S.green,borderRadius:8,padding:'8px 12px',fontSize:12,fontWeight:600,marginBottom:8,textAlign:'center'}}>✅ {csvResult.success} anunțuri importate cu succes!</div>}
+                  {csvResult?.error&&<div style={{background:S.redBg,color:S.red,borderRadius:8,padding:'8px 12px',fontSize:12,fontWeight:600,marginBottom:8,textAlign:'center'}}>❌ {csvResult.error}</div>}
                   <a href={'data:text/csv;charset=utf-8,titlu%2Cpret%2Ccategorie%2Coras%2Cstare%2Cdescriere%0AUsa%20fata%20stanga%20BMW%20E60%2C850%2Cpiese%2CBucuresti%2Cfolosit%2CPiesa%20originala'}
                     download="model_import_reparo.csv"
                     style={{display:'block',textAlign:'center',fontSize:12,color:S.blue,textDecoration:'none',fontWeight:600}}>
@@ -1602,8 +1618,25 @@ export default function ServiceDashboard() {
                       Upgrade pentru relistare →
                     </button>
                   ):(
-                    <div style={{background:'#dcfce7',borderRadius:10,padding:'10px 14px',fontSize:12,color:'#166534',fontWeight:600}}>
-                      ✅ Relistarea automată este activă
+                    <div>
+                      <button onClick={async()=>{
+                        setRelistLoading(true); setRelistResult(null)
+                        try {
+                          const{data:myListings}=await supabase.from('listings').select('id').eq('user_id',user?.id).eq('status','activ')
+                          if(!myListings||myListings.length===0){setRelistResult({info:'Nu ai anunțuri active de relistat.'});setRelistLoading(false);return}
+                          const ids=myListings.map(l=>l.id)
+                          const{error}=await supabase.from('listings').update({updated_at:new Date().toISOString()}).in('id',ids)
+                          if(error){setRelistResult({error:error.message});setRelistLoading(false);return}
+                          setRelistResult({success:ids.length})
+                        } catch(e){setRelistResult({error:'Eroare la relistare.'})}
+                        setRelistLoading(false)
+                      }} disabled={relistLoading}
+                        style={{...btn('primary'),width:'100%',justifyContent:'center',fontSize:13,marginBottom:8,opacity:relistLoading?.6:1}}>
+                        {relistLoading?'⏳ Se relistează...':'🔄 Relistează toate anunțurile acum'}
+                      </button>
+                      {relistResult?.success&&<div style={{background:S.greenBg,color:S.green,borderRadius:8,padding:'8px 12px',fontSize:12,fontWeight:600,textAlign:'center'}}>✅ {relistResult.success} anunțuri urcate în top!</div>}
+                      {relistResult?.error&&<div style={{background:S.redBg,color:S.red,borderRadius:8,padding:'8px 12px',fontSize:12,fontWeight:600,textAlign:'center'}}>❌ {relistResult.error}</div>}
+                      {relistResult?.info&&<div style={{background:S.bg,color:S.muted,borderRadius:8,padding:'8px 12px',fontSize:12,textAlign:'center'}}>{relistResult.info}</div>}
                     </div>
                   )}
                 </div>
