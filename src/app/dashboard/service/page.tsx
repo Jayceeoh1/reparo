@@ -329,6 +329,8 @@ export default function ServiceDashboard() {
   const [csvResult, setCsvResult] = useState(null)
   const [relistLoading, setRelistLoading] = useState(false)
   const [relistResult, setRelistResult] = useState(null)
+  const [verifyLoading, setVerifyLoading] = useState(false)
+  const [verifyDone, setVerifyDone] = useState(false)
   const [pushEnabled, setPushEnabled] = useState(false)
   const [pushLoading, setPushLoading] = useState(false)
   const [showAddApt, setShowAddApt] = useState(false)
@@ -970,6 +972,70 @@ export default function ServiceDashboard() {
           )}
 
           {/* ══ SERVICII OFERITE ══ */}
+          {/* Verificare service - afiseaza in Profil public */}
+          {tab==='Profil public'&&service&&!service.is_verified&&(
+            <div style={{background:'#fef3c7',border:'1.5px solid #f59e0b',borderRadius:16,padding:'16px 20px',marginBottom:16,display:'flex',alignItems:'flex-start',gap:14}}>
+              <span style={{fontSize:28,flexShrink:0}}>⚠️</span>
+              <div style={{flex:1}}>
+                <div style={{fontFamily:"'Sora',sans-serif",fontWeight:700,fontSize:15,color:'#92400e',marginBottom:4}}>Service neverificat</div>
+                <div style={{fontSize:13,color:'#a16207',marginBottom:12,lineHeight:1.6}}>
+                  Service-urile verificate apar mai sus în căutări și au badge-ul ✓ Verificat care crește încrederea clienților.
+                  Procesul de verificare e gratuit și durează 24-48h.
+                </div>
+                {!verifyDone?(
+                  <div>
+                    <div style={{fontSize:12,fontWeight:700,color:'#92400e',marginBottom:8,textTransform:'uppercase',letterSpacing:.5}}>Documente necesare:</div>
+                    <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:8,marginBottom:12}}>
+                      {[
+                        {icon:'📄',label:'CUI / CIF',desc:'Certificat înregistrare fiscală'},
+                        {icon:'🏢',label:'Certificat RAR',desc:'Dacă ești autorizat RAR'},
+                        {icon:'🖼️',label:'Foto sediu',desc:'Poze cu service-ul exterior'},
+                        {icon:'📋',label:'Act constitutiv',desc:'Sau altă dovadă activitate'},
+                      ].map(d=>(
+                        <div key={d.label} style={{background:'rgba(255,255,255,0.7)',borderRadius:10,padding:'8px 12px',display:'flex',gap:8,alignItems:'center'}}>
+                          <span style={{fontSize:20}}>{d.icon}</span>
+                          <div><div style={{fontSize:12,fontWeight:700,color:'#92400e'}}>{d.label}</div><div style={{fontSize:11,color:'#a16207'}}>{d.desc}</div></div>
+                        </div>
+                      ))}
+                    </div>
+                    <button onClick={async()=>{
+                      setVerifyLoading(true)
+                      try {
+                        await supabase.from('verification_requests').insert({
+                          service_id: service.id,
+                          owner_id: user?.id,
+                          status: 'pending',
+                          submitted_at: new Date().toISOString(),
+                          notes: 'Cerere verificare trimisă din dashboard'
+                        })
+                        await supabase.from('notifications').insert({
+                          user_id: 'admin',
+                          type: 'verification_request',
+                          title: 'Cerere verificare service nouă',
+                          body: `${service.name} a solicitat verificarea`,
+                          data: { service_id: service.id }
+                        })
+                        setVerifyDone(true)
+                      } catch(e) { console.error(e) }
+                      setVerifyLoading(false)
+                    }} disabled={verifyLoading}
+                      style={{padding:'11px 24px',background:'#f59e0b',color:'#fff',border:'none',borderRadius:50,fontSize:14,fontWeight:700,cursor:'pointer',display:'flex',alignItems:'center',gap:8,opacity:verifyLoading?.6:1}}>
+                      {verifyLoading?'Se trimite...':'🛡️ Solicită verificarea gratuită'}
+                    </button>
+                  </div>
+                ):(
+                  <div style={{background:'rgba(255,255,255,0.8)',borderRadius:10,padding:'12px 16px',display:'flex',alignItems:'center',gap:10}}>
+                    <span style={{fontSize:24}}>✅</span>
+                    <div>
+                      <div style={{fontWeight:700,fontSize:13,color:'#065f46'}}>Cerere trimisă cu succes!</div>
+                      <div style={{fontSize:12,color:'#047857'}}>Echipa Reparo va analiza documentele și te va contacta în 24-48h.</div>
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+
           {tab==='Servicii oferite'&&(
             <div>
               <h1 style={{fontFamily:"'Sora',sans-serif",fontWeight:800,fontSize:22,color:S.navy,marginBottom:4}}>Servicii oferite</h1>
