@@ -21,6 +21,11 @@ export default function ServiceProfilePage({ params }: { params: { id: string } 
   const [showReviewForm, setShowReviewForm] = useState(false)
   const [reviewForm, setReviewForm] = useState({ rating: 5, title: '', body: '' })
   const [submittingReview, setSubmittingReview] = useState(false)
+  const [hasReviewed, setHasReviewed] = useState(false)
+  const [replyingTo, setReplyingTo] = useState<string|null>(null)
+  const [replyText, setReplyText] = useState('')
+  const [reportingId, setReportingId] = useState<string|null>(null)
+  const [isOwner, setIsOwner] = useState(false)
   const [showQuote, setShowQuote] = useState(false)
   const [conversationCreating, setConversationCreating] = useState(false)
   const supabase = createClient()
@@ -29,10 +34,20 @@ export default function ServiceProfilePage({ params }: { params: { id: string } 
     async function load() {
       const { data: { user } } = await supabase.auth.getUser()
       setUser(user)
+      if (user) {
+        // Verifică dacă userul e owner-ul acestui service
+        const { data: svcOwn } = await supabase.from('services').select('id').eq('id', params.id).eq('owner_id', user.id).single()
+        setIsOwner(!!svcOwn)
+      }
       const { data: svc } = await supabase.from('services').select('*').eq('id', params.id).single()
       setService(svc)
       const { data: revs } = await supabase.from('reviews').select('*, profiles(full_name)').eq('service_id', params.id).order('created_at', { ascending: false })
       setReviews(revs || [])
+      // Verifică dacă userul curent a lăsat deja recenzie
+      if (user) {
+        const already = (revs||[]).some(r => r.user_id === user.id)
+        setHasReviewed(already)
+      }
       const { data: gal } = await supabase.from('service_gallery').select('*').eq('service_id', params.id).order('sort_order')
       setGallery(gal || [])
       const { data: offs } = await supabase.from('service_offerings').select('*').eq('service_id', params.id).eq('is_active', true).order('price_from', {ascending:true})
@@ -44,6 +59,7 @@ export default function ServiceProfilePage({ params }: { params: { id: string } 
 
   async function submitReview() {
     if (!user) { window.location.href = '/auth/login'; return }
+    if (hasReviewed) { alert('Ai lăsat deja o recenzie pentru acest service.'); return }
     setSubmittingReview(true)
     const { data, error } = await supabase.from('reviews').insert({
       service_id: params.id, user_id: user.id,
@@ -54,10 +70,30 @@ export default function ServiceProfilePage({ params }: { params: { id: string } 
       setSubmittingReview(false)
       return
     }
-    if (data) setReviews(prev => [data, ...prev])
+    if (data) {
+      setReviews(prev => [data, ...prev])
+      setHasReviewed(true)
+    }
     setShowReviewForm(false)
     setReviewForm({ rating: 5, title: '', body: '' })
     setSubmittingReview(false)
+  }
+
+  async function submitReply(reviewId: string) {
+    if (!replyText.trim()) return
+    const { error } = await supabase.from('reviews').update({ service_reply: replyText, replied_at: new Date().toISOString() }).eq('id', reviewId)
+    if (error) { alert('Eroare: ' + error.message); return }
+    setReviews(prev => prev.map(r => r.id === reviewId ? {...r, service_reply: replyText} : r))
+    setReplyingTo(null)
+    setReplyText('')
+  }
+
+  async function reportReview(reviewId: string) {
+    if (!confirm('Raportezi această recenzie ca frauduloasă/falsă?')) return
+    const { error } = await supabase.from('reviews').update({ is_reported: true, reported_at: new Date().toISOString() }).eq('id', reviewId)
+    if (error) { alert('Eroare: ' + error.message); return }
+    setReviews(prev => prev.map(r => r.id === reviewId ? {...r, is_reported: true} : r))
+    alert('✅ Recenzia a fost raportată. O vom analiza în curând.')
   }
 
   async function startConversation() {
@@ -192,10 +228,21 @@ export default function ServiceProfilePage({ params }: { params: { id: string } 
             <div style={card()}>
               <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:16}}>
                 <h2 style={{fontFamily:"'Sora',sans-serif",fontWeight:700,fontSize:16,color:S.navy,margin:0}}>⭐ Recenzii ({reviews.length})</h2>
-                <button onClick={()=>setShowReviewForm(!showReviewForm)}
-                  style={{padding:'8px 16px',background:showReviewForm?S.bg:S.blue,color:showReviewForm?S.muted:'#fff',border:`1px solid ${showReviewForm?S.border:'none'}`,borderRadius:50,fontSize:13,fontWeight:600,cursor:'pointer',fontFamily:"'DM Sans',sans-serif"}}>
-                  {showReviewForm?'Anulează':'Lasă recenzie'}
-                </button>
+                {/* Buton doar pentru clienti care nu au lasat recenzie si nu sunt owner */}
+                {user && !isOwner && !hasReviewed && (
+                  <button onClick={()=>setShowReviewForm(!showReviewForm)}
+                    style={{padding:'8px 16px',background:showReviewForm?S.bg:S.blue,color:showReviewForm?S.muted:'#fff',border:`1px solid ${showReviewForm?S.border:'none'}`,borderRadius:50,fontSize:13,fontWeight:600,cursor:'pointer',fontFamily:"'DM Sans',sans-serif"}}>
+                    {showReviewForm?'Anulează':'Lasă recenzie'}
+                  </button>
+                )}
+                {user && !isOwner && hasReviewed && (
+                  <span style={{fontSize:12,color:S.green,fontWeight:600}}>✅ Ai lăsat deja o recenzie</span>
+                )}
+                {!user && (
+                  <a href="/auth/login" style={{padding:'8px 16px',background:S.blue,color:'#fff',borderRadius:50,fontSize:13,fontWeight:600,textDecoration:'none'}}>
+                    Conectează-te pentru recenzie
+                  </a>
+                )}
               </div>
 
               {showReviewForm && (
@@ -231,7 +278,7 @@ export default function ServiceProfilePage({ params }: { params: { id: string } 
                   Nicio recenzie încă. Fii primul!
                 </div>
               ) : reviews.map(r=>(
-                <div key={r.id} style={{padding:'14px 0',borderBottom:`1px solid ${S.border}`}}>
+                <div key={r.id} style={{padding:'14px 0',borderBottom:`1px solid ${S.border}`,opacity:r.is_reported?0.6:1}}>
                   <div style={{display:'flex',justifyContent:'space-between',alignItems:'flex-start',marginBottom:6}}>
                     <div>
                       <div style={{display:'flex',gap:1,marginBottom:3}}>
@@ -239,16 +286,62 @@ export default function ServiceProfilePage({ params }: { params: { id: string } 
                       </div>
                       {r.title && <div style={{fontWeight:700,fontSize:14,color:S.navy,marginBottom:3}}>{r.title}</div>}
                     </div>
-                    <div style={{fontSize:11,color:S.muted}}>{new Date(r.created_at).toLocaleDateString('ro-RO')}</div>
+                    <div style={{display:'flex',alignItems:'center',gap:8}}>
+                      <span style={{fontSize:11,color:S.muted}}>{new Date(r.created_at).toLocaleDateString('ro-RO')}</span>
+                      {/* Butoane owner: raspunde + raporteaza */}
+                      {isOwner && !r.service_reply && (
+                        <button onClick={()=>{setReplyingTo(r.id);setReplyText('')}}
+                          style={{fontSize:11,padding:'4px 10px',borderRadius:50,border:`1px solid ${S.blue}`,background:'#eaf3ff',color:S.blue,cursor:'pointer',fontWeight:600}}>
+                          💬 Răspunde
+                        </button>
+                      )}
+                      {isOwner && !r.is_reported && (
+                        <button onClick={()=>reportReview(r.id)}
+                          style={{fontSize:11,padding:'4px 10px',borderRadius:50,border:`1px solid ${S.border}`,background:S.bg,color:S.muted,cursor:'pointer'}}>
+                          🚩 Raportează
+                        </button>
+                      )}
+                      {r.is_reported && (
+                        <span style={{fontSize:11,color:S.amber,fontWeight:600}}>⚠️ Raportat</span>
+                      )}
+                    </div>
                   </div>
-                  <p style={{fontSize:13,color:'#374151',lineHeight:1.6,marginBottom:r.service_reply?8:0}}>{r.body}</p>
+                  <p style={{fontSize:13,color:'#374151',lineHeight:1.6,marginBottom:6}}>{r.body}</p>
+
+                  {/* Raspuns service existent */}
                   {r.service_reply && (
-                    <div style={{background:'#eaf3ff',borderRadius:10,padding:'10px 12px',borderLeft:`3px solid ${S.blue}`}}>
+                    <div style={{background:'#eaf3ff',borderRadius:10,padding:'10px 12px',borderLeft:`3px solid ${S.blue}`,marginBottom:6}}>
                       <div style={{fontSize:11,fontWeight:700,color:S.blue,marginBottom:4}}>Răspuns service</div>
                       <p style={{fontSize:13,color:S.navy,margin:0}}>{r.service_reply}</p>
+                      {isOwner && (
+                        <button onClick={()=>{setReplyingTo(r.id);setReplyText(r.service_reply)}}
+                          style={{fontSize:11,color:S.blue,background:'none',border:'none',cursor:'pointer',marginTop:4,fontWeight:600}}>
+                          ✏️ Editează răspunsul
+                        </button>
+                      )}
                     </div>
                   )}
-                  <div style={{fontSize:12,color:S.muted,marginTop:6}}>— {r.profiles?.full_name||'Utilizator'}{r.is_verified&&' ✓ Verificat'}</div>
+
+                  {/* Form raspuns */}
+                  {replyingTo===r.id && (
+                    <div style={{background:S.bg,borderRadius:10,padding:12,marginBottom:6}}>
+                      <textarea value={replyText} onChange={e=>setReplyText(e.target.value)} rows={3}
+                        placeholder="Scrie răspunsul tău la această recenzie..."
+                        style={{width:'100%',padding:'8px 12px',border:`1.5px solid ${S.border}`,borderRadius:8,fontSize:13,fontFamily:"'DM Sans',sans-serif",resize:'none',boxSizing:'border-box',marginBottom:8}}/>
+                      <div style={{display:'flex',gap:8}}>
+                        <button onClick={()=>submitReply(r.id)} disabled={!replyText.trim()}
+                          style={{padding:'8px 18px',background:S.blue,color:'#fff',border:'none',borderRadius:50,fontSize:12,fontWeight:700,cursor:'pointer',opacity:!replyText.trim()?.5:1}}>
+                          Publică răspunsul
+                        </button>
+                        <button onClick={()=>setReplyingTo(null)}
+                          style={{padding:'8px 14px',background:'transparent',color:S.muted,border:`1px solid ${S.border}`,borderRadius:50,fontSize:12,cursor:'pointer'}}>
+                          Anulează
+                        </button>
+                      </div>
+                    </div>
+                  )}
+
+                  <div style={{fontSize:12,color:S.muted,marginTop:4}}>— {r.profiles?.full_name||'Utilizator'}{r.is_verified&&' ✓ Verificat'}</div>
                 </div>
               ))}
             </div>

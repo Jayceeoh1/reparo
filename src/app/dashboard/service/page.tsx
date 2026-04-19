@@ -329,6 +329,8 @@ export default function ServiceDashboard() {
   const [csvResult, setCsvResult] = useState(null)
   const [relistLoading, setRelistLoading] = useState(false)
   const [relistResult, setRelistResult] = useState(null)
+  const [pushEnabled, setPushEnabled] = useState(false)
+  const [pushLoading, setPushLoading] = useState(false)
   const [showAddApt, setShowAddApt] = useState(false)
   const [newApt, setNewApt] = useState({client_name:'',car_info:'',scheduled_date:'',scheduled_time:'',duration_min:'60',work_description:'',notes:''})
   const [addingApt, setAddingApt] = useState(false)
@@ -342,6 +344,17 @@ export default function ServiceDashboard() {
       const params = new URLSearchParams(window.location.search)
       const t = params.get('tab')
       if (t) setTab(t)
+    }
+  }, [])
+
+  // Check push subscription status
+  useEffect(() => {
+    if (typeof window !== 'undefined' && 'serviceWorker' in navigator && 'PushManager' in window) {
+      navigator.serviceWorker.ready.then(reg => {
+        reg.pushManager.getSubscription().then(sub => {
+          setPushEnabled(!!sub)
+        })
+      }).catch(() => {})
     }
   }, [])
 
@@ -1859,6 +1872,37 @@ export default function ServiceDashboard() {
                 {/* Notificări */}
                 <div style={card()}>
                   <h3 style={{fontFamily:"'Sora',sans-serif",fontWeight:700,fontSize:15,color:S.navy,marginBottom:14}}>🔔 Notificări</h3>
+                  {/* Push toggle */}
+                  <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',padding:'12px 0',borderBottom:`1px solid ${S.border}`,marginBottom:12}}>
+                    <div>
+                      <div style={{fontSize:13,fontWeight:600,color:S.navy,marginBottom:2}}>Notificări push pe telefon/browser</div>
+                      <div style={{fontSize:12,color:S.muted}}>{pushEnabled?'✅ Activate — vei primi alerte instant':'Activează pentru alerte instant la cereri noi'}</div>
+                    </div>
+                    <button onClick={async()=>{
+                      setPushLoading(true)
+                      try {
+                        if(!('serviceWorker' in navigator&&'PushManager' in window)){alert('Browser-ul tău nu suportă notificări push.');setPushLoading(false);return}
+                        const reg=await navigator.serviceWorker.ready
+                        if(pushEnabled){
+                          const sub=await reg.pushManager.getSubscription()
+                          if(sub){await sub.unsubscribe();await fetch('/api/push/subscribe',{method:'DELETE',headers:{'Content-Type':'application/json'},body:JSON.stringify({endpoint:sub.endpoint})})}
+                          setPushEnabled(false)
+                        } else {
+                          const perm=await Notification.requestPermission()
+                          if(perm!=='granted'){alert('Permite notificările în setările browserului.');setPushLoading(false);return}
+                          const VAPID_PUBLIC=process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY||''
+                          if(!VAPID_PUBLIC){alert('NEXT_PUBLIC_VAPID_PUBLIC_KEY lipsă din env vars.');setPushLoading(false);return}
+                          const sub=await reg.pushManager.subscribe({userVisibleOnly:true,applicationServerKey:VAPID_PUBLIC})
+                          await fetch('/api/push/subscribe',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({subscription:sub.toJSON()})})
+                          setPushEnabled(true)
+                        }
+                      } catch(e){console.error('[push]',e);alert('Eroare la activarea notificărilor: '+e.message)}
+                      setPushLoading(false)
+                    }} disabled={pushLoading}
+                      style={{position:'relative',width:44,height:24,borderRadius:12,background:pushEnabled?S.blue:'#e5e7eb',border:'none',cursor:'pointer',transition:'background .2s',flexShrink:0,opacity:pushLoading?.6:1}}>
+                      <div style={{position:'absolute',top:2,left:pushEnabled?22:2,width:20,height:20,borderRadius:'50%',background:'#fff',transition:'left .2s',boxShadow:'0 1px 4px rgba(0,0,0,0.2)'}}/>
+                    </button>
+                  </div>
                   {[
                     {label:'Cerere ofertă nouă',desc:'Când un client trimite o cerere în orașul tău',key:'notif_requests',default:true},
                     {label:'Programare confirmată',desc:'Când un client acceptă oferta ta',key:'notif_appointments',default:true},

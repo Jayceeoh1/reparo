@@ -275,6 +275,18 @@ export default function ListingDetailPage({ params }: { params: { id: string } }
                 </div>
               )}
 
+              {/* Trimite mesaj */}
+              <a href={`/messages`}
+                style={{display:'flex',alignItems:'center',justifyContent:'center',gap:8,width:'100%',padding:'12px',background:'transparent',color:S.blue,border:`1.5px solid ${S.blue}`,borderRadius:50,fontSize:14,fontWeight:700,cursor:'pointer',fontFamily:"'Sora',sans-serif",textDecoration:'none',marginBottom:10,boxSizing:'border-box',transition:'all .2s'}}>
+                💬 Trimite mesaj vânzătorului
+              </a>
+
+              {/* Cere oferta piese similare */}
+              <a href={`/piese-oferta`}
+                style={{display:'flex',alignItems:'center',justifyContent:'center',gap:8,width:'100%',padding:'12px',background:S.amberBg,color:'#92400e',border:'1.5px solid rgba(217,119,6,0.3)',borderRadius:50,fontSize:13,fontWeight:600,cursor:'pointer',fontFamily:"'DM Sans',sans-serif",textDecoration:'none',marginBottom:10,boxSizing:'border-box'}}>
+                🔩 Caută piese similare la alte service-uri
+              </a>
+
               <div style={{display:'flex',gap:8}}>
                 <button onClick={()=>setFavorite(!favorite)}
                   style={{flex:1,padding:'10px',background:favorite?'#fee2e2':S.bg,color:favorite?S.red:S.muted,border:`1px solid ${favorite?'#fecaca':S.border}`,borderRadius:50,fontSize:13,fontWeight:600,cursor:'pointer',fontFamily:"'DM Sans',sans-serif",transition:'all .2s'}}>
