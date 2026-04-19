@@ -60,7 +60,9 @@ export default function ServiceProfilePage({ params }: { params: { id: string } 
         {/* Header card */}
         <div className="bg-white rounded-2xl border border-gray-100 p-6 -mt-8 relative z-10 mb-6 shadow-sm">
           <div className="flex items-start gap-5">
-            <div className="w-20 h-20 bg-[#E6F0FB] rounded-2xl flex items-center justify-center text-4xl flex-shrink-0 -mt-2 border-4 border-white shadow">🔧</div>
+            <div className="w-20 h-20 bg-[#E6F0FB] rounded-2xl flex items-center justify-center text-4xl flex-shrink-0 -mt-2 border-4 border-white shadow overflow-hidden">
+              {service.logo_url ? <img src={service.logo_url} alt={service.name} className="w-full h-full object-cover" /> : '🔧'}
+            </div>
             <div className="flex-1 min-w-0">
               <div className="flex items-start justify-between flex-wrap gap-3">
                 <div>

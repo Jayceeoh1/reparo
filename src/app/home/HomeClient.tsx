@@ -169,6 +169,7 @@ export default function HomeClient() {
               <ServiceCard key={s.id}
                 name={s.name} city={s.city || ''} dist="" rating={s.rating_avg} reviews={s.rating_count}
                 desc={s.description || 'Service auto profesional'} tags={[s.is_verified ? 'Verificat' : '', s.has_itp ? 'ITP pe loc' : '', s.is_authorized_rar ? 'Autorizat RAR' : ''].filter(Boolean)}
+                logo={s.logo_url}
                 isFav={favorites.has(s.id)} onFav={() => toggleFav(s.id)} onClick={() => window.location.href = `/service/${s.id}`} />
             ))}
           </div>
@@ -568,10 +569,12 @@ export default function HomeClient() {
   )
 }
 
-function ServiceCard({ name, city, dist, rating, reviews, desc, tags, isFav, onFav, onClick }: any) {
+function ServiceCard({ name, city, dist, rating, reviews, desc, tags, isFav, onFav, onClick, logo }: any) {
   return (
     <div onClick={onClick} className="svc-card" style={{ background: '#fff', borderRadius: 14, border: `1px solid #e5e7eb`, padding: 18, cursor: 'pointer', display: 'flex', gap: 12, alignItems: 'flex-start', transition: 'all .2s', boxShadow: '0 2px 8px rgba(10,31,68,0.04)' }}>
-      <div style={{ width: 50, height: 50, background: '#eaf3ff', borderRadius: 13, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, fontSize: 22 }}>🔧</div>
+      <div style={{ width: 50, height: 50, background: '#eaf3ff', borderRadius: 13, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, fontSize: 22, overflow: 'hidden' }}>
+        {logo ? <img src={logo} alt={name} style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: 13 }} /> : '🔧'}
+      </div>
       <div style={{ flex: 1, minWidth: 0 }}>
         <div style={{ fontSize: 14, fontWeight: 700, color: '#0a1f44', marginBottom: 2, fontFamily: "'Sora',sans-serif" }}>{name}</div>
         <div style={{ display: 'flex', gap: 1, marginBottom: 4 }}>
