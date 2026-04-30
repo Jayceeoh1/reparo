@@ -108,3 +108,4 @@ vercel
 - [ ] Sistem review-uri
 - [ ] Plati Stripe
 - [ ] App mobila (React Native)
+ 
