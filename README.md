@@ -109,3 +109,4 @@ vercel
 - [ ] Plati Stripe
 - [ ] App mobila (React Native)
  
+ 
