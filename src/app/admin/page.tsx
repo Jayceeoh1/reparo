@@ -58,7 +58,7 @@ export default function AdminPage() {
       { data: rr },
       { data: usersData },
       { data: activity },
-      { data: payments },
+      { data: payments, error: paymentsError },
       { count: totalServices },
       { count: totalUsers },
       { count: totalRequests },
@@ -70,7 +70,7 @@ export default function AdminPage() {
       supabase.from('reviews').select('*, profiles:user_id(full_name), services(name)').eq('is_reported', true).order('reported_at', { ascending: false }),
       supabase.from('profiles').select('id,full_name,role,created_at,is_banned').order('created_at', { ascending: false }).limit(100),
       supabase.from('quote_requests').select('id,car_brand,car_model,city,created_at,status').order('created_at', { ascending: false }).limit(20),
-      supabase.from('payments').select('amount,created_at,plan,service_id').order('created_at', { ascending: false }).limit(90).catch(() => ({ data: [] })),
+      supabase.from('payments').select('amount,created_at,plan,service_id').order('created_at', { ascending: false }).limit(90),
       supabase.from('services').select('*', { count: 'exact', head: true }),
       supabase.from('profiles').select('*', { count: 'exact', head: true }),
       supabase.from('quote_requests').select('*', { count: 'exact', head: true }),
@@ -91,7 +91,7 @@ export default function AdminPage() {
       d.setDate(d.getDate() - (29 - i))
       return d.toISOString().split('T')[0]
     })
-    const payArr = payments || []
+    const payArr = (!paymentsError && payments) ? payments : []
     const revenueByDay = days.map(day => ({
       day: day.slice(5), // MM-DD
       total: payArr.filter(p => p.created_at?.startsWith(day)).reduce((sum, p) => sum + (p.amount || 0), 0),
