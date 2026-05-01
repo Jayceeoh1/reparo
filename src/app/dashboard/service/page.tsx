@@ -759,6 +759,195 @@ export default function ServiceDashboard() {
           {/* ══ PROFIL PUBLIC ══ */}
           {tab==='Profil public'&&(
             <div>
+          {/* Verificare service - flux complet */}
+          {tab==='Profil public'&&service&&(
+            <div style={{marginBottom:16}}>
+              {/* Badge verificat */}
+              {service.is_verified?(
+                <div style={{background:'#dcfce7',border:'1.5px solid #16a34a',borderRadius:14,padding:'14px 20px',display:'flex',alignItems:'center',gap:12}}>
+                  <span style={{fontSize:28}}>✅</span>
+                  <div>
+                    <div style={{fontFamily:"'Sora',sans-serif",fontWeight:700,fontSize:15,color:'#065f46'}}>Service verificat Reparo</div>
+                    <div style={{fontSize:13,color:'#047857'}}>Badge-ul ✓ Verificat apare pe profilul tău public și în rezultatele de căutare.</div>
+                  </div>
+                </div>
+              ):(
+                <div style={{background:'#fef3c7',border:'1.5px solid #f59e0b',borderRadius:16,padding:'20px',marginBottom:8}}>
+                  {/* Header */}
+                  <div style={{display:'flex',alignItems:'flex-start',gap:12,marginBottom:16}}>
+                    <span style={{fontSize:28,flexShrink:0}}>🛡️</span>
+                    <div>
+                      <div style={{fontFamily:"'Sora',sans-serif",fontWeight:700,fontSize:16,color:'#92400e',marginBottom:4}}>Verifică-ți service-ul — gratuit</div>
+                      <div style={{fontSize:13,color:'#a16207',lineHeight:1.6}}>Service-urile verificate apar mai sus în căutări și au un badge care crește rata de conversie cu ~40%.</div>
+                    </div>
+                  </div>
+
+                  {/* Steps indicator */}
+                  <div style={{display:'flex',gap:0,marginBottom:20}}>
+                    {['Documente','Upload','Confirmare'].map((s,i)=>(
+                      <div key={s} style={{flex:1,display:'flex',alignItems:'center'}}>
+                        <div style={{display:'flex',flexDirection:'column',alignItems:'center',flex:1}}>
+                          <div style={{width:28,height:28,borderRadius:'50%',background:verifyStep>i+1?'#16a34a':verifyStep===i+1?'#f59e0b':'#e5e7eb',color:verifyStep>=i+1?'#fff':'#9ca3af',display:'flex',alignItems:'center',justifyContent:'center',fontSize:12,fontWeight:700,marginBottom:4}}>
+                            {verifyStep>i+1?'✓':i+1}
+                          </div>
+                          <div style={{fontSize:10,fontWeight:600,color:verifyStep===i+1?'#92400e':'#9ca3af'}}>{s}</div>
+                        </div>
+                        {i<2&&<div style={{height:2,flex:1,background:verifyStep>i+1?'#16a34a':'#e5e7eb',marginBottom:16,marginTop:0}}/>}
+                      </div>
+                    ))}
+                  </div>
+
+                  {/* Step 1 — Info + documente necesare */}
+                  {verifyStep===1&&!verifyDone&&!existingRequest&&(
+                    <div>
+                      <div style={{fontSize:12,fontWeight:700,color:'#92400e',marginBottom:10,textTransform:'uppercase',letterSpacing:.5}}>Ce documente sunt necesare:</div>
+                      <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fit,minmax(160px,1fr))',gap:8,marginBottom:16}}>
+                        {[
+                          {icon:'📄',label:'CUI / CIF',desc:'Certificat înreg. fiscală',req:true},
+                          {icon:'🏢',label:'Certificat RAR',desc:'Dacă ești autorizat RAR',req:false},
+                          {icon:'🖼️',label:'Foto sediu',desc:'Exterior service, minim 2 poze',req:true},
+                          {icon:'📋',label:'Act constitutiv',desc:'Sau altă dovadă activitate',req:false},
+                        ].map(d=>(
+                          <div key={d.label} style={{background:'rgba(255,255,255,0.75)',borderRadius:10,padding:'10px 12px',display:'flex',gap:8,alignItems:'flex-start'}}>
+                            <span style={{fontSize:22,flexShrink:0}}>{d.icon}</span>
+                            <div>
+                              <div style={{fontSize:12,fontWeight:700,color:'#92400e'}}>{d.label} {d.req&&<span style={{color:'#dc2626'}}>*</span>}</div>
+                              <div style={{fontSize:11,color:'#a16207'}}>{d.desc}</div>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                      <div style={{fontSize:11,color:'#a16207',marginBottom:14}}>* obligatoriu · Procesul e gratuit și durează 24-48h</div>
+                      <button onClick={()=>setVerifyStep(2)}
+                        style={{padding:'11px 28px',background:'#f59e0b',color:'#fff',border:'none',borderRadius:50,fontSize:14,fontWeight:700,cursor:'pointer'}}>
+                        Continuă →
+                      </button>
+                    </div>
+                  )}
+
+                  {/* Step 2 — Upload documente */}
+                  {verifyStep===2&&!verifyDone&&!existingRequest&&(
+                    <div>
+                      <div style={{fontSize:12,fontWeight:700,color:'#92400e',marginBottom:12,textTransform:'uppercase',letterSpacing:.5}}>Încarcă documentele:</div>
+                      {[
+                        {key:'cui',label:'CUI / Certificat înregistrare fiscală',icon:'📄',accept:'image/*,application/pdf',req:true},
+                        {key:'rar',label:'Certificat RAR (opțional)',icon:'🏢',accept:'image/*,application/pdf',req:false},
+                        {key:'foto',label:'Foto sediu exterior (minim 1)',icon:'🖼️',accept:'image/*',req:true},
+                      ].map(doc=>(
+                        <div key={doc.key} style={{background:'rgba(255,255,255,0.75)',borderRadius:12,padding:'12px 14px',marginBottom:10,display:'flex',alignItems:'center',gap:12}}>
+                          <span style={{fontSize:24,flexShrink:0}}>{doc.icon}</span>
+                          <div style={{flex:1,minWidth:0}}>
+                            <div style={{fontSize:13,fontWeight:600,color:'#92400e',marginBottom:2}}>{doc.label}</div>
+                            {verifyDocs[doc.key]?(
+                              <div style={{fontSize:12,color:'#16a34a',display:'flex',alignItems:'center',gap:4}}>✅ Încărcat
+                                <button onClick={()=>setVerifyDocs(prev=>({...prev,[doc.key]:''}))}
+                                  style={{fontSize:11,color:'#dc2626',background:'none',border:'none',cursor:'pointer',marginLeft:4}}>Șterge</button>
+                              </div>
+                            ):(
+                              <div style={{fontSize:12,color:'#a16207'}}>{doc.req?'Obligatoriu':'Opțional'}</div>
+                            )}
+                          </div>
+                          <label style={{padding:'7px 14px',background:verifyDocs[doc.key]?'#dcfce7':'rgba(255,255,255,0.9)',border:`1.5px solid ${verifyDocs[doc.key]?'#16a34a':'#f59e0b'}`,borderRadius:50,fontSize:12,fontWeight:700,cursor:'pointer',color:verifyDocs[doc.key]?'#065f46':'#92400e',flexShrink:0,display:'flex',alignItems:'center',gap:6}}>
+                            {verifyUploading===doc.key?'⏳...':verifyDocs[doc.key]?'✓':'+ Upload'}
+                            <input type="file" accept={doc.accept} style={{display:'none'}}
+                              onChange={async(e)=>{
+                                const file=e.target.files?.[0]; if(!file||!service) return
+                                setVerifyUploading(doc.key)
+                                const ext=file.name.split('.').pop()
+                                const path=`verification/${service.id}/${doc.key}_${Date.now()}.${ext}`
+                                const {error}=await supabase.storage.from('verification-docs').upload(path,file,{upsert:true})
+                                if(error){alert('Eroare upload: '+error.message);setVerifyUploading('');return}
+                                const {data:{publicUrl}}=supabase.storage.from('verification-docs').getPublicUrl(path)
+                                setVerifyDocs(prev=>({...prev,[doc.key]:publicUrl}))
+                                setVerifyUploading('')
+                                e.target.value=''
+                              }}/>
+                          </label>
+                        </div>
+                      ))}
+
+                      <div style={{display:'flex',gap:10,marginTop:16}}>
+                        <button onClick={()=>setVerifyStep(1)}
+                          style={{padding:'10px 20px',background:'transparent',border:'1.5px solid #f59e0b',borderRadius:50,fontSize:13,fontWeight:600,cursor:'pointer',color:'#92400e'}}>
+                          ← Înapoi
+                        </button>
+                        <button onClick={async()=>{
+                          if(!verifyDocs.cui){alert('Încarcă cel puțin CUI-ul.');return}
+                          if(!verifyDocs.foto){alert('Încarcă cel puțin o fotografie a sediului.');return}
+                          setVerifyLoading(true)
+                          try {
+                            const {error}=await supabase.from('verification_requests').insert({
+                              service_id:service.id,
+                              owner_id:user?.id,
+                              status:'pending',
+                              submitted_at:new Date().toISOString(),
+                              doc_cui:verifyDocs.cui,
+                              doc_rar:verifyDocs.rar||null,
+                              doc_foto:verifyDocs.foto,
+                              notes:`CUI: ${verifyDocs.cui} | RAR: ${verifyDocs.rar||'N/A'} | Foto: ${verifyDocs.foto}`,
+                            })
+                            if(error) throw error
+                            setVerifyStep(3)
+                            setVerifyDone(true)
+                            setExistingRequest({status:'pending'})
+                          } catch(e){alert('Eroare: '+e.message)}
+                          setVerifyLoading(false)
+                        }} disabled={verifyLoading||!verifyDocs.cui||!verifyDocs.foto}
+                          style={{flex:1,padding:'11px 24px',background:verifyDocs.cui&&verifyDocs.foto?'#f59e0b':'#e5e7eb',color:verifyDocs.cui&&verifyDocs.foto?'#fff':'#9ca3af',border:'none',borderRadius:50,fontSize:14,fontWeight:700,cursor:verifyDocs.cui&&verifyDocs.foto?'pointer':'not-allowed',opacity:verifyLoading?.6:1}}>
+                          {verifyLoading?'Se trimite...':'🛡️ Trimite cererea'}
+                        </button>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Request pending / in review */}
+                  {existingRequest&&existingRequest.status==='pending'&&(
+                    <div style={{background:'rgba(255,255,255,0.8)',borderRadius:12,padding:'16px',display:'flex',gap:12,alignItems:'flex-start'}}>
+                      <span style={{fontSize:28}}>⏳</span>
+                      <div>
+                        <div style={{fontWeight:700,fontSize:14,color:'#92400e',marginBottom:4}}>Cerere în așteptare</div>
+                        <div style={{fontSize:13,color:'#a16207',lineHeight:1.6}}>Documentele tale au fost trimise. Echipa Reparo le va analiza în 24-48h și vei primi o notificare.</div>
+                      </div>
+                    </div>
+                  )}
+                  {existingRequest&&existingRequest.status==='in_review'&&(
+                    <div style={{background:'rgba(255,255,255,0.8)',borderRadius:12,padding:'16px',display:'flex',gap:12,alignItems:'flex-start'}}>
+                      <span style={{fontSize:28}}>🔍</span>
+                      <div>
+                        <div style={{fontWeight:700,fontSize:14,color:'#1d4ed8',marginBottom:4}}>În curs de analiză</div>
+                        <div style={{fontSize:13,color:'#1e40af',lineHeight:1.6}}>Echipa Reparo analizează documentele tale. Vei fi notificat când procesul e finalizat.</div>
+                      </div>
+                    </div>
+                  )}
+                  {existingRequest&&existingRequest.status==='rejected'&&(
+                    <div style={{background:'#fee2e2',borderRadius:12,padding:'16px',display:'flex',gap:12,alignItems:'flex-start'}}>
+                      <span style={{fontSize:28}}>❌</span>
+                      <div>
+                        <div style={{fontWeight:700,fontSize:14,color:'#991b1b',marginBottom:4}}>Cerere respinsă</div>
+                        <div style={{fontSize:13,color:'#b91c1c',lineHeight:1.6,marginBottom:10}}>{existingRequest.rejection_reason||'Documentele nu au putut fi validate. Te rugăm să încerci din nou cu documente clare.'}</div>
+                        <button onClick={()=>{setExistingRequest(null);setVerifyDone(false);setVerifyStep(1);setVerifyDocs({cui:'',rar:'',foto:''})}}
+                          style={{padding:'8px 18px',background:'#dc2626',color:'#fff',border:'none',borderRadius:50,fontSize:13,fontWeight:700,cursor:'pointer'}}>
+                          Reîncarcă documente
+                        </button>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Step 3 — Confirmare */}
+                  {verifyStep===3&&(
+                    <div style={{background:'rgba(255,255,255,0.8)',borderRadius:12,padding:'16px',display:'flex',gap:12,alignItems:'center'}}>
+                      <span style={{fontSize:36}}>🎉</span>
+                      <div>
+                        <div style={{fontWeight:700,fontSize:15,color:'#065f46',marginBottom:4}}>Cerere trimisă cu succes!</div>
+                        <div style={{fontSize:13,color:'#047857',lineHeight:1.6}}>Echipa Reparo va analiza documentele în 24-48h. Vei primi un email cu rezultatul verificării.</div>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+          )}
+
               <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:20,flexWrap:'wrap',gap:12}}>
                 <div>
                   <h1 style={{fontFamily:"'Sora',sans-serif",fontWeight:800,fontSize:22,color:S.navy,marginBottom:4}}>Profilul public</h1>
@@ -983,202 +1172,13 @@ export default function ServiceDashboard() {
               <div style={{display:'flex',justifyContent:'flex-end',marginTop:16}}>
                 <button onClick={saveProfile} disabled={profileSaving}
                   style={{...btn('primary'),padding:'12px 28px',fontSize:14,background:profileSaved?S.green:S.blue}}>
-                  {profileSaved?'✅ Profil salvat!':profileSaving?'Se salvează...':'Salvează toate modificările →'}
+                  {profileSaved?'✅ Profil salvat!':profileSaving?'Se salvează...':'Salvează profilul'}
                 </button>
               </div>
             </div>
           )}
 
           {/* ══ SERVICII OFERITE ══ */}
-          {/* Verificare service - flux complet */}
-          {tab==='Profil public'&&service&&(
-            <div style={{marginBottom:16}}>
-              {/* Badge verificat */}
-              {service.is_verified?(
-                <div style={{background:'#dcfce7',border:'1.5px solid #16a34a',borderRadius:14,padding:'14px 20px',display:'flex',alignItems:'center',gap:12}}>
-                  <span style={{fontSize:28}}>✅</span>
-                  <div>
-                    <div style={{fontFamily:"'Sora',sans-serif",fontWeight:700,fontSize:15,color:'#065f46'}}>Service verificat Reparo</div>
-                    <div style={{fontSize:13,color:'#047857'}}>Badge-ul ✓ Verificat apare pe profilul tău public și în rezultatele de căutare.</div>
-                  </div>
-                </div>
-              ):(
-                <div style={{background:'#fef3c7',border:'1.5px solid #f59e0b',borderRadius:16,padding:'20px',marginBottom:8}}>
-                  {/* Header */}
-                  <div style={{display:'flex',alignItems:'flex-start',gap:12,marginBottom:16}}>
-                    <span style={{fontSize:28,flexShrink:0}}>🛡️</span>
-                    <div>
-                      <div style={{fontFamily:"'Sora',sans-serif",fontWeight:700,fontSize:16,color:'#92400e',marginBottom:4}}>Verifică-ți service-ul — gratuit</div>
-                      <div style={{fontSize:13,color:'#a16207',lineHeight:1.6}}>Service-urile verificate apar mai sus în căutări și au un badge care crește rata de conversie cu ~40%.</div>
-                    </div>
-                  </div>
-
-                  {/* Steps indicator */}
-                  <div style={{display:'flex',gap:0,marginBottom:20}}>
-                    {['Documente','Upload','Confirmare'].map((s,i)=>(
-                      <div key={s} style={{flex:1,display:'flex',alignItems:'center'}}>
-                        <div style={{display:'flex',flexDirection:'column',alignItems:'center',flex:1}}>
-                          <div style={{width:28,height:28,borderRadius:'50%',background:verifyStep>i+1?'#16a34a':verifyStep===i+1?'#f59e0b':'#e5e7eb',color:verifyStep>=i+1?'#fff':'#9ca3af',display:'flex',alignItems:'center',justifyContent:'center',fontSize:12,fontWeight:700,marginBottom:4}}>
-                            {verifyStep>i+1?'✓':i+1}
-                          </div>
-                          <div style={{fontSize:10,fontWeight:600,color:verifyStep===i+1?'#92400e':'#9ca3af'}}>{s}</div>
-                        </div>
-                        {i<2&&<div style={{height:2,flex:1,background:verifyStep>i+1?'#16a34a':'#e5e7eb',marginBottom:16,marginTop:0}}/>}
-                      </div>
-                    ))}
-                  </div>
-
-                  {/* Step 1 — Info + documente necesare */}
-                  {verifyStep===1&&!verifyDone&&!existingRequest&&(
-                    <div>
-                      <div style={{fontSize:12,fontWeight:700,color:'#92400e',marginBottom:10,textTransform:'uppercase',letterSpacing:.5}}>Ce documente sunt necesare:</div>
-                      <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fit,minmax(160px,1fr))',gap:8,marginBottom:16}}>
-                        {[
-                          {icon:'📄',label:'CUI / CIF',desc:'Certificat înreg. fiscală',req:true},
-                          {icon:'🏢',label:'Certificat RAR',desc:'Dacă ești autorizat RAR',req:false},
-                          {icon:'🖼️',label:'Foto sediu',desc:'Exterior service, minim 2 poze',req:true},
-                          {icon:'📋',label:'Act constitutiv',desc:'Sau altă dovadă activitate',req:false},
-                        ].map(d=>(
-                          <div key={d.label} style={{background:'rgba(255,255,255,0.75)',borderRadius:10,padding:'10px 12px',display:'flex',gap:8,alignItems:'flex-start'}}>
-                            <span style={{fontSize:22,flexShrink:0}}>{d.icon}</span>
-                            <div>
-                              <div style={{fontSize:12,fontWeight:700,color:'#92400e'}}>{d.label} {d.req&&<span style={{color:'#dc2626'}}>*</span>}</div>
-                              <div style={{fontSize:11,color:'#a16207'}}>{d.desc}</div>
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                      <div style={{fontSize:11,color:'#a16207',marginBottom:14}}>* obligatoriu · Procesul e gratuit și durează 24-48h</div>
-                      <button onClick={()=>setVerifyStep(2)}
-                        style={{padding:'11px 28px',background:'#f59e0b',color:'#fff',border:'none',borderRadius:50,fontSize:14,fontWeight:700,cursor:'pointer'}}>
-                        Continuă →
-                      </button>
-                    </div>
-                  )}
-
-                  {/* Step 2 — Upload documente */}
-                  {verifyStep===2&&!verifyDone&&!existingRequest&&(
-                    <div>
-                      <div style={{fontSize:12,fontWeight:700,color:'#92400e',marginBottom:12,textTransform:'uppercase',letterSpacing:.5}}>Încarcă documentele:</div>
-                      {[
-                        {key:'cui',label:'CUI / Certificat înregistrare fiscală',icon:'📄',accept:'image/*,application/pdf',req:true},
-                        {key:'rar',label:'Certificat RAR (opțional)',icon:'🏢',accept:'image/*,application/pdf',req:false},
-                        {key:'foto',label:'Foto sediu exterior (minim 1)',icon:'🖼️',accept:'image/*',req:true},
-                      ].map(doc=>(
-                        <div key={doc.key} style={{background:'rgba(255,255,255,0.75)',borderRadius:12,padding:'12px 14px',marginBottom:10,display:'flex',alignItems:'center',gap:12}}>
-                          <span style={{fontSize:24,flexShrink:0}}>{doc.icon}</span>
-                          <div style={{flex:1,minWidth:0}}>
-                            <div style={{fontSize:13,fontWeight:600,color:'#92400e',marginBottom:2}}>{doc.label}</div>
-                            {verifyDocs[doc.key]?(
-                              <div style={{fontSize:12,color:'#16a34a',display:'flex',alignItems:'center',gap:4}}>✅ Încărcat
-                                <button onClick={()=>setVerifyDocs(prev=>({...prev,[doc.key]:''}))}
-                                  style={{fontSize:11,color:'#dc2626',background:'none',border:'none',cursor:'pointer',marginLeft:4}}>Șterge</button>
-                              </div>
-                            ):(
-                              <div style={{fontSize:12,color:'#a16207'}}>{doc.req?'Obligatoriu':'Opțional'}</div>
-                            )}
-                          </div>
-                          <label style={{padding:'7px 14px',background:verifyDocs[doc.key]?'#dcfce7':'rgba(255,255,255,0.9)',border:`1.5px solid ${verifyDocs[doc.key]?'#16a34a':'#f59e0b'}`,borderRadius:50,fontSize:12,fontWeight:700,cursor:'pointer',color:verifyDocs[doc.key]?'#065f46':'#92400e',flexShrink:0,display:'flex',alignItems:'center',gap:6}}>
-                            {verifyUploading===doc.key?'⏳...':verifyDocs[doc.key]?'✓':'+ Upload'}
-                            <input type="file" accept={doc.accept} style={{display:'none'}}
-                              onChange={async(e)=>{
-                                const file=e.target.files?.[0]; if(!file||!service) return
-                                setVerifyUploading(doc.key)
-                                const ext=file.name.split('.').pop()
-                                const path=`verification/${service.id}/${doc.key}_${Date.now()}.${ext}`
-                                const {error}=await supabase.storage.from('verification-docs').upload(path,file,{upsert:true})
-                                if(error){alert('Eroare upload: '+error.message);setVerifyUploading('');return}
-                                const {data:{publicUrl}}=supabase.storage.from('verification-docs').getPublicUrl(path)
-                                setVerifyDocs(prev=>({...prev,[doc.key]:publicUrl}))
-                                setVerifyUploading('')
-                                e.target.value=''
-                              }}/>
-                          </label>
-                        </div>
-                      ))}
-
-                      <div style={{display:'flex',gap:10,marginTop:16}}>
-                        <button onClick={()=>setVerifyStep(1)}
-                          style={{padding:'10px 20px',background:'transparent',border:'1.5px solid #f59e0b',borderRadius:50,fontSize:13,fontWeight:600,cursor:'pointer',color:'#92400e'}}>
-                          ← Înapoi
-                        </button>
-                        <button onClick={async()=>{
-                          if(!verifyDocs.cui){alert('Încarcă cel puțin CUI-ul.');return}
-                          if(!verifyDocs.foto){alert('Încarcă cel puțin o fotografie a sediului.');return}
-                          setVerifyLoading(true)
-                          try {
-                            const {error}=await supabase.from('verification_requests').insert({
-                              service_id:service.id,
-                              owner_id:user?.id,
-                              status:'pending',
-                              submitted_at:new Date().toISOString(),
-                              doc_cui:verifyDocs.cui,
-                              doc_rar:verifyDocs.rar||null,
-                              doc_foto:verifyDocs.foto,
-                              notes:`CUI: ${verifyDocs.cui} | RAR: ${verifyDocs.rar||'N/A'} | Foto: ${verifyDocs.foto}`,
-                            })
-                            if(error) throw error
-                            setVerifyStep(3)
-                            setVerifyDone(true)
-                            setExistingRequest({status:'pending'})
-                          } catch(e){alert('Eroare: '+e.message)}
-                          setVerifyLoading(false)
-                        }} disabled={verifyLoading||!verifyDocs.cui||!verifyDocs.foto}
-                          style={{flex:1,padding:'11px 24px',background:verifyDocs.cui&&verifyDocs.foto?'#f59e0b':'#e5e7eb',color:verifyDocs.cui&&verifyDocs.foto?'#fff':'#9ca3af',border:'none',borderRadius:50,fontSize:14,fontWeight:700,cursor:verifyDocs.cui&&verifyDocs.foto?'pointer':'not-allowed',opacity:verifyLoading?.6:1}}>
-                          {verifyLoading?'Se trimite...':'🛡️ Trimite cererea'}
-                        </button>
-                      </div>
-                    </div>
-                  )}
-
-                  {/* Request pending / in review */}
-                  {existingRequest&&existingRequest.status==='pending'&&(
-                    <div style={{background:'rgba(255,255,255,0.8)',borderRadius:12,padding:'16px',display:'flex',gap:12,alignItems:'flex-start'}}>
-                      <span style={{fontSize:28}}>⏳</span>
-                      <div>
-                        <div style={{fontWeight:700,fontSize:14,color:'#92400e',marginBottom:4}}>Cerere în așteptare</div>
-                        <div style={{fontSize:13,color:'#a16207',lineHeight:1.6}}>Documentele tale au fost trimise. Echipa Reparo le va analiza în 24-48h și vei primi o notificare.</div>
-                      </div>
-                    </div>
-                  )}
-                  {existingRequest&&existingRequest.status==='in_review'&&(
-                    <div style={{background:'rgba(255,255,255,0.8)',borderRadius:12,padding:'16px',display:'flex',gap:12,alignItems:'flex-start'}}>
-                      <span style={{fontSize:28}}>🔍</span>
-                      <div>
-                        <div style={{fontWeight:700,fontSize:14,color:'#1d4ed8',marginBottom:4}}>În curs de analiză</div>
-                        <div style={{fontSize:13,color:'#1e40af',lineHeight:1.6}}>Echipa Reparo analizează documentele tale. Vei fi notificat când procesul e finalizat.</div>
-                      </div>
-                    </div>
-                  )}
-                  {existingRequest&&existingRequest.status==='rejected'&&(
-                    <div style={{background:'#fee2e2',borderRadius:12,padding:'16px',display:'flex',gap:12,alignItems:'flex-start'}}>
-                      <span style={{fontSize:28}}>❌</span>
-                      <div>
-                        <div style={{fontWeight:700,fontSize:14,color:'#991b1b',marginBottom:4}}>Cerere respinsă</div>
-                        <div style={{fontSize:13,color:'#b91c1c',lineHeight:1.6,marginBottom:10}}>{existingRequest.rejection_reason||'Documentele nu au putut fi validate. Te rugăm să încerci din nou cu documente clare.'}</div>
-                        <button onClick={()=>{setExistingRequest(null);setVerifyDone(false);setVerifyStep(1);setVerifyDocs({cui:'',rar:'',foto:''})}}
-                          style={{padding:'8px 18px',background:'#dc2626',color:'#fff',border:'none',borderRadius:50,fontSize:13,fontWeight:700,cursor:'pointer'}}>
-                          Reîncarcă documente
-                        </button>
-                      </div>
-                    </div>
-                  )}
-
-                  {/* Step 3 — Confirmare */}
-                  {verifyStep===3&&(
-                    <div style={{background:'rgba(255,255,255,0.8)',borderRadius:12,padding:'16px',display:'flex',gap:12,alignItems:'center'}}>
-                      <span style={{fontSize:36}}>🎉</span>
-                      <div>
-                        <div style={{fontWeight:700,fontSize:15,color:'#065f46',marginBottom:4}}>Cerere trimisă cu succes!</div>
-                        <div style={{fontSize:13,color:'#047857',lineHeight:1.6}}>Echipa Reparo va analiza documentele în 24-48h. Vei primi un email cu rezultatul verificării.</div>
-                      </div>
-                    </div>
-                  )}
-                </div>
-              )}
-            </div>
-          )}
-
           {tab==='Servicii oferite'&&(
             <div>
               <h1 style={{fontFamily:"'Sora',sans-serif",fontWeight:800,fontSize:22,color:S.navy,marginBottom:4}}>Servicii oferite</h1>
