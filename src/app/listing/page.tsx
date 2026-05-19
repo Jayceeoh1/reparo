@@ -62,11 +62,24 @@ function ListingsContent() {
     if (activeCategory!=='toate') q = q.eq('category', activeCategory)
     if (sortBy==='pret_asc') q = q.order('price',{ascending:true})
     else if (sortBy==='pret_desc') q = q.order('price',{ascending:false})
-    else q = q.order('is_promoted',{ascending:false}).order('created_at',{ascending:false})
+    else {
+      // Promoted first (only if promoted_until is in the future or null)
+      q = q.order('is_promoted',{ascending:false}).order('promoted_until',{ascending:false}).order('created_at',{ascending:false})
+    }
     const {data} = await q.limit(40)
     let results = data||[]
     if (query) results = results.filter(l=>l.title.toLowerCase().includes(query.toLowerCase()))
-    setListings(results)
+    // Sort: promoted (valid) first, then by date
+    const now = new Date()
+    const sorted = (results||[]).map(l => ({
+      ...l,
+      is_promoted: l.is_promoted && (!l.promoted_until || new Date(l.promoted_until) > now)
+    })).sort((a,b) => {
+      if (a.is_promoted && !b.is_promoted) return -1
+      if (!a.is_promoted && b.is_promoted) return 1
+      return new Date(b.created_at) - new Date(a.created_at)
+    })
+    setListings(sorted)
     setLoading(false)
   }
 
