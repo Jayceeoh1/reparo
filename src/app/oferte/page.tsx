@@ -31,26 +31,58 @@ export default function OfertePage() {
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) { window.location.href = '/auth/login'; return }
 
-      const { data: reqs } = await supabase.from('quote_requests').select('*').eq('user_id', user.id).order('created_at', {ascending:false})
+      const { data: reqs } = await supabase
+        .from('quote_requests')
+        .select('*')
+        .eq('user_id', user.id)
+        .order('created_at', {ascending:false})
       setRequests(reqs||[])
 
       if (reqs?.length) {
         setSelectedReq(reqs[0].id)
-        for (const req of reqs) {
-          const { data: offs } = await supabase.from('offers').select('*, services(id,name,city,rating_avg,rating_count,phone)').eq('request_id', req.id).order('price_total', {ascending:true})
-          if (offs) setOffers(prev=>({...prev,[req.id]:offs}))
+        // Load ALL offers for all requests in one query
+        const reqIds = reqs.map(r => r.id)
+        const { data: allOffs } = await supabase
+          .from('offers')
+          .select('*, services(id,name,city,rating_avg,rating_count,phone,logo_url,is_verified)')
+          .in('request_id', reqIds)
+          .order('price_total', {ascending:true})
+        
+        if (allOffs?.length) {
+          const grouped = {}
+          for (const off of allOffs) {
+            if (!grouped[off.request_id]) grouped[off.request_id] = []
+            grouped[off.request_id].push(off)
+          }
+          setOffers(grouped)
         }
       }
       setLoading(false)
     }
     load()
 
-    const channel = supabase.channel('new-offers')
-      .on('postgres_changes',{event:'INSERT',schema:'public',table:'offers'},async payload=>{
+    // Realtime pentru oferte noi
+    const channel = supabase.channel('client-new-offers')
+      .on('postgres_changes', {event:'INSERT', schema:'public', table:'offers'}, async payload => {
         const offer = payload.new
-        const {data:svc} = await supabase.from('services').select('id,name,city,rating_avg,rating_count,phone').eq('id',offer.service_id).single()
-        setOffers(prev=>({...prev,[offer.request_id]:[{...offer,services:svc},...(prev[offer.request_id]||[])]}))
-      }).subscribe()
+        const {data:svc} = await supabase.from('services').select('id,name,city,rating_avg,rating_count,phone,logo_url,is_verified').eq('id', offer.service_id).single()
+        setOffers(prev => ({
+          ...prev,
+          [offer.request_id]: [...(prev[offer.request_id]||[]), {...offer, services:svc}]
+            .sort((a,b) => (a.price_total||0) - (b.price_total||0))
+        }))
+      })
+      .on('postgres_changes', {event:'UPDATE', schema:'public', table:'offers'}, payload => {
+        const offer = payload.new
+        setOffers(prev => {
+          if (!prev[offer.request_id]) return prev
+          return {
+            ...prev,
+            [offer.request_id]: prev[offer.request_id].map(o => o.id === offer.id ? {...o, ...offer} : o)
+          }
+        })
+      })
+      .subscribe()
     return () => supabase.removeChannel(channel)
   }, [])
 
@@ -164,9 +196,14 @@ export default function OfertePage() {
                         {/* Service info */}
                         <div style={{display:'flex',alignItems:'flex-start',justifyContent:'space-between',marginBottom:16}}>
                           <div style={{display:'flex',alignItems:'center',gap:12}}>
-                            <div style={{width:44,height:44,background:'#eaf3ff',borderRadius:12,display:'flex',alignItems:'center',justifyContent:'center',fontSize:22,flexShrink:0}}>🔧</div>
+                            <div style={{width:44,height:44,background:'#eaf3ff',borderRadius:12,display:'flex',alignItems:'center',justifyContent:'center',fontSize:22,flexShrink:0,overflow:'hidden'}}>
+                              {svc?.logo_url?<img src={svc.logo_url} style={{width:'100%',height:'100%',objectFit:'cover'}} alt=""/>:'🔧'}
+                            </div>
                             <div>
-                              <div style={{fontFamily:"'Sora',sans-serif",fontWeight:700,fontSize:14,color:S.navy,marginBottom:2}}>{svc?.name||'Service auto'}</div>
+                              <div style={{fontFamily:"'Sora',sans-serif",fontWeight:700,fontSize:14,color:S.navy,marginBottom:2,display:'flex',alignItems:'center',gap:6}}>
+                                {svc?.name||'Service auto'}
+                                {svc?.is_verified&&<span style={{fontSize:11,background:'#dcfce7',color:'#16a34a',padding:'1px 6px',borderRadius:50,fontWeight:700}}>✓ Verificat</span>}
+                              </div>
                               <div style={{fontSize:12,color:S.muted}}>
                                 {'⭐'.repeat(Math.round(svc?.rating_avg||0))} ({svc?.rating_count||0} recenzii) · {svc?.city}
                               </div>
@@ -201,6 +238,14 @@ export default function OfertePage() {
                             <div style={{background:S.bg,borderRadius:10,padding:'10px 12px'}}>
                               <div style={{fontSize:10,color:S.muted,marginBottom:2}}>Garanție lucrare</div>
                               <div style={{fontWeight:600,fontSize:13,color:S.navy}}>🛡️ {o.warranty_months} luni</div>
+                            </div>
+                          )}
+                          {(o.parts_type)&&(
+                            <div style={{background:S.bg,borderRadius:10,padding:'10px 12px'}}>
+                              <div style={{fontSize:10,color:S.muted,marginBottom:2}}>Tip piese</div>
+                              <div style={{fontWeight:600,fontSize:13,color:S.navy}}>
+                                {o.parts_type==='oem'?'🔵 OEM (Original)':o.parts_type==='aftermarket'?'🟡 Aftermarket':'🔵 OEM + 🟡 Aftermarket'}
+                              </div>
                             </div>
                           )}
                         </div>

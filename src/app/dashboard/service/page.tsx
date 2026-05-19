@@ -314,7 +314,7 @@ export default function ServiceDashboard() {
   const [offerings, setOfferings] = useState([])
   const [loading, setLoading] = useState(true)
   const [selectedReq, setSelectedReq] = useState(null)
-  const [offerForm, setOfferForm] = useState({price_total:'',price_parts:'',price_labor:'',description:'',available_date:'',available_time:'09:00-12:00',warranty_months:'6'})
+  const [offerForm, setOfferForm] = useState({price_total:'',price_parts:'',price_labor:'',description:'',available_date:'',available_time:'09:00-12:00',warranty_months:'6',parts_type:'oem'})
   const [offerSent, setOfferSent] = useState(false)
   const [replyingTo, setReplyingTo] = useState(null)
   const [replyText, setReplyText] = useState('')
@@ -464,12 +464,12 @@ export default function ServiceDashboard() {
 
   async function sendOffer() {
     if (!service||!selectedReq) return
-    const {data} = await supabase.from('offers').insert({request_id:selectedReq.id,service_id:service.id,price_total:offerForm.price_total?parseFloat(offerForm.price_total):null,price_parts:offerForm.price_parts?parseFloat(offerForm.price_parts):null,price_labor:offerForm.price_labor?parseFloat(offerForm.price_labor):null,description:offerForm.description,available_date:offerForm.available_date||null,available_time:offerForm.available_time,warranty_months:parseInt(offerForm.warranty_months),status:'trimisa'}).select().single()
+    const {data} = await supabase.from('offers').insert({request_id:selectedReq.id,service_id:service.id,price_total:offerForm.price_total?parseFloat(offerForm.price_total):null,price_parts:offerForm.price_parts?parseFloat(offerForm.price_parts):null,price_labor:offerForm.price_labor?parseFloat(offerForm.price_labor):null,description:offerForm.description,available_date:offerForm.available_date||null,available_time:offerForm.available_time,warranty_months:parseInt(offerForm.warranty_months),parts_type:offerForm.parts_type,status:'trimisa'}).select().single()
     setOfferSent(true)
     // Add to offers list immediately
     if (data) setOffers(prev=>[data,...prev])
     setRequests(prev=>prev.filter(r=>r.id!==selectedReq.id))
-    setTimeout(()=>{setSelectedReq(null);setOfferSent(false);setOfferForm({price_total:'',price_parts:'',price_labor:'',description:'',available_date:'',available_time:'09:00-12:00',warranty_months:'6'})},1800)
+    setTimeout(()=>{setSelectedReq(null);setOfferSent(false);setOfferForm({price_total:'',price_parts:'',price_labor:'',description:'',available_date:'',available_time:'09:00-12:00',warranty_months:'6',parts_type:'oem'})},1800)
   }
 
   async function updateAptStatus(id, status) {
@@ -1378,6 +1378,23 @@ export default function ServiceDashboard() {
                             <select className="dash-input" value={offerForm.warranty_months} onChange={e=>setOfferForm(p=>({...p,warranty_months:e.target.value}))} style={input}>
                               {['0','3','6','12','24'].map(m=><option key={m}>{m}</option>)}
                             </select>
+                          </div>
+                          <div style={{gridColumn:'1/-1'}}>
+                            <label style={label}>Tip piese utilizate</label>
+                            <div style={{display:'flex',gap:8,marginTop:4}}>
+                              {[
+                                {value:'oem',label:'🔵 OEM',desc:'Originale'},
+                                {value:'aftermarket',label:'🟡 Aftermarket',desc:'Compatibile'},
+                                {value:'both',label:'🔵🟡 Ambele',desc:'La alegere'},
+                              ].map(pt=>(
+                                <button key={pt.value} type="button"
+                                  onClick={()=>setOfferForm(p=>({...p,parts_type:pt.value}))}
+                                  style={{flex:1,padding:'9px 6px',border:`1.5px solid ${offerForm.parts_type===pt.value?S.blue:S.border}`,borderRadius:10,background:offerForm.parts_type===pt.value?'#eaf3ff':'#fff',cursor:'pointer',textAlign:'center'}}>
+                                  <div style={{fontWeight:700,fontSize:12,color:offerForm.parts_type===pt.value?S.blue:S.navy}}>{pt.label}</div>
+                                  <div style={{fontSize:10,color:S.muted}}>{pt.desc}</div>
+                                </button>
+                              ))}
+                            </div>
                           </div>
                         </div>
                         <button onClick={sendOffer} style={{...btn('yellow'),width:'100%',justifyContent:'center',padding:'12px',fontSize:14}}>✉️ Trimite oferta</button>

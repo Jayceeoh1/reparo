@@ -97,9 +97,7 @@ export default function HomeClient() {
       {/* ══ HERO ══ */}
       <div style={{ background: 'linear-gradient(135deg,#eaf3ff 0%,#f8fbff 60%,#fff8ed 100%)', padding: '40px 24px 36px', borderBottom: `1px solid ${S.border}` }}>
         <div style={{ maxWidth: 1100, margin: '0 auto' }}>
-          <div className="fu1" style={{ display: 'inline-flex', alignItems: 'center', gap: 6, background: 'rgba(26,86,219,0.08)', border: '1px solid rgba(26,86,219,0.15)', color: S.blue, fontSize: 11, fontWeight: 700, letterSpacing: 1.5, textTransform: 'uppercase', padding: '5px 12px', borderRadius: 50, marginBottom: 16, fontFamily: "'Sora',sans-serif" }}>
-            ✦ Platforma servicii auto România
-          </div>
+
           <h1 className="fu2" style={{ fontFamily: "'Sora',sans-serif", fontWeight: 800, fontSize: 'clamp(26px,4vw,48px)', lineHeight: 1.1, color: S.navy, marginBottom: 14, letterSpacing: -1 }}>
             Găsește cel mai bun<br /><span style={{ color: '#3b82f6' }}>service auto</span> din zona ta
           </h1>
@@ -111,17 +109,33 @@ export default function HomeClient() {
               style={{ display: 'inline-flex', alignItems: 'center', gap: 8, padding: '13px 32px', background: S.blue, color: '#fff', border: 'none', borderRadius: 50, fontSize: 'clamp(14px,3vw,16px)', fontWeight: 700, cursor: 'pointer', fontFamily: "'Sora',sans-serif", boxShadow: '0 8px 24px rgba(26,86,219,0.25)', transition: 'background .2s,transform .15s' }}
               onMouseEnter={e => { e.currentTarget.style.background = '#1741b0' }}
               onMouseLeave={e => { e.currentTarget.style.background = S.blue }}>
-              ✦ Cere ofertă gratuită
+              ✦ Cere ofertă service
             </button>
-            <a href="/search" style={{ display: 'inline-flex', alignItems: 'center', gap: 6, padding: '13px 24px', color: S.navy, border: `1.5px solid ${S.border}`, borderRadius: 50, fontSize: 14, fontWeight: 600, textDecoration: 'none', fontFamily: "'Sora',sans-serif", background: '#fff' }}>
-              Caută service-uri →
-            </a>
+
           </div>
         </div>
       </div>
 
       {/* ══ MAIN ══ */}
       <div style={{ maxWidth: 1200, margin: '0 auto', padding: '24px 16px 80px' }}>
+
+        {/* Piese noi + Dezmembrări — quick access */}
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, marginBottom: 20 }}>
+          <a href="/listing?categorie=piese-noi" style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '14px 16px', background: '#fff', border: '1.5px solid #e5e7eb', borderRadius: 16, textDecoration: 'none', boxShadow: '0 2px 8px rgba(10,31,68,0.06)', transition: 'box-shadow .2s' }}>
+            <div style={{ width: 44, height: 44, background: '#eaf3ff', borderRadius: 12, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 22, flexShrink: 0 }}>📦</div>
+            <div>
+              <div style={{ fontFamily: "'Sora',sans-serif", fontWeight: 700, fontSize: 14, color: '#0a1f44', marginBottom: 2 }}>Piese noi</div>
+              <div style={{ fontSize: 12, color: '#6b7280' }}>Găsește piese noi la prețuri bune</div>
+            </div>
+          </a>
+          <a href="/listing?categorie=dezmembrari" style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '14px 16px', background: '#fff', border: '1.5px solid #e5e7eb', borderRadius: 16, textDecoration: 'none', boxShadow: '0 2px 8px rgba(10,31,68,0.06)', transition: 'box-shadow .2s' }}>
+            <div style={{ width: 44, height: 44, background: '#fef3c7', borderRadius: 12, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 22, flexShrink: 0 }}>♻️</div>
+            <div>
+              <div style={{ fontFamily: "'Sora',sans-serif", fontWeight: 700, fontSize: 14, color: '#0a1f44', marginBottom: 2 }}>Dezmembrări</div>
+              <div style={{ fontSize: 12, color: '#6b7280' }}>Piese second-hand verificate</div>
+            </div>
+          </a>
+        </div>
 
         {/* Categorii */}
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>

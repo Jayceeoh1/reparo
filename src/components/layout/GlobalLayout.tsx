@@ -363,7 +363,7 @@ export default function GlobalLayout({ children }) {
                 style={{display:'inline-flex',alignItems:'center',gap:6,padding:'9px 20px',borderRadius:10,fontSize:13,fontWeight:700,background:'var(--navy)',color:'#fff',textDecoration:'none',fontFamily:"'Sora',sans-serif",transition:'background .15s'}}
                 onMouseEnter={e=>e.currentTarget.style.background='#1a3a6b'}
                 onMouseLeave={e=>e.currentTarget.style.background='var(--navy)'}>
-                + Cere ofertă
+                Cere ofertă service
               </a>
             </div>
 
@@ -386,20 +386,8 @@ export default function GlobalLayout({ children }) {
                   <a href="/auth/register" style={{padding:'7px 14px',borderRadius:8,fontSize:12,fontWeight:700,color:'#fff',background:'var(--navy)',textDecoration:'none',fontFamily:"'DM Sans',sans-serif"}}>Cont nou</a>
                 </>
               )}
-              {user&&(
-                <a href="/home" onClick={e=>{e.preventDefault();window.dispatchEvent(new CustomEvent('open-quote-modal'))}}
-                  style={{padding:'7px 14px',borderRadius:8,fontSize:12,fontWeight:700,background:'var(--navy)',color:'#fff',textDecoration:'none',fontFamily:"'Sora',sans-serif",whiteSpace:'nowrap'}}>
-                  + Ofertă
-                </a>
-              )}
-              <button onClick={()=>setDrawerOpen(o=>!o)}
-                style={{display:'flex',flexDirection:'column',gap:5,cursor:'pointer',padding:6,background:'none',border:'none'}}>
-                {[0,1,2].map(i=>(
-                  <span key={i} style={{display:'block',width:22,height:2,background:'var(--navy)',borderRadius:2,transition:'all .3s',
-                    transform:drawerOpen?(i===0?'rotate(45deg) translate(5px,5px)':i===2?'rotate(-45deg) translate(5px,-5px)':'none'):'none',
-                    opacity:drawerOpen&&i===1?0:1}}/>
-                ))}
-              </button>
+
+
             </div>
           </div>
 
