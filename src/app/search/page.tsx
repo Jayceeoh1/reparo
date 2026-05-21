@@ -13,18 +13,21 @@ const CITIES = ['Toate orașele','București','Cluj-Napoca','Timișoara','Iași'
 
 
 const CATEGORY_MAP = {
-  'schimb-ulei': ['schimb ulei', 'schimb ulei si filtre', 'ulei motor'],
-  'geometrie': ['geometrie', 'echilibrare', 'geometrie si echilibrare', 'echilibrare roti'],
-  'detailing': ['detailing', 'detailing auto', 'polish', 'spalatorie'],
-  'diagnoza': ['diagnoza', 'diagnoza electronica', 'diagnosticare', 'diagnoza auto'],
-  'vopsitorie': ['vopsitorie', 'caroserie', 'vopsitorie si caroserie', 'tinichigerie'],
-  'itp': ['itp', 'inspecție tehnică', 'inspectie tehnica'],
-  'dezmembrari': ['dezmembrari', 'dezmembrare', 'piese second hand'],
-  'electrica': ['electrica', 'electric', 'instalatie electrica', 'electronica'],
-  'anvelope': ['anvelope', 'jante', 'anvelope si jante', 'schimb anvelope'],
-  'tractari': ['tractari', 'tractare', 'depanare'],
-  'ac': ['aer conditionat', 'ac auto', 'climatizare'],
-  'frane': ['frane', 'sistem franare', 'placute frana'],
+  'schimb-ulei': ['schimb ulei', 'ulei', 'filtre ulei', 'schimb ulei si filtre'],
+  'geometrie': ['geometrie', 'echilibrare', 'geometrie roti', 'echilibrare roti', 'unghi'],
+  'detailing': ['detailing', 'polish', 'curățare tapițerie', 'curățare tapiterie', 'protecție ceramică', 'protectie ceramica', 'ppf', 'folii geamuri', 'detailing exterior', 'detailing interior', 'polish auto'],
+  'diagnoza': ['diagnoză', 'diagnoza', 'diagnosticare', 'probleme bord', 'martori', 'diagnoză electrică', 'diagnoza electrica', 'diagnoza sistem'],
+  'vopsitorie': ['vopsitorie', 'caroserie', 'îndreptare caroserie', 'indreptare caroserie', 'reparații daune', 'reparatii daune', 'tinichigerie', 'lacatuserie'],
+  'itp': ['itp', 'inspecție', 'inspectie', 'itp autoturisme', 'itp autoutilitare'],
+  'dezmembrari': ['dezmembrare', 'dezmembrări', 'piese second', 'dezmembrari'],
+  'electrica': ['electric', 'electrică', 'instalație electrică', 'instalatie electrica', 'reparații instalație electrică', 'alternator', 'electromotor', 'codări', 'codari', 'remap', 'actualizări software', 'actualizari software', 'programare chei', 'chei auto'],
+  'anvelope': ['anvelope', 'jante', 'montaj anvelope', 'demontaj anvelope', 'schimb anvelope'],
+  'tractari': ['tractare', 'tractări', 'asistență rutieră', 'asistenta rutiera', 'pornire baterie', 'depanare'],
+  'ac': ['aer condiționat', 'aer conditionat', 'freon', 'încărcare freon', 'incarcare freon', 'ac auto', 'climatizare', 'curățare instalație ac', 'curatare instalatie ac', 'reparații compresor'],
+  'frane': ['frân', 'fran', 'aerisire sistem frânare', 'aerisire sistem franare', 'diagnoză sistem frânare', 'recondiționare etrieri', 'reconditionare etrieri', 'placute'],
+  'motor': ['motor', 'reparații motor', 'reparatii motor', 'rectificare motor', 'garnitură chiulasă', 'garnitura chiulasa', 'injectoare', 'curățare injectoare', 'sistem alimentare'],
+  'cutie-viteze': ['cutie', 'ambreiaj', 'cutie automată', 'cutie manuala', 'cutie automata', 'reparații cutie', 'planetare'],
+  'suspensie': ['suspensie', 'direcție', 'directie', 'bielete', 'capete bară', 'capete bara', 'amortizoare'],
 }
 
 function SearchContent() {
@@ -84,8 +87,11 @@ function SearchContent() {
           offsData
             .filter(o => {
               const name = (o.name || '').toLowerCase()
-              const cat = (o.category || '').toLowerCase()
-              return keywords.some(kw => name.includes(kw) || cat.includes(kw) || kw.includes(cat))
+              // category is null in DB, filter only by name
+              return keywords.some(kw => {
+                const kwLow = kw.toLowerCase()
+                return name.includes(kwLow) || kwLow.includes(name)
+              })
             })
             .map(o => o.service_id)
         )
