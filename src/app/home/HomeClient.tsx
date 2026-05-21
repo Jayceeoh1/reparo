@@ -39,6 +39,7 @@ export default function HomeClient() {
   const [listings, setListings] = useState<any[]>([])
   const [activeFilter, setActiveFilter] = useState('Toate')
   const [favorites, setFavorites] = useState<Set<string>>(new Set())
+  const [user, setUser] = useState(null)
   const [modalOpen, setModalOpen] = useState(false)
   const [modalStep, setModalStep] = useState(0)
   const [submitDone, setSubmitDone] = useState(false)
@@ -59,6 +60,18 @@ export default function HomeClient() {
       .order('is_promoted', { ascending: false }).order('created_at', { ascending: false }).limit(8)
       .then(({ data }) => { setListings(data || []); setLoadingListings(false) })
 
+    // Load user + favorites from DB
+    supabase.auth.getUser().then(({ data: { user } }) => {
+      setUser(user)
+      if (user) {
+        supabase.from('favorites').select('service_id,listing_id').eq('user_id', user.id)
+          .then(({ data }) => {
+            const ids = new Set((data || []).map(f => f.service_id || f.listing_id).filter(Boolean))
+            setFavorites(ids)
+          })
+      }
+    })
+
     const handler = (e: any) => { setModalOpen(true); setModalStep(0); setSubmitDone(false) }
     window.addEventListener('open-quote-modal', handler)
     return () => window.removeEventListener('open-quote-modal', handler)
@@ -68,8 +81,27 @@ export default function HomeClient() {
     setForm(f => ({ ...f, services: f.services.includes(svc) ? f.services.filter(s => s !== svc) : [...f.services, svc] }))
   }
 
-  function toggleFav(id: string) {
-    setFavorites(prev => { const n = new Set(prev); n.has(id) ? n.delete(id) : n.add(id); return n })
+  async function toggleFav(id: string, type: string = 'service') {
+    if (!user) { window.location.href = '/auth/login'; return }
+    const isFav = favorites.has(id)
+    // Optimistic update
+    setFavorites(prev => {
+      const n = new Set(prev)
+      isFav ? n.delete(id) : n.add(id)
+      return n
+    })
+    if (isFav) {
+      await supabase.from('favorites').delete()
+        .eq('user_id', user.id)
+        .eq(type === 'service' ? 'service_id' : 'listing_id', id)
+    } else {
+      await supabase.from('favorites').upsert({
+        user_id: user.id,
+        [type === 'service' ? 'service_id' : 'listing_id']: id,
+        type,
+        created_at: new Date().toISOString()
+      })
+    }
   }
 
   async function submitRequest() {

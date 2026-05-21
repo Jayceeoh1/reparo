@@ -1,206 +1,284 @@
 // @ts-nocheck
 'use client'
 import { useEffect, useState, Suspense } from 'react'
-import { useSearchParams } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 
 const S = {
-  navy:'#0a1f44',blue:'#1a56db',blueLight:'#3b82f6',yellow:'#f59e0b',
-  bg:'#f0f6ff',white:'#fff',text:'#111827',muted:'#6b7280',border:'#e5e7eb',
-  green:'#16a34a',greenBg:'#dcfce7',amber:'#d97706',amberBg:'#fef3c7',
+  navy:'#0a1f44',blue:'#1a56db',bg:'#f4f6f9',white:'#fff',
+  text:'#111827',muted:'#6b7280',border:'#e5e7eb',
+  green:'#16a34a',greenBg:'#dcfce7',yellow:'#f59e0b',
 }
 
-const pill = (bg,color,text) => ({display:'inline-flex',alignItems:'center',padding:'3px 10px',borderRadius:50,background:bg,color,fontSize:11,fontWeight:700,fontFamily:"'Sora',sans-serif"})
-const card = (extra={}) => ({background:S.white,borderRadius:16,border:`1px solid ${S.border}`,boxShadow:'0 2px 12px rgba(10,31,68,0.06)',padding:20,...extra})
-const inp = {width:'100%',padding:'10px 14px',border:`1.5px solid ${S.border}`,borderRadius:10,fontSize:13,color:S.text,outline:'none',fontFamily:"'DM Sans',sans-serif",background:S.white}
-const btn = (primary=true) => ({display:'inline-flex',alignItems:'center',gap:6,padding:'9px 18px',borderRadius:50,fontSize:13,fontWeight:600,cursor:'pointer',fontFamily:"'DM Sans',sans-serif",transition:'all .15s',border:primary?'none':`1.5px solid ${S.border}`,background:primary?S.blue:'transparent',color:primary?'#fff':S.muted,boxShadow:primary?'0 2px 8px rgba(26,86,219,0.2)':'none'})
-
-const CATEGORIES = ['Schimb ulei','Frâne','Geometrie','Diagnoză','Vopsitorie','ITP','Climatizare','Suspensie','Motor','Electrică']
-const CITIES = ['Toate orașele','Alba Iulia','Arad','Bacău','Baia Mare','Brașov','București','Cluj-Napoca','Constanța','Craiova','Galați','Iași','Oradea','Pitești','Ploiești','Sibiu','Suceava','Târgu Mureș','Timișoara']
+const CITIES = ['Toate orașele','București','Cluj-Napoca','Timișoara','Iași','Constanța','Craiova','Brașov','Galați','Ploiești','Oradea','Sibiu','Bacău','Pitești','Arad','Târgu Mureș','Baia Mare','Buzău','Rm. Vâlcea','Drobeta-Turnu Severin']
 
 function SearchContent() {
-  const searchParams = useSearchParams()
+  const [query, setQuery] = useState('')
   const [services, setServices] = useState([])
   const [loading, setLoading] = useState(true)
-  const [query, setQuery] = useState(searchParams.get('q')||'')
+  const [user, setUser] = useState(null)
+  const [favorites, setFavorites] = useState(new Set())
+  // Filtre
+  const [filtersOpen, setFiltersOpen] = useState(false)
   const [city, setCity] = useState('Toate orașele')
   const [sortBy, setSortBy] = useState('rating')
   const [filterVerified, setFilterVerified] = useState(false)
   const [filterITP, setFilterITP] = useState(false)
   const [filterRAR, setFilterRAR] = useState(false)
-  const [minRating, setMinRating] = useState(0)
+  const [filterRatingMin, setFilterRatingMin] = useState(0)
   const supabase = createClient()
 
-  useEffect(() => { loadServices() }, [city, sortBy, filterVerified, filterITP, filterRAR, minRating])
+  useEffect(() => {
+    supabase.auth.getUser().then(({data:{user}})=>{
+      setUser(user)
+      if (user) {
+        supabase.from('favorites').select('service_id').eq('user_id',user.id).eq('type','service')
+          .then(({data})=>setFavorites(new Set((data||[]).map(f=>f.service_id))))
+      }
+    })
+    // Read URL params
+    if (typeof window !== 'undefined') {
+      const p = new URLSearchParams(window.location.search)
+      if (p.get('q')) setQuery(p.get('q'))
+      if (p.get('city')) setCity(p.get('city'))
+      if (p.get('category')) setQuery(p.get('category'))
+    }
+    loadServices()
+  }, [])
+
+  useEffect(() => { loadServices() }, [city, sortBy, filterVerified, filterITP, filterRAR, filterRatingMin])
 
   async function loadServices() {
     setLoading(true)
     let q = supabase.from('services').select('*').eq('is_active', true)
-    if (city!=='Toate orașele') q = q.eq('city', city)
+    if (city && city !== 'Toate orașele') q = q.eq('city', city)
     if (filterVerified) q = q.eq('is_verified', true)
     if (filterITP) q = q.eq('has_itp', true)
     if (filterRAR) q = q.eq('is_authorized_rar', true)
-    if (minRating>0) q = q.gte('rating_avg', minRating)
-    if (sortBy==='rating') q = q.order('rating_avg', {ascending:false})
-    else if (sortBy==='reviews') q = q.order('rating_count', {ascending:false})
-    const {data} = await q.limit(30)
-    let results = data||[]
-    if (query) results = results.filter(s=>s.name.toLowerCase().includes(query.toLowerCase())||s.description?.toLowerCase().includes(query.toLowerCase())||s.city?.toLowerCase().includes(query.toLowerCase()))
+    if (filterRatingMin > 0) q = q.gte('rating_avg', filterRatingMin)
+    if (sortBy === 'rating') q = q.order('rating_avg', {ascending:false})
+    else if (sortBy === 'reviews') q = q.order('rating_count', {ascending:false})
+    else q = q.order('name', {ascending:true})
+    const {data} = await q.limit(60)
+    let results = data || []
+    if (query.trim()) {
+      const q2 = query.toLowerCase()
+      results = results.filter(s =>
+        s.name?.toLowerCase().includes(q2) ||
+        s.description?.toLowerCase().includes(q2) ||
+        s.city?.toLowerCase().includes(q2)
+      )
+    }
     setServices(results)
     setLoading(false)
   }
 
+  async function toggleFav(serviceId) {
+    if (!user) { window.location.href = '/auth/login'; return }
+    const isFav = favorites.has(serviceId)
+    setFavorites(prev => { const n=new Set(prev); isFav?n.delete(serviceId):n.add(serviceId); return n })
+    if (isFav) {
+      await supabase.from('favorites').delete().eq('user_id',user.id).eq('service_id',serviceId)
+    } else {
+      await supabase.from('favorites').upsert({user_id:user.id,service_id:serviceId,type:'service'})
+    }
+  }
+
   function handleSearch(e) { e.preventDefault(); loadServices() }
-  function reset() { setQuery(''); setCity('Toate orașele'); setFilterVerified(false); setFilterITP(false); setFilterRAR(false); setMinRating(0) }
+  function resetFilters() { setCity('Toate orașele');setFilterVerified(false);setFilterITP(false);setFilterRAR(false);setFilterRatingMin(0);setSortBy('rating') }
+  const activeFilters = [filterVerified&&'Verificat',filterITP&&'ITP',filterRAR&&'RAR',filterRatingMin>0&&`Rating ≥${filterRatingMin}`].filter(Boolean)
 
   return (
     <div style={{minHeight:'100vh',background:S.bg,fontFamily:"'DM Sans',sans-serif"}}>
-      <style>{`.svc-card:hover{border-color:${S.blue}!important;box-shadow:0 4px 20px rgba(26,86,219,0.1)!important}.filter-check:hover{background:#eaf3ff!important}
-        @media(max-width:768px){
-          .search-layout{flex-direction:column!important}
-          .search-sidebar{width:100%!important;display:flex!important;overflow-x:auto!important;gap:10px!important;padding-bottom:6px!important;scrollbar-width:none!important}
-          .search-sidebar::-webkit-scrollbar{display:none}
-          .search-sidebar-item{flex-shrink:0!important;min-width:200px!important;margin-bottom:0!important}
-          .search-results{min-width:0!important}
-          .svc-card-inner{flex-wrap:wrap!important}
-          .svc-card-btn{width:100%!important;text-align:center!important;justify-content:center!important}
-        }`}</style>
+      <style>{`
+        .svc-card{background:#fff;border-radius:12px;border:1px solid #e5e7eb;padding:16px;display:flex;gap:14px;align-items:flex-start;text-decoration:none;color:inherit;transition:box-shadow .15s;cursor:pointer}
+        .svc-card:hover{box-shadow:0 4px 16px rgba(26,86,219,0.1);border-color:#1a56db}
+        .filter-section{overflow:hidden;transition:max-height .3s ease}
+        @media(max-width:768px){.search-layout{flex-direction:column!important}}
+      `}</style>
 
-      {/* Search subheader */}
-      <div style={{background:S.white,borderBottom:`1px solid ${S.border}`,padding:'12px 24px'}}>
-        <div style={{maxWidth:1100,margin:'0 auto'}}>
-          <form onSubmit={handleSearch} style={{display:'flex',gap:0,maxWidth:600}}>
-            <input value={query} onChange={e=>setQuery(e.target.value)} placeholder="Caută service, lucrare, specialist auto..."
-              style={{...inp,borderRadius:'50px 0 0 50px',borderRight:'none',padding:'10px 18px'}}/>
-            <button type="submit" style={{padding:'0 20px',background:S.blue,border:'none',borderRadius:'0 50px 50px 0',cursor:'pointer'}}>
-              <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="6.5" cy="6.5" r="5" stroke="#fff" strokeWidth="1.8"/><path d="M10.5 10.5L14 14" stroke="#fff" strokeWidth="1.8" strokeLinecap="round"/></svg>
+      {/* Search bar sticky */}
+      <div style={{background:S.white,borderBottom:`1px solid ${S.border}`,padding:'12px 0',position:'sticky',top:0,zIndex:100}}>
+        <div style={{maxWidth:960,margin:'0 auto',padding:'0 16px',display:'flex',gap:10,alignItems:'center'}}>
+          <form onSubmit={handleSearch} style={{display:'flex',flex:1}}>
+            <input value={query} onChange={e=>setQuery(e.target.value)}
+              placeholder="Caută service, lucrare, specialist auto..."
+              style={{flex:1,padding:'11px 18px',border:`1.5px solid ${S.border}`,borderRadius:'50px 0 0 50px',fontSize:14,outline:'none',fontFamily:"'DM Sans',sans-serif"}}/>
+            <button type="submit" style={{padding:'0 20px',background:S.blue,border:'none',borderRadius:'0 50px 50px 0',cursor:'pointer',height:44}}>
+              <svg width="16" height="16" viewBox="0 0 15 15" fill="none"><circle cx="6" cy="6" r="4.5" stroke="#fff" strokeWidth="1.6"/><path d="M9.5 9.5L13 13" stroke="#fff" strokeWidth="1.6" strokeLinecap="round"/></svg>
             </button>
           </form>
+          {/* Buton filtre */}
+          <button onClick={()=>setFiltersOpen(o=>!o)}
+            style={{display:'flex',alignItems:'center',gap:7,padding:'10px 16px',border:`1.5px solid ${filtersOpen||activeFilters.length>0?S.blue:S.border}`,borderRadius:50,background:filtersOpen||activeFilters.length>0?'#eaf3ff':S.white,cursor:'pointer',fontSize:13,fontWeight:600,color:filtersOpen||activeFilters.length>0?S.blue:S.navy,fontFamily:"'DM Sans',sans-serif",flexShrink:0,transition:'all .15s'}}>
+            <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M1 3h14M3 8h10M6 13h4" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"/></svg>
+            Filtre
+            {activeFilters.length>0&&<span style={{background:S.blue,color:'#fff',borderRadius:'50%',width:18,height:18,display:'inline-flex',alignItems:'center',justifyContent:'center',fontSize:10,fontWeight:700}}>{activeFilters.length}</span>}
+            <svg width="10" height="10" viewBox="0 0 10 10" fill="none" style={{transform:filtersOpen?'rotate(180deg)':'none',transition:'transform .2s'}}><path d="M2 3l3 3 3-3" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/></svg>
+          </button>
         </div>
       </div>
 
-      <style>{`
-        @media(max-width:768px){
-          .search-layout{flex-direction:column!important}
-          .search-sidebar{width:100%!important;display:flex!important;overflow-x:auto!important;gap:10px!important;padding-bottom:4px!important;scrollbar-width:none!important}
-          .search-sidebar::-webkit-scrollbar{display:none}
-        }
-      `}</style>
-      <div className="search-layout" className="search-layout" style={{maxWidth:1100,margin:'0 auto',padding:'16px',display:'flex',gap:16}}>
-
-        {/* Sidebar filtre */}
-        <div className="search-sidebar" style={{width:240,flexShrink:0,display:'flex',flexDirection:'column',gap:12}}>
-
-
-          <div style={card({})}>
-            <div style={{fontSize:11,fontWeight:700,color:S.muted,textTransform:'uppercase',letterSpacing:1,marginBottom:10,fontFamily:"'Sora',sans-serif"}}>Oraș</div>
-            <select value={city} onChange={e=>setCity(e.target.value)} style={{...inp,borderRadius:10}}>
-              {CITIES.map(c=><option key={c}>{c}</option>)}
-            </select>
-          </div>
-
-          <div className="search-sidebar-item" style={card()}>
-            <div style={{fontSize:11,fontWeight:700,color:S.muted,textTransform:'uppercase',letterSpacing:1,marginBottom:10,fontFamily:"'Sora',sans-serif"}}>Sortare</div>
-            {[['rating','Rating (cel mai bun)'],['reviews','Cele mai multe recenzii'],['name','Nume (A-Z)']].map(([val,label])=>(
-              <label key={val} style={{display:'flex',alignItems:'center',gap:8,padding:'7px 0',cursor:'pointer'}}>
-                <input type="radio" name="sort" checked={sortBy===val} onChange={()=>setSortBy(val)} style={{accentColor:S.blue}}/>
-                <span style={{fontSize:13,color:sortBy===val?S.navy:S.muted,fontWeight:sortBy===val?600:400}}>{label}</span>
-              </label>
+      {/* Active filter chips */}
+      {activeFilters.length>0&&(
+        <div style={{background:S.white,borderBottom:`1px solid ${S.border}`,padding:'8px 0'}}>
+          <div style={{maxWidth:960,margin:'0 auto',padding:'0 16px',display:'flex',gap:6,alignItems:'center',flexWrap:'wrap'}}>
+            <span style={{fontSize:12,color:S.muted}}>Filtre active:</span>
+            {activeFilters.map(f=>(
+              <span key={f} style={{background:'#eaf3ff',color:S.blue,fontSize:12,fontWeight:600,padding:'3px 10px',borderRadius:50,display:'inline-flex',alignItems:'center',gap:4}}>
+                {f}
+              </span>
             ))}
+            <button onClick={resetFilters} style={{fontSize:12,color:S.muted,background:'none',border:'none',cursor:'pointer',textDecoration:'underline',marginLeft:4}}>Resetează tot</button>
           </div>
+        </div>
+      )}
 
-          <div className="search-sidebar-item" style={card()}>
-            <div style={{fontSize:11,fontWeight:700,color:S.muted,textTransform:'uppercase',letterSpacing:1,marginBottom:10,fontFamily:"'Sora',sans-serif"}}>Filtre</div>
-            {[['Verificat Reparo',filterVerified,setFilterVerified],['ITP pe loc',filterITP,setFilterITP],['Autorizat RAR',filterRAR,setFilterRAR]].map(([label,val,set])=>(
-              <label key={label} className="filter-check" style={{display:'flex',alignItems:'center',gap:8,padding:'8px 10px',borderRadius:10,cursor:'pointer',marginBottom:4,transition:'background .15s'}}>
-                <input type="checkbox" checked={val} onChange={e=>set(e.target.checked)} style={{accentColor:S.blue,width:15,height:15}}/>
-                <span style={{fontSize:13,color:val?S.navy:S.muted,fontWeight:val?600:400}}>{label}</span>
-              </label>
-            ))}
-            <div style={{marginTop:10}}>
-              <div style={{fontSize:12,color:S.muted,marginBottom:6}}>Rating minim: {minRating>0?`${minRating}★`:'Oricare'}</div>
-              <input type="range" min="0" max="5" step="0.5" value={minRating} onChange={e=>setMinRating(parseFloat(e.target.value))}
+      {/* Filters panel — collapsible */}
+      <div style={{maxHeight:filtersOpen?500:0,overflow:'hidden',transition:'max-height .3s ease',background:S.white,borderBottom:filtersOpen?`1px solid ${S.border}`:'none'}}>
+        <div style={{maxWidth:960,margin:'0 auto',padding:'16px 16px 20px'}}>
+          <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fit,minmax(180px,1fr))',gap:16}}>
+            {/* Oras */}
+            <div>
+              <div style={{fontSize:11,fontWeight:700,color:S.muted,textTransform:'uppercase',letterSpacing:.5,marginBottom:8}}>Oraș</div>
+              <select value={city} onChange={e=>setCity(e.target.value)}
+                style={{width:'100%',padding:'9px 12px',border:`1.5px solid ${S.border}`,borderRadius:10,fontSize:13,outline:'none',background:S.white}}>
+                {CITIES.map(c=><option key={c}>{c}</option>)}
+              </select>
+            </div>
+
+            {/* Sortare */}
+            <div>
+              <div style={{fontSize:11,fontWeight:700,color:S.muted,textTransform:'uppercase',letterSpacing:.5,marginBottom:8}}>Sortare</div>
+              <div style={{display:'flex',flexDirection:'column',gap:6}}>
+                {[
+                  {value:'rating',label:'Rating (cel mai bun)'},
+                  {value:'reviews',label:'Cele mai multe recenzii'},
+                  {value:'name',label:'Nume (A-Z)'},
+                ].map(opt=>(
+                  <label key={opt.value} style={{display:'flex',alignItems:'center',gap:8,cursor:'pointer',fontSize:13,color:S.text}}>
+                    <input type="radio" name="sort" checked={sortBy===opt.value} onChange={()=>setSortBy(opt.value)}
+                      style={{accentColor:S.blue,width:16,height:16}}/>
+                    <span style={{fontWeight:sortBy===opt.value?700:400}}>{opt.label}</span>
+                  </label>
+                ))}
+              </div>
+            </div>
+
+            {/* Filtre */}
+            <div>
+              <div style={{fontSize:11,fontWeight:700,color:S.muted,textTransform:'uppercase',letterSpacing:.5,marginBottom:8}}>Filtre</div>
+              <div style={{display:'flex',flexDirection:'column',gap:8}}>
+                {[
+                  {val:filterVerified,set:setFilterVerified,label:'✓ Verificat Reparo'},
+                  {val:filterITP,set:setFilterITP,label:'🔍 ITP pe loc'},
+                  {val:filterRAR,set:setFilterRAR,label:'🏢 Autorizat RAR'},
+                ].map(f=>(
+                  <label key={f.label} style={{display:'flex',alignItems:'center',gap:8,cursor:'pointer',fontSize:13,color:S.text}}>
+                    <input type="checkbox" checked={f.val} onChange={e=>f.set(e.target.checked)}
+                      style={{accentColor:S.blue,width:16,height:16}}/>
+                    <span style={{fontWeight:f.val?700:400}}>{f.label}</span>
+                  </label>
+                ))}
+              </div>
+            </div>
+
+            {/* Rating minim */}
+            <div>
+              <div style={{fontSize:11,fontWeight:700,color:S.muted,textTransform:'uppercase',letterSpacing:.5,marginBottom:8}}>
+                Rating minim: {filterRatingMin>0?`${filterRatingMin}★`:'Oricare'}
+              </div>
+              <input type="range" min={0} max={5} step={0.5} value={filterRatingMin}
+                onChange={e=>setFilterRatingMin(parseFloat(e.target.value))}
                 style={{width:'100%',accentColor:S.blue}}/>
+              <div style={{display:'flex',justifyContent:'space-between',fontSize:11,color:S.muted,marginTop:4}}>
+                <span>Oricare</span><span>5★</span>
+              </div>
             </div>
           </div>
 
-          <div className="search-sidebar-item" style={card()}>
-            <div style={{fontSize:11,fontWeight:700,color:S.muted,textTransform:'uppercase',letterSpacing:1,marginBottom:10,fontFamily:"'Sora',sans-serif"}}>Categorii</div>
-            {CATEGORIES.map(c=>(
-              <button key={c} onClick={()=>setQuery(c)}
-                style={{display:'block',width:'100%',textAlign:'left',padding:'8px 10px',borderRadius:10,border:'none',background:'transparent',fontSize:13,color:S.muted,cursor:'pointer',transition:'all .15s',fontFamily:"'DM Sans',sans-serif",marginBottom:2}}
-                onMouseEnter={e=>{e.currentTarget.style.background='#eaf3ff';e.currentTarget.style.color=S.blue}}
-                onMouseLeave={e=>{e.currentTarget.style.background='transparent';e.currentTarget.style.color=S.muted}}>
-                {c}
-              </button>
+          <div style={{display:'flex',gap:8,marginTop:16}}>
+            <button onClick={()=>setFiltersOpen(false)}
+              style={{padding:'9px 22px',background:S.blue,color:'#fff',border:'none',borderRadius:50,fontSize:13,fontWeight:700,cursor:'pointer'}}>
+              Aplică ({services.length} rezultate)
+            </button>
+            {activeFilters.length>0&&<button onClick={resetFilters}
+              style={{padding:'9px 18px',background:'transparent',color:S.muted,border:`1.5px solid ${S.border}`,borderRadius:50,fontSize:13,cursor:'pointer'}}>
+              Resetează
+            </button>}
+          </div>
+        </div>
+      </div>
+
+      {/* Results */}
+      <div style={{maxWidth:960,margin:'0 auto',padding:'16px'}}>
+        <div style={{fontSize:14,color:S.muted,marginBottom:14}}>
+          {loading?'Se caută...':<><span style={{fontWeight:700,color:S.navy}}>{services.length}</span> service-uri găsite {city!=='Toate orașele'&&<span>în <strong>{city}</strong></span>}</>}
+        </div>
+
+        {loading?(
+          <div style={{display:'flex',flexDirection:'column',gap:10}}>
+            {[1,2,3,4].map(i=>(
+              <div key={i} style={{background:S.white,borderRadius:12,height:100,border:`1px solid ${S.border}`,animation:'pulse 1.5s infinite'}}/>
+            ))}
+            <style>{`@keyframes pulse{0%,100%{opacity:1}50%{opacity:.5}}`}</style>
+          </div>
+        ):services.length===0?(
+          <div style={{background:S.white,borderRadius:12,border:`1px solid ${S.border}`,textAlign:'center',padding:'60px 20px'}}>
+            <div style={{fontSize:48,marginBottom:12}}>🔍</div>
+            <div style={{fontFamily:"'Sora',sans-serif",fontWeight:700,fontSize:16,color:S.navy,marginBottom:6}}>Niciun service găsit</div>
+            <p style={{fontSize:13,color:S.muted}}>Încearcă alte filtre sau un alt oraș.</p>
+          </div>
+        ):(
+          <div style={{display:'flex',flexDirection:'column',gap:10}}>
+            {services.map(svc=>(
+              <a key={svc.id} href={`/service/${svc.id}`} className="svc-card">
+                {/* Logo */}
+                <div style={{width:56,height:56,background:'#eaf3ff',borderRadius:12,display:'flex',alignItems:'center',justifyContent:'center',fontSize:24,flexShrink:0,overflow:'hidden'}}>
+                  {svc.logo_url?<img src={svc.logo_url} style={{width:'100%',height:'100%',objectFit:'cover'}} alt=""/>:'🔧'}
+                </div>
+                {/* Info */}
+                <div style={{flex:1,minWidth:0}}>
+                  <div style={{display:'flex',alignItems:'flex-start',justifyContent:'space-between',gap:8,marginBottom:4}}>
+                    <div style={{fontFamily:"'Sora',sans-serif",fontWeight:700,fontSize:15,color:S.navy,display:'flex',alignItems:'center',gap:6,flexWrap:'wrap'}}>
+                      {svc.name}
+                      {svc.is_verified&&<span style={{fontSize:10,background:S.greenBg,color:S.green,padding:'1px 6px',borderRadius:50,fontWeight:700}}>✓ Verificat</span>}
+                      {svc.plan==='pro'&&<span style={{fontSize:10,background:'#ede9fe',color:'#7c3aed',padding:'1px 6px',borderRadius:50,fontWeight:700}}>⭐ Pro</span>}
+                    </div>
+                    <button onClick={e=>{e.preventDefault();e.stopPropagation();toggleFav(svc.id)}}
+                      style={{background:'none',border:'none',cursor:'pointer',fontSize:18,flexShrink:0,padding:0}}>
+                      {favorites.has(svc.id)?'❤️':'🤍'}
+                    </button>
+                  </div>
+                  <div style={{fontSize:12,color:S.muted,marginBottom:6,display:'-webkit-box',WebkitLineClamp:2,WebkitBoxOrient:'vertical',overflow:'hidden'}}>
+                    {svc.description||'Service auto profesional'}
+                  </div>
+                  <div style={{display:'flex',alignItems:'center',gap:10,flexWrap:'wrap'}}>
+                    {svc.rating_avg>0&&(
+                      <span style={{fontSize:12,fontWeight:700,color:S.navy,display:'flex',alignItems:'center',gap:3}}>
+                        <span style={{color:S.yellow}}>★</span>{svc.rating_avg.toFixed(1)}
+                        <span style={{color:S.muted,fontWeight:400}}>({svc.rating_count})</span>
+                      </span>
+                    )}
+                    <span style={{fontSize:12,color:S.muted}}>📍 {svc.city||'România'}</span>
+                    {svc.has_itp&&<span style={{fontSize:10,background:'#f3e8ff',color:'#7c3aed',padding:'1px 6px',borderRadius:50,fontWeight:600}}>ITP</span>}
+                    {svc.is_authorized_rar&&<span style={{fontSize:10,background:'#dbeafe',color:'#1d4ed8',padding:'1px 6px',borderRadius:50,fontWeight:600}}>RAR</span>}
+                  </div>
+                </div>
+                {/* CTA */}
+                <div style={{flexShrink:0,display:'flex',flexDirection:'column',gap:6,alignItems:'flex-end'}}>
+                  <span style={{display:'inline-block',padding:'8px 14px',background:S.blue,color:'#fff',borderRadius:50,fontSize:12,fontWeight:700,whiteSpace:'nowrap'}}>
+                    Cere ofertă →
+                  </span>
+                </div>
+              </a>
             ))}
           </div>
-        </div>
-
-        {/* Rezultate */}
-        <div style={{flex:1,minWidth:0}}>
-          <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:16}}>
-            <div style={{fontSize:14,color:S.muted}}>
-              {loading?'Se caută...':<><span style={{fontWeight:700,color:S.navy}}>{services.length}</span> service-uri găsite{query&&<> pentru „<strong style={{color:S.navy}}>{query}</strong>"</>}</>}
-            </div>
-            <button onClick={reset} style={{fontSize:12,color:S.blue,background:'none',border:'none',cursor:'pointer',fontFamily:"'DM Sans',sans-serif",fontWeight:600}}>Resetează filtrele</button>
-          </div>
-
-          {loading?(
-            <div style={{display:'flex',flexDirection:'column',gap:12}}>
-              {[1,2,3].map(i=><div key={i} style={{...card({height:120}),animation:'pulse 1.5s ease-in-out infinite'}}/>)}
-              <style>{`@keyframes pulse{0%,100%{opacity:1}50%{opacity:.5}}`}</style>
-            </div>
-          ):services.length===0?(
-            <div style={{...card(),textAlign:'center',padding:'80px 20px'}}>
-              <div style={{fontSize:56,marginBottom:14}}>🔍</div>
-              <div style={{fontFamily:"'Sora',sans-serif",fontWeight:700,fontSize:18,color:S.navy,marginBottom:6}}>Niciun service găsit</div>
-              <p style={{fontSize:13,color:S.muted,marginBottom:16}}>Încearcă alte filtre sau un alt oraș.</p>
-              <button onClick={reset} style={btn(true)}>Resetează filtrele</button>
-            </div>
-          ):(
-            <div style={{display:'flex',flexDirection:'column',gap:12}}>
-              {services.map(s=>(
-                <a key={s.id} href={`/service/${s.id}`} className="svc-card"
-                  className="svc-card" style={{...card({padding:14}),display:'flex',gap:12,alignItems:'flex-start',textDecoration:'none',transition:'all .2s',cursor:'pointer'}}>
-                  <div style={{width:56,height:56,background:'#eaf3ff',borderRadius:14,display:'flex',alignItems:'center',justifyContent:'center',fontSize:26,flexShrink:0}}>🔧</div>
-                  <div style={{flex:1,minWidth:0}}>
-                    <div style={{display:'flex',alignItems:'flex-start',justifyContent:'space-between',marginBottom:6,flexWrap:'wrap',gap:6}}>
-                      <div>
-                        <span style={{fontFamily:"'Sora',sans-serif",fontWeight:700,fontSize:16,color:S.navy}}>{s.name}</span>
-                        {s.is_verified&&<span style={{...pill('#eaf3ff',S.blue,''),marginLeft:8}}>✓ Verificat</span>}
-                        {s.plan==='pro'&&<span style={{...pill(S.amberBg,S.amber,''),marginLeft:6}}>⭐ Pro</span>}
-                      </div>
-                      <div style={{display:'flex',alignItems:'center',gap:4,flexShrink:0}}>
-                        {[1,2,3,4,5].map(star=><span key={star} style={{fontSize:14,color:star<=Math.round(s.rating_avg)?S.yellow:'#e5e7eb'}}>★</span>)}
-                        <span style={{fontSize:12,color:S.muted,marginLeft:3}}>({s.rating_count})</span>
-                      </div>
-                    </div>
-                    {s.description&&<p style={{fontSize:13,color:S.muted,marginBottom:8,lineHeight:1.5,display:'-webkit-box',WebkitLineClamp:2,WebkitBoxOrient:'vertical',overflow:'hidden'}}>{s.description}</p>}
-                    <div style={{display:'flex',flexWrap:'wrap',gap:6,marginBottom:8}}>
-                      {s.has_itp&&<span style={pill('#eaf3ff',S.blue,'')}>ITP pe loc</span>}
-                      {s.is_authorized_rar&&<span style={pill('#eaf3ff',S.blue,'')}>Autorizat RAR</span>}
-                      {s.warranty_months>0&&<span style={pill(S.greenBg,S.green,'')}>Garanție {s.warranty_months} luni</span>}
-                    </div>
-                    <div style={{fontSize:12,color:S.blue,fontWeight:500}}>📍 {s.city}{s.address?` · ${s.address}`:''}</div>
-                  </div>
-                  <div style={{flexShrink:0,marginLeft:'auto'}}>
-                    <span style={{display:'inline-flex',padding:'7px 14px',borderRadius:50,background:'#eaf3ff',color:S.blue,fontSize:12,fontWeight:700}}>Vezi profil →</span>
-                  </div>
-                </a>
-              ))}
-            </div>
-          )}
-        </div>
+        )}
       </div>
     </div>
   )
 }
 
 export default function SearchPage() {
-  return (
-    <Suspense fallback={<div style={{minHeight:'60vh',display:'flex',alignItems:'center',justifyContent:'center',background:'#f0f6ff'}}><div style={{width:36,height:36,border:'3px solid #1a56db',borderTopColor:'transparent',borderRadius:'50%',animation:'spin 1s linear infinite'}}/><style>{`@keyframes spin{to{transform:rotate(360deg)}}`}</style></div>}>
-      <SearchContent/>
-    </Suspense>
-  )
+  return <Suspense><SearchContent/></Suspense>
 }

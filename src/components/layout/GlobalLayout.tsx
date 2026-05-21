@@ -391,19 +391,7 @@ export default function GlobalLayout({ children }) {
             </div>
           </div>
 
-          {/* Mobile search bar */}
-          <div className="mob-only" style={{padding:'0 16px 12px'}}>
-            <div style={{display:'flex',borderRadius:50,overflow:'hidden',border:'1.5px solid var(--border)',background:'#fff'}}>
-              <input value={searchQuery} onChange={e=>setSearchQuery(e.target.value)}
-                placeholder="Caută service, piesă..."
-                onKeyDown={e=>{if(e.key==='Enter')window.location.href=`/search?q=${encodeURIComponent(searchQuery)}`}}
-                style={{flex:1,padding:'11px 16px',border:'none',fontSize:14,outline:'none',fontFamily:"'DM Sans',sans-serif",background:'transparent',color:'var(--text)'}}/>
-              <button onClick={()=>window.location.href=`/search?q=${encodeURIComponent(searchQuery)}`}
-                style={{padding:'0 18px',background:'var(--blue)',border:'none',cursor:'pointer'}}>
-                <svg width="15" height="15" viewBox="0 0 15 15" fill="none"><circle cx="6" cy="6" r="4.5" stroke="#fff" strokeWidth="1.6"/><path d="M9.5 9.5L13 13" stroke="#fff" strokeWidth="1.6" strokeLinecap="round"/></svg>
-              </button>
-            </div>
-          </div>
+
 
           {/* Nav tabs — desktop */}
           <div className="nav-scroll hide-mob" style={{display:'flex',padding:'0 32px',maxWidth:1280,margin:'0 auto',overflowX:'auto',borderTop:'1px solid var(--border)'}}>
