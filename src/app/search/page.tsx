@@ -11,6 +11,22 @@ const S = {
 
 const CITIES = ['Toate orașele','București','Cluj-Napoca','Timișoara','Iași','Constanța','Craiova','Brașov','Galați','Ploiești','Oradea','Sibiu','Bacău','Pitești','Arad','Târgu Mureș','Baia Mare','Buzău','Rm. Vâlcea','Drobeta-Turnu Severin']
 
+
+const CATEGORY_MAP = {
+  'schimb-ulei': ['schimb ulei', 'schimb ulei si filtre', 'ulei motor'],
+  'geometrie': ['geometrie', 'echilibrare', 'geometrie si echilibrare', 'echilibrare roti'],
+  'detailing': ['detailing', 'detailing auto', 'polish', 'spalatorie'],
+  'diagnoza': ['diagnoza', 'diagnoza electronica', 'diagnosticare', 'diagnoza auto'],
+  'vopsitorie': ['vopsitorie', 'caroserie', 'vopsitorie si caroserie', 'tinichigerie'],
+  'itp': ['itp', 'inspecție tehnică', 'inspectie tehnica'],
+  'dezmembrari': ['dezmembrari', 'dezmembrare', 'piese second hand'],
+  'electrica': ['electrica', 'electric', 'instalatie electrica', 'electronica'],
+  'anvelope': ['anvelope', 'jante', 'anvelope si jante', 'schimb anvelope'],
+  'tractari': ['tractari', 'tractare', 'depanare'],
+  'ac': ['aer conditionat', 'ac auto', 'climatizare'],
+  'frane': ['frane', 'sistem franare', 'placute frana'],
+}
+
 function SearchContent() {
   const [query, setQuery] = useState('')
   const [services, setServices] = useState([])
@@ -25,6 +41,7 @@ function SearchContent() {
   const [filterITP, setFilterITP] = useState(false)
   const [filterRAR, setFilterRAR] = useState(false)
   const [filterRatingMin, setFilterRatingMin] = useState(0)
+  const [activeCategory, setActiveCategory] = useState('')
   const supabase = createClient()
 
   useEffect(() => {
@@ -40,34 +57,78 @@ function SearchContent() {
       const p = new URLSearchParams(window.location.search)
       if (p.get('q')) setQuery(p.get('q'))
       if (p.get('city')) setCity(p.get('city'))
-      if (p.get('category')) setQuery(p.get('category'))
+      if (p.get('category')) {
+        setActiveCategory(p.get('category'))
+      }
     }
     loadServices()
   }, [])
 
-  useEffect(() => { loadServices() }, [city, sortBy, filterVerified, filterITP, filterRAR, filterRatingMin])
+  useEffect(() => { loadServices() }, [city, sortBy, filterVerified, filterITP, filterRAR, filterRatingMin, activeCategory, query])
 
   async function loadServices() {
     setLoading(true)
+
+    // If filtering by category, get service IDs that have that offering
+    let serviceIdsForCategory = null
+    if (activeCategory && activeCategory !== '' && activeCategory !== 'toate') {
+      const keywords = CATEGORY_MAP[activeCategory] || [activeCategory.toLowerCase()]
+      // Get all offerings matching the category keywords
+      const { data: offsData } = await supabase
+        .from('service_offerings')
+        .select('service_id, name, category')
+        .eq('is_active', true)
+      
+      if (offsData?.length) {
+        serviceIdsForCategory = new Set(
+          offsData
+            .filter(o => {
+              const name = (o.name || '').toLowerCase()
+              const cat = (o.category || '').toLowerCase()
+              return keywords.some(kw => name.includes(kw) || cat.includes(kw) || kw.includes(cat))
+            })
+            .map(o => o.service_id)
+        )
+        // Also include services with matching fields (has_itp etc)
+        if (activeCategory === 'itp') {
+          // will also include has_itp=true services below
+        }
+      }
+
+      // Fallback: if no offerings found, filter by service fields
+      if (!serviceIdsForCategory || serviceIdsForCategory.size === 0) {
+        serviceIdsForCategory = null // will use field filters below
+      }
+    }
+
     let q = supabase.from('services').select('*').eq('is_active', true)
     if (city && city !== 'Toate orașele') q = q.eq('city', city)
     if (filterVerified) q = q.eq('is_verified', true)
-    if (filterITP) q = q.eq('has_itp', true)
     if (filterRAR) q = q.eq('is_authorized_rar', true)
     if (filterRatingMin > 0) q = q.gte('rating_avg', filterRatingMin)
+    // ITP filter — use field OR category
+    if (filterITP || activeCategory === 'itp') q = q.eq('has_itp', true)
     if (sortBy === 'rating') q = q.order('rating_avg', {ascending:false})
     else if (sortBy === 'reviews') q = q.order('rating_count', {ascending:false})
     else q = q.order('name', {ascending:true})
-    const {data} = await q.limit(60)
+    const {data} = await q.limit(200)
     let results = data || []
+
+    // Filter by category offerings
+    if (serviceIdsForCategory && serviceIdsForCategory.size > 0) {
+      results = results.filter(s => serviceIdsForCategory.has(s.id))
+    }
+
+    // Text search
     if (query.trim()) {
-      const q2 = query.toLowerCase()
+      const qLow = query.toLowerCase()
       results = results.filter(s =>
-        s.name?.toLowerCase().includes(q2) ||
-        s.description?.toLowerCase().includes(q2) ||
-        s.city?.toLowerCase().includes(q2)
+        s.name?.toLowerCase().includes(qLow) ||
+        s.description?.toLowerCase().includes(qLow) ||
+        s.city?.toLowerCase().includes(qLow)
       )
     }
+
     setServices(results)
     setLoading(false)
   }
@@ -84,7 +145,7 @@ function SearchContent() {
   }
 
   function handleSearch(e) { e.preventDefault(); loadServices() }
-  function resetFilters() { setCity('Toate orașele');setFilterVerified(false);setFilterITP(false);setFilterRAR(false);setFilterRatingMin(0);setSortBy('rating') }
+  function resetFilters() { setCity('Toate orașele');setFilterVerified(false);setFilterITP(false);setFilterRAR(false);setFilterRatingMin(0);setSortBy('rating');setActiveCategory('') }
   const activeFilters = [filterVerified&&'Verificat',filterITP&&'ITP',filterRAR&&'RAR',filterRatingMin>0&&`Rating ≥${filterRatingMin}`].filter(Boolean)
 
   return (
@@ -212,7 +273,14 @@ function SearchContent() {
       {/* Results */}
       <div style={{maxWidth:960,margin:'0 auto',padding:'16px'}}>
         <div style={{fontSize:14,color:S.muted,marginBottom:14}}>
-          {loading?'Se caută...':<><span style={{fontWeight:700,color:S.navy}}>{services.length}</span> service-uri găsite {city!=='Toate orașele'&&<span>în <strong>{city}</strong></span>}</>}
+          {loading?'Se caută...':(
+            <>
+              <span style={{fontWeight:700,color:S.navy}}>{services.length}</span> service-uri
+              {activeCategory&&activeCategory!=='toate'&&<span> cu <strong style={{color:S.blue}}>{activeCategory.replace(/-/g,' ')}</strong></span>}
+              {city!=='Toate orașele'&&<span> în <strong>{city}</strong></span>}
+              {activeCategory&&<button onClick={()=>setActiveCategory('')} style={{marginLeft:8,fontSize:11,color:S.muted,background:'none',border:'none',cursor:'pointer',textDecoration:'underline'}}>✕ Resetează categoria</button>}
+            </>
+          )}
         </div>
 
         {loading?(
