@@ -264,7 +264,7 @@ function ListingsContent() {
         .cat-item{display:flex;align-items:center;gap:8px;padding:9px 12px;border-radius:8px;cursor:pointer;font-size:13px;color:#6b7280;transition:all .15s;border:none;background:none;width:100%;text-align:left;font-family:'DM Sans',sans-serif}
         .cat-item:hover,.cat-item.active{background:#eaf3ff;color:#1a56db}
         .cat-item.active{font-weight:700}
-        @media(max-width:768px){.lst-layout{flex-direction:column!important}.lst-sidebar{display:none!important}.lst-grid{grid-template-columns:repeat(2,1fr)!important;gap:8px!important}}
+        .lst-sidebar{display:flex!important;flex-direction:column!important} @media(max-width:768px){.lst-layout{flex-direction:column!important}.lst-sidebar{display:none!important}.lst-grid{grid-template-columns:repeat(2,1fr)!important;gap:8px!important}}
       `}}/>
 
       {/* TOP BAR */}
@@ -373,7 +373,7 @@ function ListingsContent() {
           </div>
 
           {loading?(
-            <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fill,minmax(180px,1fr))',gap:10}} className="lst-grid">
+            <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fill,minmax(180px,1fr))',gap:10}}>
               {[1,2,3,4,5,6,7,8].map(i=><div key={i} style={{background:'#fff',borderRadius:8,height:240,border:'1px solid #e5e7eb',animation:'pulse 1.5s infinite'}}/>)}
               <style dangerouslySetInnerHTML={{__html:'@keyframes pulse{0%,100%{opacity:1}50%{opacity:.5}}'}}/>
             </div>
@@ -384,7 +384,7 @@ function ListingsContent() {
               <button onClick={()=>user?setShowAdd(true):window.location.href='/auth/login'} style={{padding:'10px 24px',background:'#f59e0b',color:'#fff',border:'none',borderRadius:50,fontSize:13,fontWeight:700,cursor:'pointer',marginTop:8}}>+ Adaugă anunț</button>
             </div>
           ):(
-            <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fill,minmax(180px,1fr))',gap:10}} className="lst-grid">
+            <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fill,minmax(180px,1fr))',gap:10}}>
               {listings.map(l=>{
                 const cover = l.listing_media?.find(m=>m.is_cover)?.url||l.listing_media?.[0]?.url
                 const cond = CONDITIONS.find(c=>c.key===l.condition)
