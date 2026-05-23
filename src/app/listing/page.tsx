@@ -1,87 +1,42 @@
 // @ts-nocheck
 'use client'
 import { useEffect, useState, Suspense } from 'react'
-import { useSearchParams } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 
 const S = {
-  navy:'#0a1f44',blue:'#1a56db',blueLight:'#3b82f6',yellow:'#f59e0b',
-  bg:'#f0f6ff',white:'#fff',text:'#111827',muted:'#6b7280',border:'#e5e7eb',
+  navy:'#0a1f44',blue:'#1a56db',yellow:'#f59e0b',
+  bg:'#f4f6f9',white:'#fff',text:'#111827',muted:'#6b7280',border:'#e5e7eb',
   green:'#16a34a',greenBg:'#dcfce7',red:'#dc2626',redBg:'#fee2e2',
-  amber:'#d97706',amberBg:'#fef3c7',purple:'#7c3aed',purpleBg:'#ede9fe',
+  amber:'#d97706',amberBg:'#fef3c7',
 }
 
-const card = (extra={}) => ({background:S.white,borderRadius:16,border:`1px solid ${S.border}`,boxShadow:'0 2px 12px rgba(10,31,68,0.06)',padding:20,...extra})
-const pill = (bg,color) => ({display:'inline-flex',alignItems:'center',padding:'3px 10px',borderRadius:50,background:bg,color,fontSize:11,fontWeight:700,fontFamily:"'Sora',sans-serif"})
-const inp = {width:'100%',padding:'10px 14px',border:`1.5px solid ${S.border}`,borderRadius:10,fontSize:13,color:S.text,outline:'none',fontFamily:"'DM Sans',sans-serif",background:S.white}
-const btnPrimary = {display:'inline-flex',alignItems:'center',gap:6,padding:'10px 20px',borderRadius:50,fontSize:13,fontWeight:600,cursor:'pointer',border:'none',fontFamily:"'DM Sans',sans-serif",background:S.blue,color:'#fff',boxShadow:'0 2px 8px rgba(26,86,219,0.2)',transition:'all .15s'}
-
 const CATEGORIES = [
-  {key:'toate',label:'Toate',icon:'📦'},
-  {key:'piese',label:'Piese auto',icon:'🔧'},
+  {key:'toate',label:'Toate categoriile',icon:'📦'},
+  {key:'piese-noi',label:'Piese noi',icon:'🔵'},
+  {key:'dezmembrari',label:'Dezmembrări',icon:'♻️'},
   {key:'anvelope',label:'Anvelope & jante',icon:'⭕'},
   {key:'accesorii',label:'Accesorii',icon:'🎯'},
-  {key:'electronice',label:'Electronice',icon:'💡'},
+  {key:'electronice',label:'Electronice auto',icon:'💡'},
   {key:'caroserie',label:'Caroserie',icon:'🚘'},
-  {key:'motoare',label:'Motoare',icon:'⚙️'},
-  {key:'unelte',label:'Unelte',icon:'🛠️'},
+  {key:'motoare',label:'Motoare & cutii',icon:'⚙️'},
+  {key:'unelte',label:'Unelte & utilaje',icon:'🛠️'},
   {key:'altele',label:'Altele',icon:'📦'},
 ]
 
 const CONDITIONS = [
-  {key:'nou',label:'Nou',bg:S.greenBg,color:S.green},
-  {key:'folosit',label:'Folosit',bg:'#eaf3ff',color:S.blue},
-  {key:'reconditionat',label:'Recondiționat',bg:S.amberBg,color:S.amber},
+  {key:'nou',label:'Nou',bg:'#dcfce7',color:'#16a34a'},
+  {key:'folosit',label:'Folosit',bg:'#eaf3ff',color:'#1a56db'},
+  {key:'reconditionat',label:'Recondiționat',bg:'#fef3c7',color:'#d97706'},
 ]
 
-function ListingsContent() {
-  const searchParams = useSearchParams()
-  const [listings, setListings] = useState([])
-  const [loading, setLoading] = useState(true)
-  const [showAdd, setShowAdd] = useState(false)
-  const [activeCategory, setActiveCategory] = useState('toate')
-  const [sortBy, setSortBy] = useState('recent')
-  const [query, setQuery] = useState('')
-  const [selected, setSelected] = useState(null)
-  const [user, setUser] = useState(null)
+const JUDETE = ['Alba','Arad','Argeș','Bacău','Bihor','Bistrița-Năsăud','Botoșani','Brăila','Brașov','București','Buzău','Călărași','Caraș-Severin','Cluj','Constanța','Covasna','Dâmbovița','Dolj','Galați','Giurgiu','Gorj','Harghita','Hunedoara','Ialomița','Iași','Ilfov','Maramureș','Mehedinți','Mureș','Neamț','Olt','Prahova','Sălaj','Satu Mare','Sibiu','Suceava','Teleorman','Timiș','Tulcea','Vâlcea','Vaslui','Vrancea']
+
+// ══ MODAL ADD LISTING — componentă separată ca să nu piardă focus-ul ══
+function AddListingModal({ onClose, onAdd, user, supabase }) {
+  const [form, setForm] = useState({title:'',description:'',price:'',category:'piese-noi',condition:'folosit',compatible_brands:'',city:'',parts_type:'oem'})
   const [saving, setSaving] = useState(false)
   const [uploadedFiles, setUploadedFiles] = useState([])
   const [uploadingFiles, setUploadingFiles] = useState(false)
-  const [favorites, setFavorites] = useState(new Set())
-  const [form, setForm] = useState({title:'',description:'',price:'',category:'piese',condition:'folosit',compatible_brands:'',city:'',phone_contact:''})
-  const supabase = createClient()
-
-  useEffect(() => {
-    supabase.auth.getUser().then(({data:{user}})=>setUser(user))
-    loadListings()
-  }, [activeCategory, sortBy])
-
-  async function loadListings() {
-    setLoading(true)
-    let q = supabase.from('listings').select('id, title, price, city, category, condition, created_at, is_promoted, promoted_until, negotiable, listing_media(url, is_cover)').eq('status','activ')
-    if (activeCategory!=='toate') q = q.eq('category', activeCategory)
-    if (sortBy==='pret_asc') q = q.order('price',{ascending:true})
-    else if (sortBy==='pret_desc') q = q.order('price',{ascending:false})
-    else {
-      // Promoted first (only if promoted_until is in the future or null)
-      q = q.order('is_promoted',{ascending:false}).order('promoted_until',{ascending:false}).order('created_at',{ascending:false})
-    }
-    const {data} = await q.limit(40)
-    let results = data||[]
-    if (query) results = results.filter(l=>l.title.toLowerCase().includes(query.toLowerCase()))
-    // Sort: promoted (valid) first, then by date
-    const now = new Date()
-    const sorted = (results||[]).map(l => ({
-      ...l,
-      is_promoted: l.is_promoted && (!l.promoted_until || new Date(l.promoted_until) > now)
-    })).sort((a,b) => {
-      if (a.is_promoted && !b.is_promoted) return -1
-      if (!a.is_promoted && b.is_promoted) return 1
-      return new Date(b.created_at) - new Date(a.created_at)
-    })
-    setListings(sorted)
-    setLoading(false)
-  }
 
   async function handleFileUpload(files) {
     if (!user||!files.length) return
@@ -89,8 +44,8 @@ function ListingsContent() {
     const urls = []
     for (const file of Array.from(files)) {
       const ext = file.name.split('.').pop()
-      const path = `${user.id}/${Date.now()}.${ext}`
-      const {error} = await supabase.storage.from('listing-media').upload(path, file)
+      const path = `${user.id}/${Date.now()}_${Math.random().toString(36).slice(2)}.${ext}`
+      const {error} = await supabase.storage.from('listing-media').upload(path,file)
       if (!error) {
         const {data:{publicUrl}} = supabase.storage.from('listing-media').getPublicUrl(path)
         urls.push(publicUrl)
@@ -100,291 +55,385 @@ function ListingsContent() {
     setUploadingFiles(false)
   }
 
-  async function addListing() {
+  async function handleSubmit() {
     if (!user) { window.location.href='/auth/login'; return }
     setSaving(true)
     const {data} = await supabase.from('listings').insert({
       user_id:user.id,title:form.title,description:form.description,
       price:form.price?parseFloat(form.price):null,category:form.category,
-      condition:form.condition,city:form.city,status:'activ',
+      condition:form.condition,city:form.city,status:'activ',parts_type:form.parts_type,
       compatible_brands:form.compatible_brands?form.compatible_brands.split(',').map(s=>s.trim()):null,
     }).select().single()
     if (data&&uploadedFiles.length>0) {
       await supabase.from('listing_media').insert(uploadedFiles.map((url,i)=>({listing_id:data.id,url,is_cover:i===0,sort_order:i})))
-      data.listing_media = uploadedFiles.map((url,i)=>({url,is_cover:i===0}))
     }
-    if (data) setListings(prev=>[data,...prev])
-    setShowAdd(false); setSaving(false); setUploadedFiles([])
-    setForm({title:'',description:'',price:'',category:'piese',condition:'folosit',compatible_brands:'',city:'',phone_contact:''})
+    setSaving(false)
+    if (data) onAdd(data)
+    onClose()
   }
 
-  function handleSearch(e) { e.preventDefault(); loadListings() }
-  function toggleFav(id) { setFavorites(prev=>{const n=new Set(prev);n.has(id)?n.delete(id):n.add(id);return n}) }
-
-  const Modal = ({title,onClose,children}) => (
-    <div onClick={e=>{if(e.target===e.currentTarget)onClose()}} style={{position:'fixed',inset:0,background:'rgba(10,31,68,0.5)',zIndex:1000,display:'flex',alignItems:'center',justifyContent:'center',padding:16}}>
-      <div style={{background:S.white,borderRadius:20,width:'100%',maxWidth:540,padding:24,maxHeight:'90vh',overflowY:'auto'}}>
-        <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:20}}>
-          <h3 style={{fontFamily:"'Sora',sans-serif",fontWeight:800,fontSize:16,color:S.navy}}>{title}</h3>
-          <button onClick={onClose} style={{background:'none',border:'none',cursor:'pointer',color:S.muted,fontSize:20}}>✕</button>
-        </div>
-        {children}
-      </div>
-    </div>
-  )
-
   return (
-    <div style={{minHeight:'100vh',background:S.bg,fontFamily:"'DM Sans',sans-serif"}}>
-      <style>{`.listing-card{text-decoration:none!important;color:inherit!important}.listing-card:hover{border-color:${S.blue}!important;box-shadow:0 4px 20px rgba(26,86,219,0.1)!important}.listing-card *{text-decoration:none!important}.cat-btn:hover{border-color:${S.blue}!important;color:${S.blue}!important}
-        @media(max-width:768px){
-          .listings-grid{grid-template-columns:repeat(2,1fr)!important;gap:10px!important}
-          .listing-card{border-radius:12px!important}
-          .listing-card-img{height:110px!important}
-          .listing-card-body{padding:10px!important}
-          .listing-search-bar{flex-direction:row!important}
-          .cat-pills{gap:6px!important}
-          .cat-pill{padding:6px 12px!important;font-size:11px!important}
-          .sort-bar{flex-wrap:wrap!important;gap:8px!important}
-        }
-        @media(max-width:380px){
-          .listings-grid{grid-template-columns:1fr 1fr!important}
-        }`}</style>
-
-
-
-      <div style={{maxWidth:1100,margin:'0 auto',padding:'24px 16px'}}>
-
-        {/* Search + Add button */}
-        <div style={{display:'flex',gap:10,marginBottom:20,alignItems:'center'}}>
-          <form onSubmit={handleSearch} style={{display:'flex',flex:1,maxWidth:560}}>
-            <input value={query} onChange={e=>setQuery(e.target.value)} placeholder="Caută piese, anvelope, accesorii..."
-              style={{...inp,borderRadius:'50px 0 0 50px',borderRight:'none',padding:'10px 18px',flex:1}}/>
-            <button type="submit" style={{padding:'0 18px',background:S.blue,border:'none',borderRadius:'0 50px 50px 0',cursor:'pointer',height:44}}>
-              <svg width="15" height="15" viewBox="0 0 15 15" fill="none"><circle cx="6" cy="6" r="4.5" stroke="#fff" strokeWidth="1.6"/><path d="M9.5 9.5L13 13" stroke="#fff" strokeWidth="1.6" strokeLinecap="round"/></svg>
-            </button>
-          </form>
-
+    <div onClick={e=>{if(e.target===e.currentTarget)onClose()}} style={{position:'fixed',inset:0,background:'rgba(10,31,68,0.5)',zIndex:1000,display:'flex',alignItems:'center',justifyContent:'center',padding:16}}>
+      <div style={{background:'#fff',borderRadius:16,width:'100%',maxWidth:520,padding:24,maxHeight:'90vh',overflowY:'auto'}}>
+        <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:20}}>
+          <h3 style={{fontFamily:"'Sora',sans-serif",fontWeight:800,fontSize:16,color:'#0a1f44',margin:0}}>Publică anunț nou</h3>
+          <button onClick={onClose} style={{background:'none',border:'none',cursor:'pointer',fontSize:20,color:'#6b7280',lineHeight:1}}>✕</button>
         </div>
-
-        {/* Banner cere oferta piese */}
-        <div style={{background:`linear-gradient(135deg,${S.navy} 0%,#1a3a6b 100%)`,borderRadius:16,padding:'16px 20px',marginBottom:20,display:'flex',alignItems:'center',justifyContent:'space-between',gap:12,flexWrap:'wrap'}}>
-          <div style={{display:'flex',alignItems:'center',gap:12}}>
-            <span style={{fontSize:28}}>🔩</span>
-            <div>
-              <div style={{fontFamily:"'Sora',sans-serif",fontWeight:700,fontSize:14,color:'#fff',marginBottom:2}}>Nu găsești piesa de care ai nevoie?</div>
-              <div style={{fontSize:12,color:'rgba(255,255,255,0.6)'}}>Trimite o cerere și parcurile de dezmembrări îți răspund cu oferte</div>
-            </div>
-          </div>
-          <a href="/piese-oferta" style={{display:'inline-flex',alignItems:'center',gap:6,padding:'10px 20px',background:S.yellow,color:'#fff',borderRadius:50,fontSize:13,fontWeight:700,textDecoration:'none',fontFamily:"'Sora',sans-serif",whiteSpace:'nowrap',boxShadow:'0 4px 12px rgba(245,158,11,0.35)',flexShrink:0}}>
-            Cere ofertă piese →
-          </a>
-        </div>
-
-        {/* Categorii */}
-        <div style={{display:'flex',gap:8,marginBottom:20,overflowX:'auto',paddingBottom:4}}>
-          {CATEGORIES.map(c=>(
-            <button key={c.key} onClick={()=>setActiveCategory(c.key)} className="cat-btn"
-              style={{flexShrink:0,padding:'8px 16px',borderRadius:50,fontSize:13,fontWeight:600,cursor:'pointer',border:`1.5px solid ${activeCategory===c.key?S.blue:S.border}`,background:activeCategory===c.key?'#eaf3ff':S.white,color:activeCategory===c.key?S.blue:S.muted,fontFamily:"'DM Sans',sans-serif",transition:'all .15s',display:'flex',alignItems:'center',gap:6}}>
-              {c.icon} {c.label}
-            </button>
-          ))}
-        </div>
-
-        {/* Sort + count */}
-        <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:16}}>
-          <div style={{fontSize:14,color:S.muted}}>
-            {loading?'Se caută...':<><span style={{fontWeight:700,color:S.navy}}>{listings.length}</span> anunțuri</>}
-          </div>
-          <select value={sortBy} onChange={e=>setSortBy(e.target.value)}
-            style={{padding:'8px 14px',borderRadius:50,border:`1.5px solid ${S.border}`,fontSize:13,background:S.white,color:S.navy,fontFamily:"'DM Sans',sans-serif",outline:'none',cursor:'pointer'}}>
-            <option value="recent">Cele mai recente</option>
-            <option value="pret_asc">Preț crescător</option>
-            <option value="pret_desc">Preț descrescător</option>
-          </select>
-        </div>
-
-        {/* Grid */}
-        {loading?(
-          <div className="listings-grid" style={{display:'grid',gridTemplateColumns:'repeat(auto-fill,minmax(200px,1fr))',gap:12}}>
-            {[1,2,3,4,5,6].map(i=><div key={i} style={{...card({height:240}),animation:'pulse 1.5s infinite'}}/>)}
-            <style>{`@keyframes pulse{0%,100%{opacity:1}50%{opacity:.5}}`}</style>
-          </div>
-        ):listings.length===0?(
-          <div style={{...card(),textAlign:'center',padding:'80px 20px'}}>
-            <div style={{fontSize:56,marginBottom:14}}>🔍</div>
-            <div style={{fontFamily:"'Sora',sans-serif",fontWeight:700,fontSize:18,color:S.navy,marginBottom:6}}>Niciun anunț în această categorie</div>
-            <button onClick={()=>user?setShowAdd(true):window.location.href='/auth/login'}
-              style={{...btnPrimary,background:S.yellow,boxShadow:'0 2px 8px rgba(245,158,11,0.2)',marginTop:8}}>
-              Fii primul care adaugă un anunț
-            </button>
-          </div>
-        ):(
-          <div className="listings-grid" style={{display:'grid',gridTemplateColumns:'repeat(auto-fill,minmax(200px,1fr))',gap:12}}>
-            {listings.map(l=>{
-              const coverImg = l.listing_media?.find(m=>m.is_cover)?.url||l.listing_media?.[0]?.url
-              const cond = CONDITIONS.find(c=>c.key===l.condition)
-              const daysAgo = Math.floor((new Date().getTime()-new Date(l.created_at).getTime())/(1000*60*60*24))
-              const promoted = l.is_promoted && l.promoted_until && new Date(l.promoted_until) > new Date()
-              return (
-                <a key={l.id} href={`/listing/${l.id}`} className="listing-card"
-                  style={{background:S.white,borderRadius:14,border:`2px solid ${promoted?S.yellow:S.border}`,overflow:'hidden',cursor:'pointer',transition:'all .2s',textDecoration:'none',color:'inherit',display:'block',boxShadow:promoted?'0 4px 16px rgba(245,158,11,0.15)':'0 2px 8px rgba(10,31,68,0.04)'}}>
-                  {/* Banner TOP */}
-                  {promoted&&(
-                    <div style={{background:S.yellow,display:'flex',alignItems:'center',justifyContent:'center',gap:4,padding:'4px 0'}}>
-                      <svg width="10" height="10" viewBox="0 0 12 12" fill="white"><path d="M6 1l1.3 2.6 2.9.4-2.1 2 .5 2.9L6 7.5l-2.6 1.4.5-2.9-2.1-2 2.9-.4z"/></svg>
-                      <span style={{fontSize:10,fontWeight:700,color:'#fff',letterSpacing:1,fontFamily:"'Sora',sans-serif"}}>TOP</span>
-                    </div>
-                  )}
-                  <div style={{height:promoted?126:150,background:promoted?'#fef3c7':'#eaf3ff',position:'relative',display:'flex',alignItems:'center',justifyContent:'center',overflow:'hidden'}}>
-                    {coverImg?(
-                      <img src={coverImg} alt={l.title} style={{width:'100%',height:'100%',objectFit:'cover'}}/>
-                    ):(
-                      <span style={{fontSize:44}}>{CATEGORIES.find(c=>c.key===l.category)?.icon||'📦'}</span>
-                    )}
-                    {cond&&<span style={{...pill(cond.bg,cond.color),position:'absolute',top:8,right:8,fontSize:10}}>{cond.label}</span>}
-                    <button onClick={e=>{e.stopPropagation();toggleFav(l.id)}}
-                      style={{position:'absolute',bottom:8,right:8,width:30,height:30,background:'rgba(255,255,255,0.92)',borderRadius:'50%',border:'none',cursor:'pointer',fontSize:14,display:'flex',alignItems:'center',justifyContent:'center',boxShadow:'0 1px 4px rgba(0,0,0,0.1)'}}>
-                      {favorites.has(l.id)?'❤️':'🤍'}
-                    </button>
-                  </div>
-                  <div style={{padding:'12px 14px 14px'}}>
-                    <div style={{fontFamily:"'Sora',sans-serif",fontWeight:800,fontSize:17,color:S.navy,marginBottom:4}}>
-                      {l.price?`${l.price.toLocaleString('ro-RO')} lei`:'Preț negociabil'}
-                    </div>
-                    <div style={{fontSize:12,color:S.muted,marginBottom:6,lineHeight:1.4,textDecoration:'none',display:'-webkit-box',WebkitLineClamp:2,WebkitBoxOrient:'vertical',overflow:'hidden'}}>{l.title}</div>
-                    <div style={{fontSize:11,color:S.muted,display:'flex',justifyContent:'space-between'}}>
-                      <span>📍 {l.city||'Locație'}</span>
-                      <span>{daysAgo===0?'Azi':daysAgo===1?'Ieri':`${daysAgo}z`}</span>
-                    </div>
-                  </div>
-                </a>
-              )
-            })}
-          </div>
-        )}
-      </div>
-
-      {/* Modal detalii anunț */}
-      {selected&&(
-        <Modal title={selected.title} onClose={()=>setSelected(null)}>
-          <div style={{height:200,background:'#eaf3ff',borderRadius:14,display:'flex',alignItems:'center',justifyContent:'center',marginBottom:16,overflow:'hidden'}}>
-            {selected.listing_media?.[0]?.url?(
-              <img src={selected.listing_media[0].url} alt={selected.title} style={{width:'100%',height:'100%',objectFit:'cover'}}/>
-            ):<span style={{fontSize:64}}>{CATEGORIES.find(c=>c.key===selected.category)?.icon||'📦'}</span>}
-          </div>
-          <div style={{fontFamily:"'Sora',sans-serif",fontWeight:800,fontSize:28,color:S.navy,marginBottom:16}}>
-            {selected.price?`${selected.price.toLocaleString()} lei`:'Preț negociabil'}
-          </div>
-          {selected.description&&(
-            <div style={{background:S.bg,borderRadius:12,padding:'12px 16px',marginBottom:14}}>
-              <div style={{fontSize:10,fontWeight:700,color:S.muted,textTransform:'uppercase',letterSpacing:1,marginBottom:6}}>Descriere</div>
-              <p style={{fontSize:13,color:S.text,lineHeight:1.6}}>{selected.description}</p>
-            </div>
-          )}
-          <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:10,marginBottom:16}}>
-            {selected.condition&&<div style={{background:S.bg,borderRadius:10,padding:'10px 12px'}}>
-              <div style={{fontSize:10,color:S.muted,marginBottom:2}}>Stare</div>
-              <div style={{fontWeight:600,fontSize:13,color:S.navy}}>{CONDITIONS.find(c=>c.key===selected.condition)?.label}</div>
-            </div>}
-            {selected.city&&<div style={{background:S.bg,borderRadius:10,padding:'10px 12px'}}>
-              <div style={{fontSize:10,color:S.muted,marginBottom:2}}>Locație</div>
-              <div style={{fontWeight:600,fontSize:13,color:S.navy}}>📍 {selected.city}</div>
-            </div>}
-            {selected.compatible_brands?.length>0&&<div style={{background:S.bg,borderRadius:10,padding:'10px 12px',gridColumn:'1/-1'}}>
-              <div style={{fontSize:10,color:S.muted,marginBottom:2}}>Compatibil cu</div>
-              <div style={{fontWeight:600,fontSize:13,color:S.navy}}>{selected.compatible_brands.join(', ')}</div>
-            </div>}
-          </div>
-          <div style={{display:'flex',gap:10}}>
-            <a href={`tel:${selected.phone_contact||''}`} style={{...btnPrimary,flex:1,justifyContent:'center',textDecoration:'none',fontSize:14}}>📞 Contactează vânzătorul</a>
-            <button onClick={()=>setSelected(null)} style={{padding:'10px 18px',borderRadius:50,border:`1.5px solid ${S.border}`,background:S.white,color:S.muted,cursor:'pointer',fontSize:13,fontFamily:"'DM Sans',sans-serif"}}>Închide</button>
-          </div>
-        </Modal>
-      )}
-
-      {/* Modal adaugă anunț */}
-      {showAdd&&(
-        <Modal title="Publică anunț nou" onClose={()=>setShowAdd(false)}>
+        <div style={{display:'flex',flexDirection:'column',gap:14}}>
+          {/* Titlu */}
           <div>
-            <div style={{marginBottom:12}}>
-              <label style={{display:'block',fontSize:11,fontWeight:700,color:S.muted,textTransform:'uppercase',letterSpacing:1,marginBottom:5,fontFamily:"'Sora',sans-serif"}}>Titlu anunț *</label>
-              <input value={form.title} onChange={e=>setForm(p=>({...p,title:e.target.value}))} placeholder="ex: Plăcuțe frână față Brembo BMW E90" style={inp}/>
-            </div>
-            <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:10,marginBottom:12}}>
-              <div>
-                <label style={{display:'block',fontSize:11,fontWeight:700,color:S.muted,textTransform:'uppercase',letterSpacing:1,marginBottom:5,fontFamily:"'Sora',sans-serif"}}>Categorie</label>
-                <select value={form.category} onChange={e=>setForm(p=>({...p,category:e.target.value}))} style={inp}>
-                  {CATEGORIES.filter(c=>c.key!=='toate').map(c=><option key={c.key} value={c.key}>{c.icon} {c.label}</option>)}
-                </select>
-              </div>
-              <div>
-                <label style={{display:'block',fontSize:11,fontWeight:700,color:S.muted,textTransform:'uppercase',letterSpacing:1,marginBottom:5,fontFamily:"'Sora',sans-serif"}}>Stare</label>
-                <div style={{display:'flex',gap:6}}>
-                  {CONDITIONS.map(c=>(
-                    <button key={c.key} onClick={()=>setForm(p=>({...p,condition:c.key}))}
-                      style={{flex:1,padding:'8px 4px',borderRadius:10,border:`1.5px solid ${form.condition===c.key?c.color:S.border}`,background:form.condition===c.key?c.bg:S.white,color:form.condition===c.key?c.color:S.muted,fontSize:11,fontWeight:700,cursor:'pointer',fontFamily:"'Sora',sans-serif"}}>
-                      {c.label}
-                    </button>
-                  ))}
-                </div>
-              </div>
-              <div>
-                <label style={{display:'block',fontSize:11,fontWeight:700,color:S.muted,textTransform:'uppercase',letterSpacing:1,marginBottom:5,fontFamily:"'Sora',sans-serif"}}>Preț (lei)</label>
-                <input type="number" value={form.price} onChange={e=>setForm(p=>({...p,price:e.target.value}))} placeholder="0" style={inp}/>
-              </div>
-              <div>
-                <label style={{display:'block',fontSize:11,fontWeight:700,color:S.muted,textTransform:'uppercase',letterSpacing:1,marginBottom:5,fontFamily:"'Sora',sans-serif"}}>Oraș</label>
-                <input value={form.city} onChange={e=>setForm(p=>({...p,city:e.target.value}))} placeholder="București" style={inp}/>
-              </div>
-            </div>
-            <div style={{marginBottom:12}}>
-              <label style={{display:'block',fontSize:11,fontWeight:700,color:S.muted,textTransform:'uppercase',letterSpacing:1,marginBottom:5,fontFamily:"'Sora',sans-serif"}}>Compatibil cu (mărci, virgulă)</label>
-              <input value={form.compatible_brands} onChange={e=>setForm(p=>({...p,compatible_brands:e.target.value}))} placeholder="BMW, Audi, Mercedes" style={inp}/>
-            </div>
-            <div style={{marginBottom:12}}>
-              <label style={{display:'block',fontSize:11,fontWeight:700,color:S.muted,textTransform:'uppercase',letterSpacing:1,marginBottom:5,fontFamily:"'Sora',sans-serif"}}>Descriere</label>
-              <textarea value={form.description} onChange={e=>setForm(p=>({...p,description:e.target.value}))} rows={3} placeholder="Descrie piesa în detaliu..." style={{...inp,resize:'none'}}/>
-            </div>
-            {/* Upload poze */}
-            <div style={{marginBottom:16}}>
-              <label style={{display:'block',fontSize:11,fontWeight:700,color:S.muted,textTransform:'uppercase',letterSpacing:1,marginBottom:5,fontFamily:"'Sora',sans-serif"}}>Fotografii produs</label>
-              <div onClick={()=>document.getElementById('listing-photos').click()}
-                style={{border:`2px dashed ${S.border}`,borderRadius:12,padding:'20px',textAlign:'center',cursor:'pointer',transition:'border-color .15s'}}
-                onMouseEnter={e=>e.currentTarget.style.borderColor=S.blue}
-                onMouseLeave={e=>e.currentTarget.style.borderColor=S.border}>
-                <div style={{fontSize:28,marginBottom:6}}>📷</div>
-                <div style={{fontSize:13,color:S.muted}}>{uploadingFiles?'Se încarcă...':'Click pentru a adăuga poze'}</div>
-                <div style={{fontSize:11,color:S.muted,marginTop:2}}>JPG, PNG · max 5MB</div>
-                <input id="listing-photos" type="file" multiple accept="image/*" style={{display:'none'}} onChange={e=>handleFileUpload(e.target.files)}/>
-              </div>
-              {uploadedFiles.length>0&&(
-                <div style={{display:'flex',gap:8,flexWrap:'wrap',marginTop:8}}>
-                  {uploadedFiles.map((url,i)=>(
-                    <div key={i} style={{position:'relative'}}>
-                      <img src={url} alt="" style={{width:60,height:60,objectFit:'cover',borderRadius:10,border:`1px solid ${S.border}`}}/>
-                      {i===0&&<span style={{position:'absolute',top:-4,left:-4,background:S.blue,color:'#fff',fontSize:8,padding:'1px 5px',borderRadius:4,fontWeight:700}}>Cover</span>}
-                      <button onClick={()=>setUploadedFiles(prev=>prev.filter((_,j)=>j!==i))}
-                        style={{position:'absolute',top:-4,right:-4,width:16,height:16,background:S.red,color:'#fff',borderRadius:'50%',fontSize:10,border:'none',cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'center'}}>✕</button>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
-            <button onClick={addListing} disabled={saving||!form.title}
-              style={{...btnPrimary,background:S.yellow,boxShadow:'0 2px 8px rgba(245,158,11,0.2)',width:'100%',justifyContent:'center',padding:'12px',fontSize:14,opacity:!form.title?.5:1}}>
-              {saving?'Se publică...':'📢 Publică anunțul gratuit'}
-            </button>
+            <label style={{fontSize:11,fontWeight:700,color:'#6b7280',textTransform:'uppercase',letterSpacing:.5,display:'block',marginBottom:6}}>Titlu anunț *</label>
+            <input
+              value={form.title}
+              onChange={e=>setForm(p=>({...p,title:e.target.value}))}
+              placeholder="Ex: Faruri BMW Seria 3 E46 2003"
+              autoFocus
+              style={{width:'100%',padding:'10px 14px',border:'1.5px solid #e5e7eb',borderRadius:10,fontSize:14,outline:'none',boxSizing:'border-box',fontFamily:"'DM Sans',sans-serif"}}/>
           </div>
-        </Modal>
-      )}
+
+          {/* Categorie */}
+          <div>
+            <label style={{fontSize:11,fontWeight:700,color:'#6b7280',textTransform:'uppercase',letterSpacing:.5,display:'block',marginBottom:6}}>Categorie *</label>
+            <select value={form.category} onChange={e=>setForm(p=>({...p,category:e.target.value}))}
+              style={{width:'100%',padding:'10px 14px',border:'1.5px solid #e5e7eb',borderRadius:10,fontSize:14,outline:'none',background:'#fff',boxSizing:'border-box',fontFamily:"'DM Sans',sans-serif"}}>
+              {CATEGORIES.filter(c=>c.key!=='toate').map(c=>(
+                <option key={c.key} value={c.key}>{c.icon} {c.label}</option>
+              ))}
+            </select>
+          </div>
+
+          {/* Pret + Oras */}
+          <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:10}}>
+            <div>
+              <label style={{fontSize:11,fontWeight:700,color:'#6b7280',textTransform:'uppercase',letterSpacing:.5,display:'block',marginBottom:6}}>Preț (LEI)</label>
+              <input value={form.price} onChange={e=>setForm(p=>({...p,price:e.target.value}))} placeholder="0" type="number"
+                style={{width:'100%',padding:'10px 14px',border:'1.5px solid #e5e7eb',borderRadius:10,fontSize:14,outline:'none',boxSizing:'border-box'}}/>
+            </div>
+            <div>
+              <label style={{fontSize:11,fontWeight:700,color:'#6b7280',textTransform:'uppercase',letterSpacing:.5,display:'block',marginBottom:6}}>Oraș *</label>
+              <input value={form.city} onChange={e=>setForm(p=>({...p,city:e.target.value}))} placeholder="București"
+                style={{width:'100%',padding:'10px 14px',border:'1.5px solid #e5e7eb',borderRadius:10,fontSize:14,outline:'none',boxSizing:'border-box',fontFamily:"'DM Sans',sans-serif"}}/>
+            </div>
+          </div>
+
+          {/* Stare */}
+          <div>
+            <label style={{fontSize:11,fontWeight:700,color:'#6b7280',textTransform:'uppercase',letterSpacing:.5,display:'block',marginBottom:6}}>Stare</label>
+            <div style={{display:'flex',gap:8}}>
+              {['nou','folosit','reconditionat'].map(c=>(
+                <button key={c} type="button" onClick={()=>setForm(p=>({...p,condition:c}))}
+                  style={{flex:1,padding:'9px 8px',border:`1.5px solid ${form.condition===c?'#16a34a':'#e5e7eb'}`,borderRadius:10,background:form.condition===c?'#dcfce7':'#fff',cursor:'pointer',fontSize:12,fontWeight:form.condition===c?700:400,color:form.condition===c?'#16a34a':'#374151',fontFamily:"'DM Sans',sans-serif",textTransform:'capitalize'}}>
+                  {c==='nou'?'Nou':c==='folosit'?'Folosit':'Recondiționat'}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Tip piesa */}
+          <div>
+            <label style={{fontSize:11,fontWeight:700,color:'#6b7280',textTransform:'uppercase',letterSpacing:.5,display:'block',marginBottom:6}}>Tip piesă</label>
+            <div style={{display:'flex',gap:8}}>
+              {[{v:'oem',l:'🔵 OEM'},{v:'aftermarket',l:'🟡 Aftermarket'},{v:'both',l:'Ambele'}].map(t=>(
+                <button key={t.v} type="button" onClick={()=>setForm(p=>({...p,parts_type:t.v}))}
+                  style={{flex:1,padding:'9px 6px',border:`1.5px solid ${form.parts_type===t.v?'#1a56db':'#e5e7eb'}`,borderRadius:10,background:form.parts_type===t.v?'#eaf3ff':'#fff',cursor:'pointer',fontSize:12,fontWeight:form.parts_type===t.v?700:400,color:form.parts_type===t.v?'#1a56db':'#374151',fontFamily:"'DM Sans',sans-serif"}}>
+                  {t.l}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Marci compatibile */}
+          <div>
+            <label style={{fontSize:11,fontWeight:700,color:'#6b7280',textTransform:'uppercase',letterSpacing:.5,display:'block',marginBottom:6}}>Compatibil cu (mărci, virgulă)</label>
+            <input value={form.compatible_brands} onChange={e=>setForm(p=>({...p,compatible_brands:e.target.value}))}
+              placeholder="BMW, Audi, Mercedes"
+              style={{width:'100%',padding:'10px 14px',border:'1.5px solid #e5e7eb',borderRadius:10,fontSize:14,outline:'none',boxSizing:'border-box',fontFamily:"'DM Sans',sans-serif"}}/>
+          </div>
+
+          {/* Descriere */}
+          <div>
+            <label style={{fontSize:11,fontWeight:700,color:'#6b7280',textTransform:'uppercase',letterSpacing:.5,display:'block',marginBottom:6}}>Descriere</label>
+            <textarea value={form.description} onChange={e=>setForm(p=>({...p,description:e.target.value}))} rows={3}
+              placeholder="Descrie piesa în detaliu..."
+              style={{width:'100%',padding:'10px 14px',border:'1.5px solid #e5e7eb',borderRadius:10,fontSize:14,outline:'none',resize:'vertical',fontFamily:"'DM Sans',sans-serif",boxSizing:'border-box'}}/>
+          </div>
+
+          {/* Fotografii */}
+          <div>
+            <label style={{fontSize:11,fontWeight:700,color:'#6b7280',textTransform:'uppercase',letterSpacing:.5,display:'block',marginBottom:6}}>Fotografii produs</label>
+            <label style={{display:'flex',flexDirection:'column',alignItems:'center',gap:8,padding:'20px',border:'2px dashed #e5e7eb',borderRadius:10,cursor:'pointer',textAlign:'center'}}>
+              <span style={{fontSize:28}}>📷</span>
+              <span style={{fontSize:13,color:'#6b7280'}}>{uploadingFiles?'Se încarcă...':uploadedFiles.length>0?`${uploadedFiles.length} foto adăugate`:'Click pentru a adăuga poze'}</span>
+              <span style={{fontSize:11,color:'#9ca3af'}}>JPG, PNG · max 5MB</span>
+              <input type="file" accept="image/*" multiple style={{display:'none'}} onChange={e=>handleFileUpload(e.target.files)} disabled={uploadingFiles}/>
+            </label>
+            {uploadedFiles.length>0&&(
+              <div style={{display:'flex',gap:6,marginTop:8,flexWrap:'wrap'}}>
+                {uploadedFiles.map((url,i)=>(
+                  <div key={i} style={{position:'relative',width:56,height:56}}>
+                    <img src={url} style={{width:56,height:56,objectFit:'cover',borderRadius:8,border:'1px solid #e5e7eb'}} alt=""/>
+                    {i===0&&<span style={{position:'absolute',bottom:0,left:0,right:0,textAlign:'center',fontSize:8,fontWeight:700,background:'rgba(26,86,219,0.85)',color:'#fff',borderRadius:'0 0 7px 7px',padding:'1px 0'}}>Cover</span>}
+                    <button onClick={()=>setUploadedFiles(prev=>prev.filter((_,idx)=>idx!==i))}
+                      style={{position:'absolute',top:-4,right:-4,width:16,height:16,borderRadius:'50%',background:'#dc2626',color:'#fff',border:'none',cursor:'pointer',fontSize:10,display:'flex',alignItems:'center',justifyContent:'center',lineHeight:1}}>✕</button>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {/* Submit */}
+          <button onClick={handleSubmit} disabled={saving||!form.title.trim()||!form.city.trim()}
+            style={{padding:'13px',background:form.title&&form.city?'#f59e0b':'#e5e7eb',color:form.title&&form.city?'#fff':'#9ca3af',border:'none',borderRadius:50,fontSize:14,fontWeight:700,cursor:form.title&&form.city?'pointer':'not-allowed',fontFamily:"'Sora',sans-serif",marginTop:4}}>
+            {saving?'Se publică...':'📣 Publică anunțul gratuit'}
+          </button>
+        </div>
+      </div>
     </div>
   )
 }
 
-export default function ListingsPage() {
+function ListingsContent() {
+  const [listings, setListings] = useState([])
+  const [loading, setLoading] = useState(true)
+  const [showAdd, setShowAdd] = useState(false)
+  const [showFilters, setShowFilters] = useState(false)
+  const [activeCategory, setActiveCategory] = useState('toate')
+  const [sortBy, setSortBy] = useState('recent')
+  const [query, setQuery] = useState('')
+  const [user, setUser] = useState(null)
+  const [favorites, setFavorites] = useState(new Set())
+  const [filterPretMin, setFilterPretMin] = useState('')
+  const [filterPretMax, setFilterPretMax] = useState('')
+  const [filterJudet, setFilterJudet] = useState('')
+  const [filterCondition, setFilterCondition] = useState('')
+  const [filterPartsType, setFilterPartsType] = useState('')
+  const supabase = createClient()
+
+  useEffect(() => {
+    supabase.auth.getUser().then(({data:{user}})=>setUser(user))
+    if (typeof window !== 'undefined') {
+      const p = new URLSearchParams(window.location.search)
+      if (p.get('categorie')) setActiveCategory(p.get('categorie'))
+    }
+  }, [])
+
+  useEffect(() => { loadListings() }, [activeCategory, sortBy])
+
+  async function loadListings() {
+    setLoading(true)
+    let q = supabase.from('listings')
+      .select('id,title,price,city,category,condition,created_at,is_promoted,promoted_until,negotiable,parts_type,listing_media(url,is_cover)')
+      .eq('status','activ')
+    if (activeCategory !== 'toate') q = q.eq('category', activeCategory)
+    if (sortBy === 'pret_asc') q = q.order('price',{ascending:true})
+    else if (sortBy === 'pret_desc') q = q.order('price',{ascending:false})
+    else q = q.order('is_promoted',{ascending:false}).order('created_at',{ascending:false})
+    const {data} = await q.limit(80)
+    let results = data||[]
+    const now = new Date()
+    results = results.map(l=>({...l,is_promoted:l.is_promoted&&(!l.promoted_until||new Date(l.promoted_until)>now)}))
+    if (query) results = results.filter(l=>l.title.toLowerCase().includes(query.toLowerCase()))
+    if (filterCondition) results = results.filter(l=>l.condition===filterCondition)
+    if (filterPartsType) results = results.filter(l=>l.parts_type===filterPartsType)
+    if (filterJudet) results = results.filter(l=>l.city?.toLowerCase().includes(filterJudet.toLowerCase()))
+    if (filterPretMin) results = results.filter(l=>l.price>=parseFloat(filterPretMin))
+    if (filterPretMax) results = results.filter(l=>!filterPretMax||l.price<=parseFloat(filterPretMax))
+    results.sort((a,b)=>{
+      if (a.is_promoted&&!b.is_promoted) return -1
+      if (!a.is_promoted&&b.is_promoted) return 1
+      if (sortBy==='pret_asc') return (a.price||0)-(b.price||0)
+      if (sortBy==='pret_desc') return (b.price||0)-(a.price||0)
+      return new Date(b.created_at)-new Date(a.created_at)
+    })
+    setListings(results)
+    setLoading(false)
+  }
+
+  function applyFilters() { loadListings(); setShowFilters(false) }
+  function resetFilters() { setFilterPretMin('');setFilterPretMax('');setFilterJudet('');setFilterCondition('');setFilterPartsType('');setActiveCategory('toate') }
+
+
+  const activeFiltersCount = [filterPretMin,filterPretMax,filterJudet,filterCondition,filterPartsType].filter(Boolean).length
+
   return (
-    <Suspense fallback={<div style={{minHeight:'60vh',display:'flex',alignItems:'center',justifyContent:'center',background:'#f0f6ff'}}><div style={{width:36,height:36,border:'3px solid #1a56db',borderTopColor:'transparent',borderRadius:'50%',animation:'spin 1s linear infinite'}}/><style>{`@keyframes spin{to{transform:rotate(360deg)}}`}</style></div>}>
-      <ListingsContent/>
-    </Suspense>
+    <div style={{minHeight:'100vh',background:'#f4f6f9',fontFamily:"'DM Sans',sans-serif"}}>
+      <style dangerouslySetInnerHTML={{__html:`
+        .lst-card{text-decoration:none;color:inherit;display:block;background:#fff;border-radius:8px;border:1px solid #e5e7eb;overflow:hidden;transition:box-shadow .15s}
+        .lst-card:hover{box-shadow:0 4px 16px rgba(26,86,219,0.1);border-color:#1a56db}
+        .lst-promoted{border:2px solid #f59e0b!important;box-shadow:0 2px 12px rgba(245,158,11,0.15)!important}
+        .cat-item{display:flex;align-items:center;gap:8px;padding:9px 12px;border-radius:8px;cursor:pointer;font-size:13px;color:#6b7280;transition:all .15s;border:none;background:none;width:100%;text-align:left;font-family:'DM Sans',sans-serif}
+        .cat-item:hover,.cat-item.active{background:#eaf3ff;color:#1a56db}
+        .cat-item.active{font-weight:700}
+        @media(max-width:768px){.lst-layout{flex-direction:column!important}.lst-sidebar{display:none!important}.lst-grid{grid-template-columns:repeat(2,1fr)!important;gap:8px!important}}
+      `}}/>
+
+      {/* TOP BAR */}
+      <div style={{background:'#fff',borderBottom:'1px solid #e5e7eb',padding:'12px 0',position:'sticky',top:0,zIndex:100}}>
+        <div style={{maxWidth:1200,margin:'0 auto',padding:'0 16px',display:'flex',gap:10,alignItems:'center'}}>
+          <form onSubmit={e=>{e.preventDefault();loadListings()}} style={{display:'flex',flex:1,maxWidth:560}}>
+            <input value={query} onChange={e=>setQuery(e.target.value)} placeholder="Caută piese, anvelope, accesorii..."
+              style={{flex:1,padding:'10px 16px',border:'1.5px solid #e5e7eb',borderRadius:'50px 0 0 50px',fontSize:13,outline:'none',fontFamily:"'DM Sans',sans-serif"}}/>
+            <button type="submit" style={{padding:'0 18px',background:'#1a56db',border:'none',borderRadius:'0 50px 50px 0',cursor:'pointer',height:42}}>
+              <svg width="15" height="15" viewBox="0 0 15 15" fill="none"><circle cx="6" cy="6" r="4.5" stroke="#fff" strokeWidth="1.6"/><path d="M9.5 9.5L13 13" stroke="#fff" strokeWidth="1.6" strokeLinecap="round"/></svg>
+            </button>
+          </form>
+          <button onClick={()=>setShowFilters(o=>!o)}
+            style={{display:'flex',alignItems:'center',gap:7,padding:'10px 16px',border:`1.5px solid \${activeFiltersCount>0?'#1a56db':'#e5e7eb'}`,borderRadius:50,background:activeFiltersCount>0?'#eaf3ff':'#fff',cursor:'pointer',fontSize:13,fontWeight:600,color:activeFiltersCount>0?'#1a56db':'#0a1f44',fontFamily:"'DM Sans',sans-serif",flexShrink:0}}>
+            <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M1 3h14M3 8h10M6 13h4" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"/></svg>
+            Filtre {activeFiltersCount>0&&<span style={{background:'#1a56db',color:'#fff',borderRadius:'50%',width:18,height:18,display:'inline-flex',alignItems:'center',justifyContent:'center',fontSize:10,fontWeight:700}}>{activeFiltersCount}</span>}
+          </button>
+          <select value={sortBy} onChange={e=>setSortBy(e.target.value)}
+            style={{padding:'9px 14px',border:'1.5px solid #e5e7eb',borderRadius:50,fontSize:13,background:'#fff',color:'#0a1f44',fontFamily:"'DM Sans',sans-serif",outline:'none',cursor:'pointer',flexShrink:0}}>
+            <option value="recent">Cele mai recente</option>
+            <option value="pret_asc">Preț ↑</option>
+            <option value="pret_desc">Preț ↓</option>
+          </select>
+          <button onClick={()=>user?setShowAdd(true):window.location.href='/auth/login'}
+            style={{display:'flex',alignItems:'center',gap:6,padding:'10px 18px',background:'#f59e0b',color:'#fff',border:'none',borderRadius:50,fontSize:13,fontWeight:700,cursor:'pointer',fontFamily:"'Sora',sans-serif",whiteSpace:'nowrap',flexShrink:0}}>
+            + Adaugă anunț
+          </button>
+        </div>
+      </div>
+
+      {/* FILTERS PANEL */}
+      {showFilters&&(
+        <div style={{background:'#fff',borderBottom:'1px solid #e5e7eb',padding:'16px 0',boxShadow:'0 4px 16px rgba(10,31,68,0.08)'}}>
+          <div style={{maxWidth:1200,margin:'0 auto',padding:'0 16px'}}>
+            <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fit,minmax(150px,1fr))',gap:12,marginBottom:12}}>
+              {[
+                {label:'Preț minim (RON)',val:filterPretMin,set:setFilterPretMin,type:'number',ph:'0'},
+                {label:'Preț maxim (RON)',val:filterPretMax,set:setFilterPretMax,type:'number',ph:'Orice'},
+              ].map(f=>(
+                <div key={f.label}>
+                  <label style={{fontSize:11,fontWeight:700,color:'#6b7280',textTransform:'uppercase',letterSpacing:.5,display:'block',marginBottom:6}}>{f.label}</label>
+                  <input value={f.val} onChange={e=>f.set(e.target.value)} placeholder={f.ph} type={f.type}
+                    style={{width:'100%',padding:'8px 12px',border:'1.5px solid #e5e7eb',borderRadius:8,fontSize:13,outline:'none',boxSizing:'border-box'}}/>
+                </div>
+              ))}
+              <div>
+                <label style={{fontSize:11,fontWeight:700,color:'#6b7280',textTransform:'uppercase',letterSpacing:.5,display:'block',marginBottom:6}}>Județ</label>
+                <select value={filterJudet} onChange={e=>setFilterJudet(e.target.value)}
+                  style={{width:'100%',padding:'8px 12px',border:'1.5px solid #e5e7eb',borderRadius:8,fontSize:13,outline:'none',background:'#fff',boxSizing:'border-box'}}>
+                  <option value="">Toată România</option>
+                  {JUDETE.map(j=><option key={j} value={j}>{j}</option>)}
+                </select>
+              </div>
+              <div>
+                <label style={{fontSize:11,fontWeight:700,color:'#6b7280',textTransform:'uppercase',letterSpacing:.5,display:'block',marginBottom:6}}>Stare</label>
+                <select value={filterCondition} onChange={e=>setFilterCondition(e.target.value)}
+                  style={{width:'100%',padding:'8px 12px',border:'1.5px solid #e5e7eb',borderRadius:8,fontSize:13,outline:'none',background:'#fff',boxSizing:'border-box'}}>
+                  <option value="">Toate</option>
+                  <option value="nou">Nouă</option>
+                  <option value="folosit">Folosită</option>
+                  <option value="reconditionat">Recondiționată</option>
+                </select>
+              </div>
+              <div>
+                <label style={{fontSize:11,fontWeight:700,color:'#6b7280',textTransform:'uppercase',letterSpacing:.5,display:'block',marginBottom:6}}>Tip piesă</label>
+                <select value={filterPartsType} onChange={e=>setFilterPartsType(e.target.value)}
+                  style={{width:'100%',padding:'8px 12px',border:'1.5px solid #e5e7eb',borderRadius:8,fontSize:13,outline:'none',background:'#fff',boxSizing:'border-box'}}>
+                  <option value="">Toate</option>
+                  <option value="oem">OEM (Originale)</option>
+                  <option value="aftermarket">Aftermarket</option>
+                  <option value="both">Ambele</option>
+                </select>
+              </div>
+            </div>
+            <div style={{display:'flex',gap:8}}>
+              <button onClick={applyFilters} style={{padding:'9px 22px',background:'#1a56db',color:'#fff',border:'none',borderRadius:50,fontSize:13,fontWeight:700,cursor:'pointer'}}>Aplică filtrele</button>
+              {activeFiltersCount>0&&<button onClick={()=>{resetFilters();setShowFilters(false)}} style={{padding:'9px 18px',background:'transparent',color:'#6b7280',border:'1.5px solid #e5e7eb',borderRadius:50,fontSize:13,cursor:'pointer'}}>Resetează</button>}
+              <button onClick={()=>setShowFilters(false)} style={{padding:'9px 18px',background:'transparent',color:'#6b7280',border:'none',borderRadius:50,fontSize:13,cursor:'pointer',marginLeft:'auto'}}>✕ Închide</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      <div style={{maxWidth:1200,margin:'0 auto',padding:'16px',display:'flex',gap:16,alignItems:'flex-start'}} className="lst-layout">
+        {/* SIDEBAR */}
+        <div className="lst-sidebar" style={{width:210,flexShrink:0,background:'#fff',borderRadius:12,border:'1px solid #e5e7eb',padding:'10px 6px',position:'sticky',top:70}}>
+          <div style={{fontSize:11,fontWeight:700,color:'#6b7280',textTransform:'uppercase',letterSpacing:.5,padding:'4px 12px 8px'}}>Categorii</div>
+          {CATEGORIES.map(c=>(
+            <button key={c.key} onClick={()=>setActiveCategory(c.key)} className={`cat-item\${activeCategory===c.key?' active':''}`}>
+              <span style={{fontSize:15}}>{c.icon}</span><span>{c.label}</span>
+            </button>
+          ))}
+          <div style={{height:1,background:'#e5e7eb',margin:'8px 8px'}}/>
+          <a href="/piese-oferta" style={{display:'flex',alignItems:'center',gap:8,padding:'9px 12px',borderRadius:8,fontSize:13,color:'#d97706',fontWeight:700,textDecoration:'none',background:'#fef3c7'}}>
+            🔩 Cere ofertă piese
+          </a>
+        </div>
+
+        {/* LISTINGS */}
+        <div style={{flex:1,minWidth:0}}>
+          <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:12}}>
+            <div style={{fontSize:14,color:'#6b7280'}}>
+              {loading?'Se caută...':<><span style={{fontWeight:700,color:'#0a1f44'}}>{listings.length}</span> anunțuri</>}
+            </div>
+            {activeFiltersCount>0&&<button onClick={resetFilters} style={{fontSize:12,color:'#dc2626',background:'none',border:'none',cursor:'pointer',textDecoration:'underline'}}>Resetează filtrele ({activeFiltersCount})</button>}
+          </div>
+
+          {loading?(
+            <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fill,minmax(180px,1fr))',gap:10}} className="lst-grid">
+              {[1,2,3,4,5,6,7,8].map(i=><div key={i} style={{background:'#fff',borderRadius:8,height:240,border:'1px solid #e5e7eb',animation:'pulse 1.5s infinite'}}/>)}
+              <style dangerouslySetInnerHTML={{__html:'@keyframes pulse{0%,100%{opacity:1}50%{opacity:.5}}'}}/>
+            </div>
+          ):listings.length===0?(
+            <div style={{background:'#fff',borderRadius:12,border:'1px solid #e5e7eb',textAlign:'center',padding:'60px 20px'}}>
+              <div style={{fontSize:48,marginBottom:12}}>🔍</div>
+              <div style={{fontFamily:"'Sora',sans-serif",fontWeight:700,fontSize:16,color:'#0a1f44',marginBottom:6}}>Niciun anunț găsit</div>
+              <button onClick={()=>user?setShowAdd(true):window.location.href='/auth/login'} style={{padding:'10px 24px',background:'#f59e0b',color:'#fff',border:'none',borderRadius:50,fontSize:13,fontWeight:700,cursor:'pointer',marginTop:8}}>+ Adaugă anunț</button>
+            </div>
+          ):(
+            <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fill,minmax(180px,1fr))',gap:10}} className="lst-grid">
+              {listings.map(l=>{
+                const cover = l.listing_media?.find(m=>m.is_cover)?.url||l.listing_media?.[0]?.url
+                const cond = CONDITIONS.find(c=>c.key===l.condition)
+                const promoted = l.is_promoted
+                const daysAgo = Math.floor((Date.now()-new Date(l.created_at))/(86400000))
+                return (
+                  <a key={l.id} href={`/listing/\${l.id}`} className={`lst-card\${promoted?' lst-promoted':''}`}>
+                    {promoted&&(
+                      <div style={{background:'#f59e0b',display:'flex',alignItems:'center',justifyContent:'center',gap:4,padding:'3px 0'}}>
+                        <svg width="9" height="9" viewBox="0 0 12 12" fill="white"><path d="M6 1l1.3 2.6 2.9.4-2.1 2 .5 2.9L6 7.5l-2.6 1.4.5-2.9-2.1-2 2.9-.4z"/></svg>
+                        <span style={{fontSize:9,fontWeight:700,color:'#fff',letterSpacing:1}}>PROMOVAT</span>
+                      </div>
+                    )}
+                    <div style={{height:150,background:'#f4f6f9',position:'relative',display:'flex',alignItems:'center',justifyContent:'center',overflow:'hidden'}}>
+                      {cover?<img src={cover} alt={l.title} style={{width:'100%',height:'100%',objectFit:'cover'}}/>:<span style={{fontSize:36}}>{CATEGORIES.find(c=>c.key===l.category)?.icon||'📦'}</span>}
+                      {cond&&<span style={{position:'absolute',top:6,left:6,fontSize:10,fontWeight:700,padding:'2px 7px',borderRadius:50,background:cond.bg,color:cond.color}}>{cond.label}</span>}
+                      <button onClick={e=>{e.preventDefault();e.stopPropagation();setFavorites(prev=>{const n=new Set(prev);n.has(l.id)?n.delete(l.id):n.add(l.id);return n})}}
+                        style={{position:'absolute',top:6,right:6,width:28,height:28,background:'rgba(255,255,255,0.92)',borderRadius:'50%',border:'none',cursor:'pointer',fontSize:13,display:'flex',alignItems:'center',justifyContent:'center'}}>
+                        {favorites.has(l.id)?'❤️':'🤍'}
+                      </button>
+                    </div>
+                    <div style={{padding:'10px 10px 12px'}}>
+                      <div style={{fontWeight:800,fontSize:15,color:'#0a1f44',marginBottom:3}}>
+                        {l.price?`\${l.price.toLocaleString('ro-RO')} lei`:<span style={{color:'#6b7280',fontSize:13,fontWeight:400}}>Negociabil</span>}
+                      </div>
+                      <div style={{fontSize:12,color:'#111827',lineHeight:1.4,marginBottom:6,display:'-webkit-box',WebkitLineClamp:2,WebkitBoxOrient:'vertical',overflow:'hidden'}}>{l.title}</div>
+                      <div style={{fontSize:11,color:'#6b7280',display:'flex',justifyContent:'space-between'}}>
+                        <span>📍 {l.city||'România'}</span>
+                        <span>{daysAgo===0?'Azi':daysAgo===1?'Ieri':`\${daysAgo}z`}</span>
+                      </div>
+                    </div>
+                  </a>
+                )
+              })}
+            </div>
+          )}
+        </div>
+      </div>
+
+      {showAdd&&<AddListingModal
+        onClose={()=>setShowAdd(false)}
+        onAdd={(data)=>setListings(prev=>[{...data,listing_media:[]},  ...prev])}
+        user={user}
+        supabase={supabase}
+      />}
+    </div>
   )
+}
+
+export default function ListingPage() {
+  return <Suspense><ListingsContent/></Suspense>
 }
