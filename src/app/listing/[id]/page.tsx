@@ -34,6 +34,11 @@ export default function ListingDetailPage({ params }: { params: { id: string } }
   const [favorite, setFavorite] = useState(false)
   const [showPhone, setShowPhone] = useState(false)
   const [copied, setCopied] = useState(false)
+  const [currentUser, setCurrentUser] = useState(null)
+  const [isOwner, setIsOwner] = useState(false)
+  const [promoting, setPromoting] = useState(false)
+  const [promoteDays, setPromoteDays] = useState(7)
+  const [showPromoteModal, setShowPromoteModal] = useState(false)
   const supabase = createClient()
 
   useEffect(() => {
@@ -60,10 +65,29 @@ export default function ListingDetailPage({ params }: { params: { id: string } }
         .eq('category', l.category).eq('status','activ').neq('id', params.id).limit(4)
       setRelated(rel || [])
 
+      // Check if current user is owner
+      const { data: { user } } = await supabase.auth.getUser()
+      setCurrentUser(user)
+      if (user && l.user_id === user.id) setIsOwner(true)
+
       setLoading(false)
     }
     load()
   }, [params.id])
+
+  async function promoteListingFree() {
+    if (!listing) return
+    setPromoting(true)
+    const until = new Date()
+    until.setDate(until.getDate() + promoteDays)
+    await supabase.from('listings').update({
+      is_promoted: true,
+      promoted_until: until.toISOString()
+    }).eq('id', listing.id)
+    setListing(prev => ({ ...prev, is_promoted: true, promoted_until: until.toISOString() }))
+    setShowPromoteModal(false)
+    setPromoting(false)
+  }
 
   function copyLink() {
     navigator.clipboard.writeText(window.location.href)
@@ -281,6 +305,31 @@ export default function ListingDetailPage({ params }: { params: { id: string } }
                 💬 Trimite mesaj vânzătorului
               </a>
 
+              {/* Promovare — doar pentru owner */}
+              {isOwner&&(
+                <div style={{marginBottom:10}}>
+                  {listing?.is_promoted&&listing?.promoted_until&&new Date(listing.promoted_until)>new Date()?(
+                    <div style={{background:'#fef3c7',border:'1px solid #f59e0b',borderRadius:12,padding:'10px 14px',display:'flex',alignItems:'center',gap:8}}>
+                      <span style={{fontSize:16}}>⭐</span>
+                      <div>
+                        <div style={{fontSize:12,fontWeight:700,color:'#92400e'}}>Anunț promovat activ</div>
+                        <div style={{fontSize:11,color:'#a16207'}}>Expiră: {new Date(listing.promoted_until).toLocaleDateString('ro-RO')}</div>
+                      </div>
+                    </div>
+                  ):(
+                    <>
+                      <style dangerouslySetInnerHTML={{__html:`@keyframes shimmer{0%{transform:translateX(-100%)}100%{transform:translateX(100%)}}.promo-btn:hover{transform:scale(1.02)}`}}/>
+                      <button onClick={()=>setShowPromoteModal(true)} className="promo-btn"
+                        style={{width:'100%',padding:'14px',background:'#f59e0b',color:'#fff',border:'none',borderRadius:14,fontSize:15,fontWeight:800,cursor:'pointer',fontFamily:"'Sora',sans-serif",display:'flex',alignItems:'center',justifyContent:'center',gap:10,boxShadow:'0 4px 20px rgba(245,158,11,0.5)',position:'relative',overflow:'hidden',transition:'transform .15s,box-shadow .15s'}}>
+                        <span style={{fontSize:20}}>⭐</span>
+                        <span>Promovează anunțul</span>
+                        <span style={{position:'absolute',top:0,left:'-100%',right:0,bottom:0,width:'200%',background:'linear-gradient(90deg,transparent 0%,rgba(255,255,255,0.2) 50%,transparent 100%)',animation:'shimmer 2s ease-in-out infinite'}}/>
+                      </button>
+                    </>
+                  )}
+                </div>
+              )}
+
               {/* Cere oferta piese similare */}
               <a href={`/piese-oferta`}
                 style={{display:'flex',alignItems:'center',justifyContent:'center',gap:8,width:'100%',padding:'12px',background:S.amberBg,color:'#92400e',border:'1.5px solid rgba(217,119,6,0.3)',borderRadius:50,fontSize:13,fontWeight:600,cursor:'pointer',fontFamily:"'DM Sans',sans-serif",textDecoration:'none',marginBottom:10,boxSizing:'border-box'}}>
@@ -297,6 +346,45 @@ export default function ListingDetailPage({ params }: { params: { id: string } }
                   {copied?'✅ Copiat!':'🔗 Distribuie'}
                 </button>
               </div>
+
+              {/* Modal promovare */}
+              {showPromoteModal&&(
+                <div onClick={e=>{if(e.target===e.currentTarget)setShowPromoteModal(false)}}
+                  style={{position:'fixed',inset:0,background:'rgba(10,31,68,0.5)',zIndex:1000,display:'flex',alignItems:'center',justifyContent:'center',padding:16}}>
+                  <div style={{background:'#fff',borderRadius:20,padding:24,maxWidth:380,width:'100%'}}>
+                    <div style={{textAlign:'center',marginBottom:20}}>
+                      <div style={{fontSize:40,marginBottom:8}}>⭐</div>
+                      <h3 style={{fontFamily:"'Sora',sans-serif",fontWeight:800,fontSize:18,color:S.navy,marginBottom:6}}>Promovează anunțul</h3>
+                      <p style={{fontSize:13,color:S.muted,lineHeight:1.6}}>Anunțul tău va apărea în top și va fi marcat cu badge ⭐ PROMOVAT</p>
+                    </div>
+
+                    <div style={{display:'grid',gridTemplateColumns:'1fr 1fr 1fr',gap:8,marginBottom:20}}>
+                      {[
+                        {days:7,label:'7 zile',price:'Gratuit'},
+                        {days:14,label:'14 zile',price:'9.99 RON'},
+                        {days:30,label:'30 zile',price:'19.99 RON'},
+                      ].map(opt=>(
+                        <button key={opt.days} onClick={()=>setPromoteDays(opt.days)}
+                          style={{padding:'12px 8px',border:`1.5px solid ${promoteDays===opt.days?S.yellow:S.border}`,borderRadius:12,background:promoteDays===opt.days?'#fef3c7':'#fff',cursor:'pointer',textAlign:'center'}}>
+                          <div style={{fontWeight:700,fontSize:14,color:S.navy,marginBottom:2}}>{opt.label}</div>
+                          <div style={{fontSize:11,fontWeight:700,color:opt.price==='Gratuit'?S.green:S.yellow}}>{opt.price}</div>
+                        </button>
+                      ))}
+                    </div>
+
+                    <div style={{display:'flex',gap:10}}>
+                      <button onClick={()=>setShowPromoteModal(false)}
+                        style={{flex:1,padding:'11px',background:'#f3f4f6',color:S.muted,border:'none',borderRadius:50,fontSize:13,fontWeight:600,cursor:'pointer'}}>
+                        Anulează
+                      </button>
+                      <button onClick={promoteListingFree} disabled={promoting}
+                        style={{flex:2,padding:'11px',background:'#f59e0b',color:'#fff',border:'none',borderRadius:50,fontSize:14,fontWeight:700,cursor:'pointer',opacity:promoting?.6:1}}>
+                        {promoting?'Se activează...':promoteDays===7?'Activează gratuit':'Continuă la plată'}
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
 
             {/* Seller card */}
