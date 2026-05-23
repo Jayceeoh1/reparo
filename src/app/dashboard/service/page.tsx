@@ -329,6 +329,9 @@ export default function ServiceDashboard() {
   const [csvResult, setCsvResult] = useState(null)
   const [relistLoading, setRelistLoading] = useState(false)
   const [relistResult, setRelistResult] = useState(null)
+  const [myListings, setMyListings] = useState([])
+  const [listingsLoading, setListingsLoading] = useState(false)
+  const [editingListing, setEditingListing] = useState(null)
   const [verifyLoading, setVerifyLoading] = useState(false)
   const [verifyDone, setVerifyDone] = useState(false)
   const [verifyStep, setVerifyStep] = useState(1) // 1=info, 2=upload, 3=done
@@ -1912,6 +1915,74 @@ export default function ServiceDashboard() {
                 </div>
                 <div style={{color:S.blue,fontSize:20,fontWeight:300}}>→</div>
               </a>
+
+              {/* Lista anunțuri */}
+              <div style={{marginTop:16}}>
+                {listingsLoading?(
+                  <div style={{textAlign:'center',padding:32,color:S.muted}}>Se încarcă...</div>
+                ):myListings.length===0?(
+                  <div style={{textAlign:'center',padding:32,color:S.muted}}>
+                    <div style={{fontSize:32,marginBottom:8}}>📦</div>
+                    <div style={{fontWeight:600,marginBottom:4}}>Nu ai anunțuri încă</div>
+                    <div style={{fontSize:13}}>Adaugă primul tău anunț folosind butonul de sus.</div>
+                  </div>
+                ):(
+                  <div style={{display:'flex',flexDirection:'column',gap:8}}>
+                    {myListings.map(l=>(
+                      <div key={l.id} style={{background:S.white,border:`1px solid ${l.status==='activ'?S.border:'#fca5a5'}`,borderRadius:12,padding:'12px 16px',display:'flex',alignItems:'center',gap:12,flexWrap:'wrap'}}>
+                        {/* Status indicator */}
+                        <div style={{width:8,height:8,borderRadius:'50%',background:l.status==='activ'?S.green:'#f87171',flexShrink:0}}/>
+                        {/* Info */}
+                        <div style={{flex:1,minWidth:200}}>
+                          <div style={{fontWeight:600,fontSize:14,color:S.navy,marginBottom:2}}>{l.title}</div>
+                          <div style={{display:'flex',gap:8,flexWrap:'wrap'}}>
+                            <span style={{fontSize:11,color:S.muted}}>{l.category}</span>
+                            <span style={{fontSize:11,color:S.muted}}>·</span>
+                            <span style={{fontSize:11,color:S.muted}}>{l.city}</span>
+                            <span style={{fontSize:11,color:S.muted}}>·</span>
+                            <span style={{fontSize:11,color:l.status==='activ'?S.green:'#ef4444',fontWeight:600}}>{l.status==='activ'?'Activ':'Inactiv'}</span>
+                            {l.is_promoted&&<span style={{fontSize:11,color:S.yellow,fontWeight:600}}>⭐ Promovat</span>}
+                          </div>
+                        </div>
+                        {/* Pret */}
+                        <div style={{flexShrink:0}}>
+                          {editingListing===l.id?(
+                            <div style={{display:'flex',gap:6,alignItems:'center'}}>
+                              <input type="number" defaultValue={l.price||0} id={`price-${l.id}`}
+                                style={{width:90,padding:'5px 8px',border:`1.5px solid ${S.blue}`,borderRadius:8,fontSize:13,outline:'none'}}/>
+                              <button onClick={()=>updateListingPrice(l.id,(document.getElementById(`price-${l.id}`) as any)?.value)}
+                                style={{padding:'5px 10px',background:S.blue,color:'#fff',border:'none',borderRadius:8,fontSize:12,cursor:'pointer',fontWeight:700}}>✓</button>
+                              <button onClick={()=>setEditingListing(null)}
+                                style={{padding:'5px 8px',background:'#f3f4f6',color:S.muted,border:'none',borderRadius:8,fontSize:12,cursor:'pointer'}}>✕</button>
+                            </div>
+                          ):(
+                            <div style={{display:'flex',gap:6,alignItems:'center'}}>
+                              <span style={{fontWeight:700,fontSize:14,color:S.navy}}>{l.price?`${l.price.toLocaleString('ro-RO')} lei`:'Preț nesetat'}</span>
+                              <button onClick={()=>setEditingListing(l.id)}
+                                style={{background:'none',border:'none',cursor:'pointer',fontSize:14,color:S.muted,padding:2}} title="Editează prețul">✏️</button>
+                            </div>
+                          )}
+                        </div>
+                        {/* Actions */}
+                        <div style={{display:'flex',gap:6,flexShrink:0}}>
+                          <a href={`/listing/${l.id}`} target="_blank"
+                            style={{padding:'6px 12px',background:'#f3f4f6',color:S.navy,border:'none',borderRadius:8,fontSize:12,fontWeight:600,cursor:'pointer',textDecoration:'none'}}>
+                            👁️ Vezi
+                          </a>
+                          <button onClick={()=>toggleListingStatus(l.id, l.status)}
+                            style={{padding:'6px 12px',background:l.status==='activ'?'#fef2f2':'#dcfce7',color:l.status==='activ'?'#ef4444':'#16a34a',border:'none',borderRadius:8,fontSize:12,fontWeight:600,cursor:'pointer'}}>
+                            {l.status==='activ'?'Dezactivează':'Activează'}
+                          </button>
+                          <button onClick={()=>deleteListing(l.id)}
+                            style={{padding:'6px 10px',background:'#fef2f2',color:'#ef4444',border:'none',borderRadius:8,fontSize:12,cursor:'pointer'}}>
+                            🗑️
+                          </button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
             </div>
           )}
 
