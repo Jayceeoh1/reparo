@@ -1,487 +1,423 @@
 // @ts-nocheck
 'use client'
-import { useEffect, useState, Suspense } from 'react'
+import { useEffect, useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
 
 const S = {
-  navy:'#0a1f44',blue:'#1a56db',yellow:'#f59e0b',
-  bg:'#f4f6f9',white:'#fff',text:'#111827',muted:'#6b7280',border:'#e5e7eb',
-  green:'#16a34a',greenBg:'#dcfce7',red:'#dc2626',redBg:'#fee2e2',
-  amber:'#d97706',amberBg:'#fef3c7',
+  navy:'#0a1f44',blue:'#1a56db',yellow:'#f59e0b',bg:'#f0f6ff',white:'#fff',
+  text:'#111827',muted:'#6b7280',border:'#e5e7eb',green:'#16a34a',greenBg:'#dcfce7',
+  red:'#dc2626',amber:'#d97706',amberBg:'#fef3c7',
 }
 
-const CATEGORIES = [
-  {key:'toate',label:'Toate categoriile',color:'#1a56db'},
-  {key:'piese-noi',label:'Piese noi',color:'#1a56db'},
-  {key:'dezmembrari',label:'Dezmembrări',color:'#0F6E56'},
-  {key:'anvelope',label:'Anvelope & jante',color:'#854F0B'},
-  {key:'accesorii',label:'Accesorii',color:'#7c3aed'},
-  {key:'electronice',label:'Electronice auto',color:'#dc2626'},
-  {key:'caroserie',label:'Caroserie',color:'#db2777'},
-  {key:'motoare',label:'Motoare & cutii',color:'#16a34a'},
-  {key:'unelte',label:'Unelte & utilaje',color:'#d97706'},
-  {key:'altele',label:'Altele',color:'#6b7280'},
-]
-
-function CatIcon({k, color}:{k:string,color:string}) {
-  const s = {width:16,height:16,flexShrink:0} as any
-  if(k==='toate') return <svg {...s} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="1.8" strokeLinecap="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
-  if(k==='piese-noi') return <svg {...s} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="1.8" strokeLinecap="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg>
-  if(k==='dezmembrari') return <svg {...s} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="1.8" strokeLinecap="round"><path d="M21 12a9 9 0 0 1-9 9m9-9a9 9 0 0 0-9-9m9 9H3m9 9a9 9 0 0 1-9-9m9 9c1.66 0 3-4.03 3-9s-1.34-9-3-9m0 18c-1.66 0-3-4.03-3-9s1.34-9 3-9m-9 9a9 9 0 0 1 9-9"/></svg>
-  if(k==='anvelope') return <svg {...s} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="1.8" strokeLinecap="round"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="3"/></svg>
-  if(k==='accesorii') return <svg {...s} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="1.8" strokeLinecap="round"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>
-  if(k==='electronice') return <svg {...s} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="1.8" strokeLinecap="round"><rect x="4" y="4" width="16" height="16" rx="2"/><rect x="9" y="9" width="6" height="6"/><path d="M9 2v2M15 2v2M9 20v2M15 20v2M2 9h2M2 15h2M20 9h2M20 15h2"/></svg>
-  if(k==='caroserie') return <svg {...s} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="1.8" strokeLinecap="round"><path d="M5 17H3a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v5"/><circle cx="15.5" cy="17.5" r="2.5"/><circle cx="5.5" cy="17.5" r="2.5"/></svg>
-  if(k==='motoare') return <svg {...s} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="1.8" strokeLinecap="round"><circle cx="12" cy="12" r="3"/><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/></svg>
-  if(k==='unelte') return <svg {...s} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="1.8" strokeLinecap="round"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>
-  return <svg {...s} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="1.8" strokeLinecap="round"><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/><circle cx="5" cy="12" r="1"/></svg>
+const CONDITIONS = {
+  nou:{label:'Nou',color:S.green,bg:S.greenBg},
+  ca_nou:{label:'Ca nou',color:S.blue,bg:'#eaf3ff'},
+  bun:{label:'Stare bună',color:S.amber,bg:S.amberBg},
+  acceptabil:{label:'Acceptabil',color:S.muted,bg:S.bg},
+  folosit:{label:'Folosit',color:S.muted,bg:S.bg},
+  reconditionat:{label:'Recondiționat',color:S.amber,bg:S.amberBg},
 }
 
-const CONDITIONS = [
-  {key:'nou',label:'Nou',bg:'#dcfce7',color:'#16a34a'},
-  {key:'folosit',label:'Folosit',bg:'#eaf3ff',color:'#1a56db'},
-  {key:'reconditionat',label:'Recondiționat',bg:'#fef3c7',color:'#d97706'},
-]
+const CATEGORIES = {
+  piese_motor:'⚙️ Piese motor',caroserie:'🚘 Caroserie',frane:'🔴 Frâne',
+  anvelope:'⭕ Anvelope & jante',electricitate:'⚡ Electricitate',
+  interior:'🪑 Interior',unelte:'🛠️ Unelte',piese:'🔧 Piese auto',altele:'📦 Altele',
+}
 
-const JUDETE = ['Alba','Arad','Argeș','Bacău','Bihor','Bistrița-Năsăud','Botoșani','Brăila','Brașov','București','Buzău','Călărași','Caraș-Severin','Cluj','Constanța','Covasna','Dâmbovița','Dolj','Galați','Giurgiu','Gorj','Harghita','Hunedoara','Ialomița','Iași','Ilfov','Maramureș','Mehedinți','Mureș','Neamț','Olt','Prahova','Sălaj','Satu Mare','Sibiu','Suceava','Teleorman','Timiș','Tulcea','Vâlcea','Vaslui','Vrancea']
+export default function ListingDetailPage({ params }: { params: { id: string } }) {
+  const [listing, setListing] = useState(null)
+  const [photos, setPhotos] = useState([])
+  const [seller, setSeller] = useState(null)
+  const [related, setRelated] = useState([])
+  const [activePhoto, setActivePhoto] = useState(0)
+  const [loading, setLoading] = useState(true)
+  const [favorite, setFavorite] = useState(false)
+  const [showPhone, setShowPhone] = useState(false)
+  const [copied, setCopied] = useState(false)
+  const [currentUser, setCurrentUser] = useState(null)
+  const [isOwner, setIsOwner] = useState(false)
+  const [promoting, setPromoting] = useState(false)
+  const [promoteDays, setPromoteDays] = useState(7)
+  const [showPromoteModal, setShowPromoteModal] = useState(false)
+  const supabase = createClient()
 
-// ══ MODAL ADD LISTING — componentă separată ca să nu piardă focus-ul ══
-function AddListingModal({ onClose, onAdd, user, supabase }) {
-  const [form, setForm] = useState({title:'',description:'',price:'',category:'piese-noi',condition:'folosit',compatible_brands:'',city:'',parts_type:'oem'})
-  const [saving, setSaving] = useState(false)
-  const [uploadedFiles, setUploadedFiles] = useState([])
-  const [uploadingFiles, setUploadingFiles] = useState(false)
+  useEffect(() => {
+    async function load() {
+      const { data: l } = await supabase.from('listings').select('*').eq('id', params.id).single()
+      if (!l) { setLoading(false); return }
+      setListing(l)
 
-  async function handleFileUpload(files) {
-    if (!user||!files.length) return
-    setUploadingFiles(true)
-    const urls = []
-    for (const file of Array.from(files)) {
-      const ext = file.name.split('.').pop()
-      const path = `${user.id}/${Date.now()}_${Math.random().toString(36).slice(2)}.${ext}`
-      const {error} = await supabase.storage.from('listing-media').upload(path,file)
-      if (!error) {
-        const {data:{publicUrl}} = supabase.storage.from('listing-media').getPublicUrl(path)
-        urls.push(publicUrl)
+      // Increment views
+      await supabase.from('listings').update({ views: (l.views || 0) + 1 }).eq('id', params.id)
+
+      // Photos
+      const { data: ph } = await supabase.from('listing_media').select('*').eq('listing_id', params.id).order('sort_order')
+      setPhotos(ph || [])
+
+      // Seller profile
+      if (l.user_id) {
+        const { data: prof } = await supabase.from('profiles').select('full_name, avatar_url, city, created_at').eq('id', l.user_id).single()
+        setSeller(prof)
       }
+
+      // Related listings
+      const { data: rel } = await supabase.from('listings').select('id,title,price,city,condition')
+        .eq('category', l.category).eq('status','activ').neq('id', params.id).limit(4)
+      setRelated(rel || [])
+
+      // Check if current user is owner
+      const { data: { user } } = await supabase.auth.getUser()
+      setCurrentUser(user)
+      if (user && l.user_id === user.id) setIsOwner(true)
+
+      setLoading(false)
     }
-    setUploadedFiles(prev=>[...prev,...urls])
-    setUploadingFiles(false)
+    load()
+  }, [params.id])
+
+  async function promoteListingFree() {
+    if (!listing) return
+    setPromoting(true)
+    const until = new Date()
+    until.setDate(until.getDate() + promoteDays)
+    await supabase.from('listings').update({
+      is_promoted: true,
+      promoted_until: until.toISOString()
+    }).eq('id', listing.id)
+    setListing(prev => ({ ...prev, is_promoted: true, promoted_until: until.toISOString() }))
+    setShowPromoteModal(false)
+    setPromoting(false)
   }
 
-  async function handleSubmit() {
-    if (!user) { window.location.href='/auth/login'; return }
-    setSaving(true)
-    const {data} = await supabase.from('listings').insert({
-      user_id:user.id,title:form.title,description:form.description,
-      price:form.price?parseFloat(form.price):null,category:form.category,
-      condition:form.condition,city:form.city,status:'activ',parts_type:form.parts_type,
-      compatible_brands:form.compatible_brands?form.compatible_brands.split(',').map(s=>s.trim()):null,
-    }).select().single()
-    if (data&&uploadedFiles.length>0) {
-      await supabase.from('listing_media').insert(uploadedFiles.map((url,i)=>({listing_id:data.id,url,is_cover:i===0,sort_order:i})))
-    }
-    setSaving(false)
-    if (data) onAdd(data)
-    onClose()
+  function copyLink() {
+    navigator.clipboard.writeText(window.location.href)
+    setCopied(true)
+    setTimeout(() => setCopied(false), 2000)
   }
+
+  if (loading) return (
+    <div style={{minHeight:'80vh',display:'flex',alignItems:'center',justifyContent:'center',background:S.bg}}>
+      <div style={{width:36,height:36,border:`3px solid ${S.blue}`,borderTopColor:'transparent',borderRadius:'50%',animation:'spin 1s linear infinite'}}/>
+      <style>{`@keyframes spin{to{transform:rotate(360deg)}}
+      @media(max-width:768px){
+        .listing-detail-grid{grid-template-columns:1fr!important}
+        .listing-detail-sidebar{position:relative!important;top:0!important}
+        .listing-related{grid-template-columns:repeat(2,1fr)!important}
+        .listing-details-grid{grid-template-columns:1fr 1fr!important}
+        .listing-contact-btns{flex-direction:column!important}
+        .listing-compat-brands{flex-wrap:wrap!important}
+      }
+      @media(max-width:480px){
+        .listing-related{grid-template-columns:1fr 1fr!important}
+        .listing-details-grid{grid-template-columns:1fr!important}
+      }`}</style>
+    </div>
+  )
+
+  if (!listing) return (
+    <div style={{minHeight:'80vh',display:'flex',alignItems:'center',justifyContent:'center',background:S.bg,fontFamily:"'DM Sans',sans-serif"}}>
+      <div style={{textAlign:'center'}}>
+        <div style={{fontSize:56,marginBottom:12}}>🔍</div>
+        <div style={{fontFamily:"'Sora',sans-serif",fontWeight:700,fontSize:18,color:S.navy,marginBottom:8}}>Anunț negăsit</div>
+        <a href="/listing" style={{color:S.blue,textDecoration:'none',fontWeight:600}}>← Înapoi la anunțuri</a>
+      </div>
+    </div>
+  )
+
+  const cond = CONDITIONS[listing.condition] || CONDITIONS.folosit
+  const daysAgo = Math.floor((new Date().getTime() - new Date(listing.created_at).getTime()) / (1000*60*60*24))
 
   return (
-    <div onClick={e=>{if(e.target===e.currentTarget)onClose()}} style={{position:'fixed',inset:0,background:'rgba(10,31,68,0.5)',zIndex:1000,display:'flex',alignItems:'center',justifyContent:'center',padding:16}}>
-      <div style={{background:'#fff',borderRadius:16,width:'100%',maxWidth:520,padding:24,maxHeight:'90vh',overflowY:'auto'}}>
-        <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:20}}>
-          <h3 style={{fontFamily:"'Sora',sans-serif",fontWeight:800,fontSize:16,color:'#0a1f44',margin:0}}>Publică anunț nou</h3>
-          <button onClick={onClose} style={{background:'none',border:'none',cursor:'pointer',fontSize:20,color:'#6b7280',lineHeight:1}}>✕</button>
+    <div style={{background:S.bg,minHeight:'100vh',fontFamily:"'DM Sans',sans-serif"}}>
+      <style>{`.photo-thumb:hover{border-color:#1a56db!important;opacity:1!important}.rel-card:hover{border-color:#1a56db!important;box-shadow:0 4px 16px rgba(26,86,219,0.1)!important}`}</style>
+
+      {/* Breadcrumb */}
+      <div style={{background:S.white,borderBottom:`1px solid ${S.border}`,padding:'10px 24px',fontSize:12,color:S.muted}}>
+        <div style={{maxWidth:1100,margin:'0 auto',display:'flex',alignItems:'center',gap:6}}>
+          <a href="/home" style={{color:S.muted,textDecoration:'none'}}>Acasă</a>
+          <span>›</span>
+          <a href="/listing" style={{color:S.muted,textDecoration:'none'}}>Anunțuri piese</a>
+          <span>›</span>
+          <span style={{color:S.navy,fontWeight:500}}>{listing.title?.slice(0,40)}{listing.title?.length>40?'...':''}</span>
         </div>
-        <div style={{display:'flex',flexDirection:'column',gap:14}}>
-          {/* Titlu */}
-          <div>
-            <label style={{fontSize:11,fontWeight:700,color:'#6b7280',textTransform:'uppercase',letterSpacing:.5,display:'block',marginBottom:6}}>Titlu anunț *</label>
-            <input
-              value={form.title}
-              onChange={e=>setForm(p=>({...p,title:e.target.value}))}
-              placeholder="Ex: Faruri BMW Seria 3 E46 2003"
-              autoFocus
-              style={{width:'100%',padding:'10px 14px',border:'1.5px solid #e5e7eb',borderRadius:10,fontSize:14,outline:'none',boxSizing:'border-box',fontFamily:"'DM Sans',sans-serif"}}/>
-          </div>
+      </div>
 
-          {/* Categorie */}
-          <div>
-            <label style={{fontSize:11,fontWeight:700,color:'#6b7280',textTransform:'uppercase',letterSpacing:.5,display:'block',marginBottom:6}}>Categorie *</label>
-            <select value={form.category} onChange={e=>setForm(p=>({...p,category:e.target.value}))}
-              style={{width:'100%',padding:'10px 14px',border:'1.5px solid #e5e7eb',borderRadius:10,fontSize:14,outline:'none',background:'#fff',boxSizing:'border-box',fontFamily:"'DM Sans',sans-serif"}}>
-              {CATEGORIES.filter(c=>c.key!=='toate').map(c=>(
-                <option key={c.key} value={c.key}>{c.icon} {c.label}</option>
-              ))}
-            </select>
-          </div>
+      <div style={{maxWidth:1100,margin:'0 auto',padding:'24px 16px'}}>
+        <style>{`
+          @media(max-width:768px){
+            .listing-detail-grid{grid-template-columns:1fr!important}
+            .listing-detail-sidebar{position:relative!important;top:0!important}
+          }
+        `}</style>
+        <div className="listing-detail-grid" style={{display:'grid',gridTemplateColumns:'1fr 340px',gap:20,alignItems:'start'}}>
 
-          {/* Pret + Oras */}
-          <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:10}}>
-            <div>
-              <label style={{fontSize:11,fontWeight:700,color:'#6b7280',textTransform:'uppercase',letterSpacing:.5,display:'block',marginBottom:6}}>Preț (LEI)</label>
-              <input value={form.price} onChange={e=>setForm(p=>({...p,price:e.target.value}))} placeholder="0" type="number"
-                style={{width:'100%',padding:'10px 14px',border:'1.5px solid #e5e7eb',borderRadius:10,fontSize:14,outline:'none',boxSizing:'border-box'}}/>
+          {/* LEFT COL */}
+          <div>
+            {/* Photo gallery */}
+            <div style={{background:S.white,borderRadius:16,border:`1px solid ${S.border}`,overflow:'hidden',marginBottom:16,boxShadow:'0 2px 12px rgba(10,31,68,0.06)'}}>
+              {/* Main photo */}
+              <div style={{height:'min(400px,60vw)',background:'#eaf3ff',display:'flex',alignItems:'center',justifyContent:'center',overflow:'hidden',position:'relative'}}>
+                {photos.length>0 ? (
+                  <>
+                    <img src={photos[activePhoto]?.url} alt={listing.title}
+                      style={{width:'100%',height:'100%',objectFit:'contain',background:'#f8faff'}}/>
+                    {photos.length>1&&(
+                      <>
+                        <button onClick={()=>setActivePhoto(p=>Math.max(0,p-1))} disabled={activePhoto===0}
+                          style={{position:'absolute',left:12,top:'50%',transform:'translateY(-50%)',width:36,height:36,background:'rgba(255,255,255,0.9)',border:'none',borderRadius:'50%',cursor:'pointer',fontSize:18,display:'flex',alignItems:'center',justifyContent:'center',boxShadow:'0 2px 8px rgba(0,0,0,0.15)',opacity:activePhoto===0?0.3:1}}>‹</button>
+                        <button onClick={()=>setActivePhoto(p=>Math.min(photos.length-1,p+1))} disabled={activePhoto===photos.length-1}
+                          style={{position:'absolute',right:12,top:'50%',transform:'translateY(-50%)',width:36,height:36,background:'rgba(255,255,255,0.9)',border:'none',borderRadius:'50%',cursor:'pointer',fontSize:18,display:'flex',alignItems:'center',justifyContent:'center',boxShadow:'0 2px 8px rgba(0,0,0,0.15)',opacity:activePhoto===photos.length-1?0.3:1}}>›</button>
+                        <div style={{position:'absolute',bottom:12,right:12,background:'rgba(10,31,68,0.6)',color:'#fff',fontSize:12,fontWeight:600,padding:'4px 10px',borderRadius:20}}>
+                          {activePhoto+1}/{photos.length}
+                        </div>
+                      </>
+                    )}
+                  </>
+                ):(
+                  <div style={{textAlign:'center',color:S.muted}}>
+                    <div style={{fontSize:64,marginBottom:8}}>📦</div>
+                    <div style={{fontSize:14}}>Fără fotografii</div>
+                  </div>
+                )}
+              </div>
+              {/* Thumbnails */}
+              {photos.length>1&&(
+                <div style={{display:'flex',gap:8,padding:'12px',overflowX:'auto'}}>
+                  {photos.map((ph,i)=>(
+                    <img key={ph.id||i} src={ph.url} alt="" onClick={()=>setActivePhoto(i)}
+                      className="photo-thumb"
+                      style={{width:72,height:72,objectFit:'cover',borderRadius:8,cursor:'pointer',border:`2px solid ${i===activePhoto?S.blue:S.border}`,opacity:i===activePhoto?1:0.65,transition:'all .15s',flexShrink:0}}/>
+                  ))}
+                </div>
+              )}
             </div>
-            <div>
-              <label style={{fontSize:11,fontWeight:700,color:'#6b7280',textTransform:'uppercase',letterSpacing:.5,display:'block',marginBottom:6}}>Oraș *</label>
-              <input value={form.city} onChange={e=>setForm(p=>({...p,city:e.target.value}))} placeholder="București"
-                style={{width:'100%',padding:'10px 14px',border:'1.5px solid #e5e7eb',borderRadius:10,fontSize:14,outline:'none',boxSizing:'border-box',fontFamily:"'DM Sans',sans-serif"}}/>
+
+            {/* Title & price */}
+            <div style={{background:S.white,borderRadius:16,border:`1px solid ${S.border}`,padding:20,marginBottom:14,boxShadow:'0 2px 12px rgba(10,31,68,0.06)'}}>
+              <div style={{display:'flex',alignItems:'flex-start',justifyContent:'space-between',marginBottom:12,gap:12}}>
+                <h1 style={{fontFamily:"'Sora',sans-serif",fontWeight:800,fontSize:22,color:S.navy,lineHeight:1.3,flex:1}}>{listing.title}</h1>
+                <div style={{textAlign:'right',flexShrink:0}}>
+                  <div style={{fontFamily:"'Sora',sans-serif",fontWeight:800,fontSize:28,color:S.navy}}>
+                    {listing.price ? `${listing.price.toLocaleString('ro-RO')} lei` : 'Preț negociabil'}
+                  </div>
+                  {listing.negotiable&&<div style={{fontSize:12,color:S.green,fontWeight:600}}>✓ Negociabil</div>}
+                </div>
+              </div>
+
+              <div style={{display:'flex',flexWrap:'wrap',gap:8,marginBottom:14}}>
+                {listing.condition&&<span style={{background:cond.bg,color:cond.color,fontSize:12,fontWeight:700,padding:'4px 12px',borderRadius:50,fontFamily:"'Sora',sans-serif"}}>{cond.label}</span>}
+                {listing.category&&<span style={{background:'#eaf3ff',color:S.blue,fontSize:12,fontWeight:600,padding:'4px 12px',borderRadius:50}}>{CATEGORIES[listing.category]||listing.category}</span>}
+                {listing.delivery&&<span style={{background:S.bg,color:S.muted,fontSize:12,fontWeight:600,padding:'4px 12px',borderRadius:50}}>🚚 Livrare {listing.delivery_price?`${listing.delivery_price} RON`:'gratuită'}</span>}
+              </div>
+
+              <div style={{display:'flex',gap:16,fontSize:12,color:S.muted}}>
+                <span>📍 {listing.city||'Locație nespecificată'}</span>
+                <span>👁️ {listing.views||1} vizualizări</span>
+                <span>📅 {daysAgo===0?'Azi':daysAgo===1?'Ieri':`${daysAgo} zile în urmă`}</span>
+              </div>
             </div>
-          </div>
 
-          {/* Stare */}
-          <div>
-            <label style={{fontSize:11,fontWeight:700,color:'#6b7280',textTransform:'uppercase',letterSpacing:.5,display:'block',marginBottom:6}}>Stare</label>
-            <div style={{display:'flex',gap:8}}>
-              {['nou','folosit','reconditionat'].map(c=>(
-                <button key={c} type="button" onClick={()=>setForm(p=>({...p,condition:c}))}
-                  style={{flex:1,padding:'9px 8px',border:`1.5px solid ${form.condition===c?'#16a34a':'#e5e7eb'}`,borderRadius:10,background:form.condition===c?'#dcfce7':'#fff',cursor:'pointer',fontSize:12,fontWeight:form.condition===c?700:400,color:form.condition===c?'#16a34a':'#374151',fontFamily:"'DM Sans',sans-serif",textTransform:'capitalize'}}>
-                  {c==='nou'?'Nou':c==='folosit'?'Folosit':'Recondiționat'}
-                </button>
-              ))}
-            </div>
-          </div>
+            {/* Description */}
+            {listing.description&&(
+              <div style={{background:S.white,borderRadius:16,border:`1px solid ${S.border}`,padding:20,marginBottom:14,boxShadow:'0 2px 12px rgba(10,31,68,0.06)'}}>
+                <h2 style={{fontFamily:"'Sora',sans-serif",fontWeight:700,fontSize:15,color:S.navy,marginBottom:12}}>📝 Descriere</h2>
+                <p style={{fontSize:14,color:'#374151',lineHeight:1.8,whiteSpace:'pre-wrap'}}>{listing.description}</p>
+              </div>
+            )}
 
-          {/* Tip piesa */}
-          <div>
-            <label style={{fontSize:11,fontWeight:700,color:'#6b7280',textTransform:'uppercase',letterSpacing:.5,display:'block',marginBottom:6}}>Tip piesă</label>
-            <div style={{display:'flex',gap:8}}>
-              {[{v:'oem',l:'🔵 OEM'},{v:'aftermarket',l:'🟡 Aftermarket'},{v:'both',l:'Ambele'}].map(t=>(
-                <button key={t.v} type="button" onClick={()=>setForm(p=>({...p,parts_type:t.v}))}
-                  style={{flex:1,padding:'9px 6px',border:`1.5px solid ${form.parts_type===t.v?'#1a56db':'#e5e7eb'}`,borderRadius:10,background:form.parts_type===t.v?'#eaf3ff':'#fff',cursor:'pointer',fontSize:12,fontWeight:form.parts_type===t.v?700:400,color:form.parts_type===t.v?'#1a56db':'#374151',fontFamily:"'DM Sans',sans-serif"}}>
-                  {t.l}
-                </button>
-              ))}
-            </div>
-          </div>
-
-          {/* Marci compatibile */}
-          <div>
-            <label style={{fontSize:11,fontWeight:700,color:'#6b7280',textTransform:'uppercase',letterSpacing:.5,display:'block',marginBottom:6}}>Compatibil cu (mărci, virgulă)</label>
-            <input value={form.compatible_brands} onChange={e=>setForm(p=>({...p,compatible_brands:e.target.value}))}
-              placeholder="BMW, Audi, Mercedes"
-              style={{width:'100%',padding:'10px 14px',border:'1.5px solid #e5e7eb',borderRadius:10,fontSize:14,outline:'none',boxSizing:'border-box',fontFamily:"'DM Sans',sans-serif"}}/>
-          </div>
-
-          {/* Descriere */}
-          <div>
-            <label style={{fontSize:11,fontWeight:700,color:'#6b7280',textTransform:'uppercase',letterSpacing:.5,display:'block',marginBottom:6}}>Descriere</label>
-            <textarea value={form.description} onChange={e=>setForm(p=>({...p,description:e.target.value}))} rows={3}
-              placeholder="Descrie piesa în detaliu..."
-              style={{width:'100%',padding:'10px 14px',border:'1.5px solid #e5e7eb',borderRadius:10,fontSize:14,outline:'none',resize:'vertical',fontFamily:"'DM Sans',sans-serif",boxSizing:'border-box'}}/>
-          </div>
-
-          {/* Fotografii */}
-          <div>
-            <label style={{fontSize:11,fontWeight:700,color:'#6b7280',textTransform:'uppercase',letterSpacing:.5,display:'block',marginBottom:6}}>Fotografii produs</label>
-            <label style={{display:'flex',flexDirection:'column',alignItems:'center',gap:8,padding:'20px',border:'2px dashed #e5e7eb',borderRadius:10,cursor:'pointer',textAlign:'center'}}>
-              <span style={{fontSize:28}}>📷</span>
-              <span style={{fontSize:13,color:'#6b7280'}}>{uploadingFiles?'Se încarcă...':uploadedFiles.length>0?`${uploadedFiles.length} foto adăugate`:'Click pentru a adăuga poze'}</span>
-              <span style={{fontSize:11,color:'#9ca3af'}}>JPG, PNG · max 5MB</span>
-              <input type="file" accept="image/*" multiple style={{display:'none'}} onChange={e=>handleFileUpload(e.target.files)} disabled={uploadingFiles}/>
-            </label>
-            {uploadedFiles.length>0&&(
-              <div style={{display:'flex',gap:6,marginTop:8,flexWrap:'wrap'}}>
-                {uploadedFiles.map((url,i)=>(
-                  <div key={i} style={{position:'relative',width:56,height:56}}>
-                    <img src={url} style={{width:56,height:56,objectFit:'cover',borderRadius:8,border:'1px solid #e5e7eb'}} alt=""/>
-                    {i===0&&<span style={{position:'absolute',bottom:0,left:0,right:0,textAlign:'center',fontSize:8,fontWeight:700,background:'rgba(26,86,219,0.85)',color:'#fff',borderRadius:'0 0 7px 7px',padding:'1px 0'}}>Cover</span>}
-                    <button onClick={()=>setUploadedFiles(prev=>prev.filter((_,idx)=>idx!==i))}
-                      style={{position:'absolute',top:-4,right:-4,width:16,height:16,borderRadius:'50%',background:'#dc2626',color:'#fff',border:'none',cursor:'pointer',fontSize:10,display:'flex',alignItems:'center',justifyContent:'center',lineHeight:1}}>✕</button>
+            {/* Details grid */}
+            <div style={{background:S.white,borderRadius:16,border:`1px solid ${S.border}`,padding:20,marginBottom:14,boxShadow:'0 2px 12px rgba(10,31,68,0.06)'}}>
+              <h2 style={{fontFamily:"'Sora',sans-serif",fontWeight:700,fontSize:15,color:S.navy,marginBottom:14}}>📋 Detalii produs</h2>
+              <div className="listing-details-grid" style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:10}}>
+                {[
+                  ['Stare',cond.label],
+                  ['Categorie',CATEGORIES[listing.category]||listing.category],
+                  ['Locație',listing.city],
+                  listing.part_number&&['Cod piesă',listing.part_number],
+                  listing.delivery!==null&&['Livrare',listing.delivery?`Da${listing.delivery_price?` — ${listing.delivery_price} RON`:', gratuită'}`:'Nu'],
+                  listing.negotiable!==null&&['Preț negociabil',listing.negotiable?'Da':'Nu'],
+                ].filter(Boolean).map(([label,value])=>(
+                  <div key={label} style={{background:S.bg,borderRadius:10,padding:'10px 14px'}}>
+                    <div style={{fontSize:11,color:S.muted,marginBottom:3,fontWeight:600,textTransform:'uppercase',letterSpacing:0.5}}>{label}</div>
+                    <div style={{fontSize:14,color:S.navy,fontWeight:500}}>{value}</div>
                   </div>
                 ))}
+              </div>
+
+              {/* Compatibilitate */}
+              {(listing.compatible_brands?.length>0||listing.compatible_models?.length>0)&&(
+                <div style={{marginTop:12,background:'#eaf3ff',borderRadius:10,padding:'12px 14px',border:'1px solid rgba(26,86,219,0.15)'}}>
+                  <div style={{fontSize:11,color:S.blue,marginBottom:6,fontWeight:700,textTransform:'uppercase',letterSpacing:0.5}}>🚗 Compatibil cu</div>
+                  {listing.compatible_brands?.length>0&&(
+                    <div style={{display:'flex',gap:6,flexWrap:'wrap',marginBottom:6}}>
+                      {listing.compatible_brands.map(b=><span key={b} style={{background:S.white,border:'1px solid rgba(26,86,219,0.2)',borderRadius:50,padding:'3px 10px',fontSize:12,color:S.blue,fontWeight:600}}>{b}</span>)}
+                    </div>
+                  )}
+                  {listing.compatible_models?.length>0&&(
+                    <div style={{fontSize:13,color:S.navy}}>{listing.compatible_models.join(', ')}</div>
+                  )}
+                </div>
+              )}
+            </div>
+
+            {/* Related */}
+            {related.length>0&&(
+              <div>
+                <h2 style={{fontFamily:"'Sora',sans-serif",fontWeight:700,fontSize:15,color:S.navy,marginBottom:12}}>Anunțuri similare</h2>
+                <div className="listing-related" style={{display:'grid',gridTemplateColumns:'repeat(4,1fr)',gap:10}}>
+                  {related.map(r=>(
+                    <a key={r.id} href={`/listing/${r.id}`} className="rel-card"
+                      style={{background:S.white,borderRadius:12,border:`1px solid ${S.border}`,padding:12,textDecoration:'none',transition:'all .2s',display:'block'}}>
+                      <div style={{fontFamily:"'Sora',sans-serif",fontWeight:700,fontSize:14,color:S.navy,marginBottom:4}}>{r.price?`${r.price.toLocaleString()} lei`:'Negociabil'}</div>
+                      <div style={{fontSize:12,color:S.muted,lineHeight:1.4,marginBottom:6,display:'-webkit-box',WebkitLineClamp:2,WebkitBoxOrient:'vertical',overflow:'hidden'}}>{r.title}</div>
+                      <div style={{fontSize:11,color:S.muted}}>📍 {r.city}</div>
+                    </a>
+                  ))}
+                </div>
               </div>
             )}
           </div>
 
-          {/* Submit */}
-          <button onClick={handleSubmit} disabled={saving||!form.title.trim()||!form.city.trim()}
-            style={{padding:'13px',background:form.title&&form.city?'#f59e0b':'#e5e7eb',color:form.title&&form.city?'#fff':'#9ca3af',border:'none',borderRadius:50,fontSize:14,fontWeight:700,cursor:form.title&&form.city?'pointer':'not-allowed',fontFamily:"'Sora',sans-serif",marginTop:4}}>
-            {saving?'Se publică...':'📣 Publică anunțul gratuit'}
-          </button>
-        </div>
-      </div>
-    </div>
-  )
-}
+          {/* RIGHT COL — sticky */}
+          <div className="listing-detail-sidebar" style={{position:'sticky',top:90}}>
 
-function ListingsContent() {
-  const [listings, setListings] = useState([])
-  const [loading, setLoading] = useState(true)
-  const [showAdd, setShowAdd] = useState(false)
-  const [showFilters, setShowFilters] = useState(false)
-  const [activeCategory, setActiveCategory] = useState('toate')
-  const [sortBy, setSortBy] = useState('recent')
-  const [query, setQuery] = useState('')
-  const [user, setUser] = useState(null)
-  const [favorites, setFavorites] = useState(new Set())
-  const [filterPretMin, setFilterPretMin] = useState('')
-  const [filterPretMax, setFilterPretMax] = useState('')
-  const [filterJudet, setFilterJudet] = useState('')
-  const [filterCondition, setFilterCondition] = useState('')
-  const [filterPartsType, setFilterPartsType] = useState('')
-  const supabase = createClient()
+            {/* Contact card */}
+            <div style={{background:S.white,borderRadius:16,border:`1px solid ${S.border}`,padding:20,marginBottom:14,boxShadow:'0 2px 12px rgba(10,31,68,0.06)'}}>
+              <div style={{fontFamily:"'Sora',sans-serif",fontWeight:800,fontSize:26,color:S.navy,marginBottom:4}}>
+                {listing.price ? `${listing.price.toLocaleString('ro-RO')} lei` : 'Preț negociabil'}
+              </div>
+              {listing.negotiable&&<div style={{fontSize:13,color:S.green,fontWeight:600,marginBottom:14}}>✓ Prețul este negociabil</div>}
 
-  useEffect(() => {
-    supabase.auth.getUser().then(({data:{user}})=>setUser(user))
-    if (typeof window !== 'undefined') {
-      const p = new URLSearchParams(window.location.search)
-      if (p.get('categorie')) setActiveCategory(p.get('categorie'))
-    }
-  }, [])
-
-  useEffect(() => { loadListings() }, [activeCategory, sortBy])
-
-  async function loadListings() {
-    setLoading(true)
-    let q = supabase.from('listings')
-      .select('id,title,price,city,category,condition,created_at,is_promoted,promoted_until,negotiable,parts_type,status')
-      .eq('status','activ')
-    if (activeCategory !== 'toate') q = q.eq('category', activeCategory)
-    if (sortBy === 'pret_asc') q = q.order('price',{ascending:true})
-    else if (sortBy === 'pret_desc') q = q.order('price',{ascending:false})
-    else q = q.order('is_promoted',{ascending:false}).order('created_at',{ascending:false})
-    const {data, error} = await q.limit(80)
-    if (error) console.error('[listings query]', error.message)
-
-    // Load media separately - avoid 400 if listing_media table missing
-    let mediaMap = {}
-    if (data?.length) {
-      const {data:media} = await supabase.from('listing_media')
-        .select('listing_id,url,is_cover')
-        .in('listing_id', data.map(l=>l.id))
-      if (media) {
-        for (const m of media) {
-          if (!mediaMap[m.listing_id]) mediaMap[m.listing_id] = []
-          mediaMap[m.listing_id].push(m)
-        }
-      }
-    }
-
-    let results = (data||[]).map(l=>({...l, listing_media: mediaMap[l.id]||[]}))
-    const now = new Date()
-    results = results.map(l=>({...l,is_promoted:l.is_promoted&&(!l.promoted_until||new Date(l.promoted_until)>now)}))
-    if (query) results = results.filter(l=>l.title.toLowerCase().includes(query.toLowerCase()))
-    if (filterCondition) results = results.filter(l=>l.condition===filterCondition)
-    if (filterPartsType) results = results.filter(l=>l.parts_type===filterPartsType)
-    if (filterJudet) results = results.filter(l=>l.city?.toLowerCase().includes(filterJudet.toLowerCase()))
-    if (filterPretMin) results = results.filter(l=>l.price>=parseFloat(filterPretMin))
-    if (filterPretMax) results = results.filter(l=>!filterPretMax||l.price<=parseFloat(filterPretMax))
-    results.sort((a,b)=>{
-      if (a.is_promoted&&!b.is_promoted) return -1
-      if (!a.is_promoted&&b.is_promoted) return 1
-      if (sortBy==='pret_asc') return (a.price||0)-(b.price||0)
-      if (sortBy==='pret_desc') return (b.price||0)-(a.price||0)
-      return new Date(b.created_at)-new Date(a.created_at)
-    })
-    setListings(results)
-    setLoading(false)
-  }
-
-  function applyFilters() { loadListings(); setShowFilters(false) }
-  function resetFilters() { setFilterPretMin('');setFilterPretMax('');setFilterJudet('');setFilterCondition('');setFilterPartsType('');setActiveCategory('toate') }
-
-
-  const activeFiltersCount = [filterPretMin,filterPretMax,filterJudet,filterCondition,filterPartsType].filter(Boolean).length
-
-  return (
-    <div style={{minHeight:'100vh',background:'#f4f6f9',fontFamily:"'DM Sans',sans-serif"}}>
-      <style dangerouslySetInnerHTML={{__html:`
-        .lst-card{text-decoration:none;color:inherit;display:block;background:#fff;border-radius:8px;border:1px solid #e5e7eb;overflow:hidden;transition:box-shadow .15s}
-        .lst-card:hover{box-shadow:0 4px 16px rgba(26,86,219,0.1);border-color:#1a56db}
-        .lst-promoted{border:2px solid #f59e0b!important;box-shadow:0 2px 12px rgba(245,158,11,0.15)!important}
-        .cat-item{display:flex;align-items:center;gap:8px;padding:9px 12px;border-radius:8px;cursor:pointer;font-size:13px;color:#6b7280;transition:all .15s;border:none;background:none;width:100%;text-align:left;font-family:'DM Sans',sans-serif}
-        .cat-item:hover,.cat-item.active{background:#eaf3ff;color:#1a56db}
-        .cat-item.active{font-weight:700}
-        .lst-sidebar{display:flex!important;flex-direction:column!important} @media(max-width:768px){.lst-layout{flex-direction:column!important}.lst-sidebar{display:none!important}.lst-grid{grid-template-columns:repeat(2,1fr)!important;gap:8px!important}}
-      `}}/>
-
-      {/* TOP BAR */}
-      <div style={{background:'#fff',borderBottom:'1px solid #e5e7eb',padding:'12px 0',position:'sticky',top:0,zIndex:100}}>
-        <div style={{maxWidth:1200,margin:'0 auto',padding:'0 16px',display:'flex',gap:10,alignItems:'center'}}>
-          <form onSubmit={e=>{e.preventDefault();loadListings()}} style={{display:'flex',flex:1,maxWidth:560}}>
-            <input value={query} onChange={e=>setQuery(e.target.value)} placeholder="Caută piese, anvelope, accesorii..."
-              style={{flex:1,padding:'10px 16px',border:'1.5px solid #e5e7eb',borderRadius:'50px 0 0 50px',fontSize:13,outline:'none',fontFamily:"'DM Sans',sans-serif"}}/>
-            <button type="submit" style={{padding:'0 18px',background:'#1a56db',border:'none',borderRadius:'0 50px 50px 0',cursor:'pointer',height:42}}>
-              <svg width="15" height="15" viewBox="0 0 15 15" fill="none"><circle cx="6" cy="6" r="4.5" stroke="#fff" strokeWidth="1.6"/><path d="M9.5 9.5L13 13" stroke="#fff" strokeWidth="1.6" strokeLinecap="round"/></svg>
-            </button>
-          </form>
-          <button onClick={()=>setShowFilters(o=>!o)}
-            style={{display:'flex',alignItems:'center',gap:7,padding:'10px 16px',border:`1.5px solid \${activeFiltersCount>0?'#1a56db':'#e5e7eb'}`,borderRadius:50,background:activeFiltersCount>0?'#eaf3ff':'#fff',cursor:'pointer',fontSize:13,fontWeight:600,color:activeFiltersCount>0?'#1a56db':'#0a1f44',fontFamily:"'DM Sans',sans-serif",flexShrink:0}}>
-            <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M1 3h14M3 8h10M6 13h4" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"/></svg>
-            Filtre {activeFiltersCount>0&&<span style={{background:'#1a56db',color:'#fff',borderRadius:'50%',width:18,height:18,display:'inline-flex',alignItems:'center',justifyContent:'center',fontSize:10,fontWeight:700}}>{activeFiltersCount}</span>}
-          </button>
-          <select value={sortBy} onChange={e=>setSortBy(e.target.value)}
-            style={{padding:'9px 14px',border:'1.5px solid #e5e7eb',borderRadius:50,fontSize:13,background:'#fff',color:'#0a1f44',fontFamily:"'DM Sans',sans-serif",outline:'none',cursor:'pointer',flexShrink:0}}>
-            <option value="recent">Cele mai recente</option>
-            <option value="pret_asc">Preț ↑</option>
-            <option value="pret_desc">Preț ↓</option>
-          </select>
-          <button onClick={()=>user?setShowAdd(true):window.location.href='/auth/login'}
-            style={{display:'flex',alignItems:'center',gap:6,padding:'10px 18px',background:'#f59e0b',color:'#fff',border:'none',borderRadius:50,fontSize:13,fontWeight:700,cursor:'pointer',fontFamily:"'Sora',sans-serif",whiteSpace:'nowrap',flexShrink:0}}>
-            + Adaugă anunț
-          </button>
-        </div>
-      </div>
-
-      {/* FILTERS PANEL */}
-      {showFilters&&(
-        <div style={{background:'#fff',borderBottom:'1px solid #e5e7eb',padding:'16px 0',boxShadow:'0 4px 16px rgba(10,31,68,0.08)'}}>
-          <div style={{maxWidth:1200,margin:'0 auto',padding:'0 16px'}}>
-            <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fit,minmax(150px,1fr))',gap:12,marginBottom:12}}>
-              {[
-                {label:'Preț minim (RON)',val:filterPretMin,set:setFilterPretMin,type:'number',ph:'0'},
-                {label:'Preț maxim (RON)',val:filterPretMax,set:setFilterPretMax,type:'number',ph:'Orice'},
-              ].map(f=>(
-                <div key={f.label}>
-                  <label style={{fontSize:11,fontWeight:700,color:'#6b7280',textTransform:'uppercase',letterSpacing:.5,display:'block',marginBottom:6}}>{f.label}</label>
-                  <input value={f.val} onChange={e=>f.set(e.target.value)} placeholder={f.ph} type={f.type}
-                    style={{width:'100%',padding:'8px 12px',border:'1.5px solid #e5e7eb',borderRadius:8,fontSize:13,outline:'none',boxSizing:'border-box'}}/>
+              {listing.phone_contact?(
+                <button onClick={()=>setShowPhone(!showPhone)}
+                  style={{width:'100%',padding:'13px',background:showPhone?S.green:S.blue,color:'#fff',border:'none',borderRadius:50,fontSize:15,fontWeight:700,cursor:'pointer',fontFamily:"'Sora',sans-serif",boxShadow:`0 4px 16px ${showPhone?'rgba(22,163,74,0.25)':'rgba(26,86,219,0.25)'}`,marginBottom:10,transition:'all .2s'}}>
+                  {showPhone?`📞 ${listing.phone_contact}`:'📞 Afișează numărul'}
+                </button>
+              ):(
+                <div style={{background:S.bg,borderRadius:12,padding:'12px 16px',textAlign:'center',marginBottom:10,fontSize:13,color:S.muted}}>
+                  Vânzătorul nu a adăugat un număr de telefon.
                 </div>
-              ))}
-              <div>
-                <label style={{fontSize:11,fontWeight:700,color:'#6b7280',textTransform:'uppercase',letterSpacing:.5,display:'block',marginBottom:6}}>Județ</label>
-                <select value={filterJudet} onChange={e=>setFilterJudet(e.target.value)}
-                  style={{width:'100%',padding:'8px 12px',border:'1.5px solid #e5e7eb',borderRadius:8,fontSize:13,outline:'none',background:'#fff',boxSizing:'border-box'}}>
-                  <option value="">Toată România</option>
-                  {JUDETE.map(j=><option key={j} value={j}>{j}</option>)}
-                </select>
-              </div>
-              <div>
-                <label style={{fontSize:11,fontWeight:700,color:'#6b7280',textTransform:'uppercase',letterSpacing:.5,display:'block',marginBottom:6}}>Stare</label>
-                <select value={filterCondition} onChange={e=>setFilterCondition(e.target.value)}
-                  style={{width:'100%',padding:'8px 12px',border:'1.5px solid #e5e7eb',borderRadius:8,fontSize:13,outline:'none',background:'#fff',boxSizing:'border-box'}}>
-                  <option value="">Toate</option>
-                  <option value="nou">Nouă</option>
-                  <option value="folosit">Folosită</option>
-                  <option value="reconditionat">Recondiționată</option>
-                </select>
-              </div>
-              <div>
-                <label style={{fontSize:11,fontWeight:700,color:'#6b7280',textTransform:'uppercase',letterSpacing:.5,display:'block',marginBottom:6}}>Tip piesă</label>
-                <select value={filterPartsType} onChange={e=>setFilterPartsType(e.target.value)}
-                  style={{width:'100%',padding:'8px 12px',border:'1.5px solid #e5e7eb',borderRadius:8,fontSize:13,outline:'none',background:'#fff',boxSizing:'border-box'}}>
-                  <option value="">Toate</option>
-                  <option value="oem">OEM (Originale)</option>
-                  <option value="aftermarket">Aftermarket</option>
-                  <option value="both">Ambele</option>
-                </select>
-              </div>
-            </div>
-            <div style={{display:'flex',gap:8}}>
-              <button onClick={applyFilters} style={{padding:'9px 22px',background:'#1a56db',color:'#fff',border:'none',borderRadius:50,fontSize:13,fontWeight:700,cursor:'pointer'}}>Aplică filtrele</button>
-              {activeFiltersCount>0&&<button onClick={()=>{resetFilters();setShowFilters(false)}} style={{padding:'9px 18px',background:'transparent',color:'#6b7280',border:'1.5px solid #e5e7eb',borderRadius:50,fontSize:13,cursor:'pointer'}}>Resetează</button>}
-              <button onClick={()=>setShowFilters(false)} style={{padding:'9px 18px',background:'transparent',color:'#6b7280',border:'none',borderRadius:50,fontSize:13,cursor:'pointer',marginLeft:'auto'}}>✕ Închide</button>
-            </div>
-          </div>
-        </div>
-      )}
+              )}
 
-      <div style={{maxWidth:1200,margin:'0 auto',padding:'16px',display:'flex',gap:16,alignItems:'flex-start'}} className="lst-layout">
-        {/* SIDEBAR */}
-        <div style={{width:210,flexShrink:0,background:'#fff',borderRadius:12,border:'.5px solid #e5e7eb',padding:'10px 8px',position:'sticky',top:70}}>
-          <div style={{fontSize:10,fontWeight:600,color:'#9ca3af',textTransform:'uppercase',letterSpacing:'.08em',padding:'0 8px 8px'}}>Categorii</div>
-          {CATEGORIES.map(c=>{
-            const isActive = activeCategory===c.key
-            return (
-              <button key={c.key} onClick={()=>setActiveCategory(c.key)}
-                style={{display:'flex',alignItems:'center',gap:10,padding:'8px 10px',borderRadius:8,
-                  width:'100%',textAlign:'left',cursor:'pointer',marginBottom:2,
-                  border:'none',outline:'none',
-                  background:isActive?'#eaf3ff':'transparent',
-                  fontFamily:"'DM Sans',sans-serif",
-                  transition:'background .15s'}}>
-                <CatIcon k={c.key} color={isActive?c.color:'#9ca3af'}/>
-                <span style={{fontSize:13,fontWeight:isActive?600:400,color:isActive?'#1a56db':'#374151',flex:1}}>
-                  {c.label}
-                </span>
-                {isActive&&(
-                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#1a56db" strokeWidth="2.5" strokeLinecap="round"><path d="M9 18l6-6-6-6"/></svg>
-                )}
-              </button>
-            )
-          })}
-          <div style={{height:'.5px',background:'#e5e7eb',margin:'8px 4px'}}/>
-          <a href="/piese-oferta" style={{display:'flex',alignItems:'center',gap:10,padding:'9px 10px',borderRadius:8,textDecoration:'none',background:'#fef3c7'}}>
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#854F0B" strokeWidth="2" strokeLinecap="round"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
-            <span style={{fontSize:13,fontWeight:500,color:'#854F0B'}}>Cere ofertă piese</span>
-          </a>
-        </div>
+              {/* Trimite mesaj */}
+              <a href={`/messages`}
+                style={{display:'flex',alignItems:'center',justifyContent:'center',gap:8,width:'100%',padding:'12px',background:'transparent',color:S.blue,border:`1.5px solid ${S.blue}`,borderRadius:50,fontSize:14,fontWeight:700,cursor:'pointer',fontFamily:"'Sora',sans-serif",textDecoration:'none',marginBottom:10,boxSizing:'border-box',transition:'all .2s'}}>
+                💬 Trimite mesaj vânzătorului
+              </a>
 
-        {/* LISTINGS */}
-        <div style={{flex:1,minWidth:0}}>
-          <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:12}}>
-            <div style={{fontSize:14,color:'#6b7280'}}>
-              {loading?'Se caută...':<><span style={{fontWeight:700,color:'#0a1f44'}}>{listings.length}</span> anunțuri</>}
-            </div>
-            {activeFiltersCount>0&&<button onClick={resetFilters} style={{fontSize:12,color:'#dc2626',background:'none',border:'none',cursor:'pointer',textDecoration:'underline'}}>Resetează filtrele ({activeFiltersCount})</button>}
-          </div>
-
-          {loading?(
-            <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fill,minmax(180px,1fr))',gap:10}}>
-              {[1,2,3,4,5,6,7,8].map(i=><div key={i} style={{background:'#fff',borderRadius:8,height:240,border:'1px solid #e5e7eb',animation:'pulse 1.5s infinite'}}/>)}
-              <style dangerouslySetInnerHTML={{__html:'@keyframes pulse{0%,100%{opacity:1}50%{opacity:.5}}'}}/>
-            </div>
-          ):listings.length===0?(
-            <div style={{background:'#fff',borderRadius:12,border:'1px solid #e5e7eb',textAlign:'center',padding:'60px 20px'}}>
-              <div style={{fontSize:48,marginBottom:12}}>🔍</div>
-              <div style={{fontFamily:"'Sora',sans-serif",fontWeight:700,fontSize:16,color:'#0a1f44',marginBottom:6}}>Niciun anunț găsit</div>
-              <button onClick={()=>user?setShowAdd(true):window.location.href='/auth/login'} style={{padding:'10px 24px',background:'#f59e0b',color:'#fff',border:'none',borderRadius:50,fontSize:13,fontWeight:700,cursor:'pointer',marginTop:8}}>+ Adaugă anunț</button>
-            </div>
-          ):(
-            <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fill,minmax(180px,1fr))',gap:10}}>
-              {listings.map(l=>{
-                const cover = l.listing_media?.find(m=>m.is_cover)?.url||l.listing_media?.[0]?.url
-                const cond = CONDITIONS.find(c=>c.key===l.condition)
-                const promoted = l.is_promoted
-                const daysAgo = Math.floor((Date.now()-new Date(l.created_at))/(86400000))
-                return (
-                  <a key={l.id} href={`/listing/${l.id}`} className={`lst-card\${promoted?' lst-promoted':''}`}>
-                    {promoted&&(
-                      <div style={{background:'#f59e0b',display:'flex',alignItems:'center',justifyContent:'center',gap:4,padding:'3px 0'}}>
-                        <svg width="9" height="9" viewBox="0 0 12 12" fill="white"><path d="M6 1l1.3 2.6 2.9.4-2.1 2 .5 2.9L6 7.5l-2.6 1.4.5-2.9-2.1-2 2.9-.4z"/></svg>
-                        <span style={{fontSize:9,fontWeight:700,color:'#fff',letterSpacing:1}}>PROMOVAT</span>
+              {/* Promovare — doar pentru owner */}
+              {isOwner&&(
+                <div style={{marginBottom:10}}>
+                  {listing?.is_promoted&&listing?.promoted_until&&new Date(listing.promoted_until)>new Date()?(
+                    <div style={{background:'#fef3c7',border:'1px solid #f59e0b',borderRadius:12,padding:'10px 14px',display:'flex',alignItems:'center',gap:8}}>
+                      <span style={{fontSize:16}}>⭐</span>
+                      <div>
+                        <div style={{fontSize:12,fontWeight:700,color:'#92400e'}}>Anunț promovat activ</div>
+                        <div style={{fontSize:11,color:'#a16207'}}>Expiră: {new Date(listing.promoted_until).toLocaleDateString('ro-RO')}</div>
                       </div>
-                    )}
-                    <div style={{height:150,background:'#f4f6f9',position:'relative',display:'flex',alignItems:'center',justifyContent:'center',overflow:'hidden'}}>
-                      {cover?<img src={cover} alt={l.title} style={{width:'100%',height:'100%',objectFit:'cover'}}/>:(
-                        <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="#d1d5db" strokeWidth="1.5" strokeLinecap="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg>
-                      )}
-                      {cond&&<span style={{position:'absolute',top:6,left:6,fontSize:10,fontWeight:700,padding:'2px 7px',borderRadius:50,background:cond.bg,color:cond.color}}>{cond.label}</span>}
-                      <button onClick={e=>{e.preventDefault();e.stopPropagation();setFavorites(prev=>{const n=new Set(prev);n.has(l.id)?n.delete(l.id):n.add(l.id);return n})}}
-                        style={{position:'absolute',top:6,right:6,width:28,height:28,background:'rgba(255,255,255,0.92)',borderRadius:'50%',border:'none',cursor:'pointer',fontSize:13,display:'flex',alignItems:'center',justifyContent:'center'}}>
-                        {favorites.has(l.id)?'❤️':'🤍'}
+                    </div>
+                  ):(
+                    <>
+                      <style dangerouslySetInnerHTML={{__html:`@keyframes shimmer{0%{transform:translateX(-100%)}100%{transform:translateX(100%)}}.promo-btn:hover{transform:scale(1.02)}`}}/>
+                      <button onClick={()=>setShowPromoteModal(true)} className="promo-btn"
+                        style={{width:'100%',padding:'14px',background:'#f59e0b',color:'#fff',border:'none',borderRadius:14,fontSize:15,fontWeight:800,cursor:'pointer',fontFamily:"'Sora',sans-serif",display:'flex',alignItems:'center',justifyContent:'center',gap:10,boxShadow:'0 4px 20px rgba(245,158,11,0.5)',position:'relative',overflow:'hidden',transition:'transform .15s,box-shadow .15s'}}>
+                        <span style={{fontSize:20}}>⭐</span>
+                        <span>Promovează anunțul</span>
+                        <span style={{position:'absolute',top:0,left:'-100%',right:0,bottom:0,width:'200%',background:'linear-gradient(90deg,transparent 0%,rgba(255,255,255,0.2) 50%,transparent 100%)',animation:'shimmer 2s ease-in-out infinite'}}/>
+                      </button>
+                    </>
+                  )}
+                </div>
+              )}
+
+              {/* Cere oferta piese similare */}
+              <a href={`/piese-oferta`}
+                style={{display:'flex',alignItems:'center',justifyContent:'center',gap:8,width:'100%',padding:'12px',background:S.amberBg,color:'#92400e',border:'1.5px solid rgba(217,119,6,0.3)',borderRadius:50,fontSize:13,fontWeight:600,cursor:'pointer',fontFamily:"'DM Sans',sans-serif",textDecoration:'none',marginBottom:10,boxSizing:'border-box'}}>
+                🔩 Caută piese similare la alte service-uri
+              </a>
+
+              <div style={{display:'flex',gap:8}}>
+                <button onClick={()=>setFavorite(!favorite)}
+                  style={{flex:1,padding:'10px',background:favorite?'#fee2e2':S.bg,color:favorite?S.red:S.muted,border:`1px solid ${favorite?'#fecaca':S.border}`,borderRadius:50,fontSize:13,fontWeight:600,cursor:'pointer',fontFamily:"'DM Sans',sans-serif",transition:'all .2s'}}>
+                  {favorite?'❤️ Salvat':'🤍 Salvează'}
+                </button>
+                <button onClick={copyLink}
+                  style={{flex:1,padding:'10px',background:copied?S.greenBg:S.bg,color:copied?S.green:S.muted,border:`1px solid ${copied?S.green+'30':S.border}`,borderRadius:50,fontSize:13,fontWeight:600,cursor:'pointer',fontFamily:"'DM Sans',sans-serif",transition:'all .2s'}}>
+                  {copied?'✅ Copiat!':'🔗 Distribuie'}
+                </button>
+              </div>
+
+              {/* Modal promovare */}
+              {showPromoteModal&&(
+                <div onClick={e=>{if(e.target===e.currentTarget)setShowPromoteModal(false)}}
+                  style={{position:'fixed',inset:0,background:'rgba(10,31,68,0.5)',zIndex:1000,display:'flex',alignItems:'center',justifyContent:'center',padding:16}}>
+                  <div style={{background:'#fff',borderRadius:20,padding:24,maxWidth:380,width:'100%'}}>
+                    <div style={{textAlign:'center',marginBottom:20}}>
+                      <div style={{fontSize:40,marginBottom:8}}>⭐</div>
+                      <h3 style={{fontFamily:"'Sora',sans-serif",fontWeight:800,fontSize:18,color:S.navy,marginBottom:6}}>Promovează anunțul</h3>
+                      <p style={{fontSize:13,color:S.muted,lineHeight:1.6}}>Anunțul tău va apărea în top și va fi marcat cu badge ⭐ PROMOVAT</p>
+                    </div>
+
+                    <div style={{display:'grid',gridTemplateColumns:'1fr 1fr 1fr',gap:8,marginBottom:20}}>
+                      {[
+                        {days:7,label:'7 zile',price:'Gratuit'},
+                        {days:14,label:'14 zile',price:'9.99 RON'},
+                        {days:30,label:'30 zile',price:'19.99 RON'},
+                      ].map(opt=>(
+                        <button key={opt.days} onClick={()=>setPromoteDays(opt.days)}
+                          style={{padding:'12px 8px',border:`1.5px solid ${promoteDays===opt.days?S.yellow:S.border}`,borderRadius:12,background:promoteDays===opt.days?'#fef3c7':'#fff',cursor:'pointer',textAlign:'center'}}>
+                          <div style={{fontWeight:700,fontSize:14,color:S.navy,marginBottom:2}}>{opt.label}</div>
+                          <div style={{fontSize:11,fontWeight:700,color:opt.price==='Gratuit'?S.green:S.yellow}}>{opt.price}</div>
+                        </button>
+                      ))}
+                    </div>
+
+                    <div style={{display:'flex',gap:10}}>
+                      <button onClick={()=>setShowPromoteModal(false)}
+                        style={{flex:1,padding:'11px',background:'#f3f4f6',color:S.muted,border:'none',borderRadius:50,fontSize:13,fontWeight:600,cursor:'pointer'}}>
+                        Anulează
+                      </button>
+                      <button onClick={promoteListingFree} disabled={promoting}
+                        style={{flex:2,padding:'11px',background:'#f59e0b',color:'#fff',border:'none',borderRadius:50,fontSize:14,fontWeight:700,cursor:'pointer',opacity:promoting?.6:1}}>
+                        {promoting?'Se activează...':promoteDays===7?'Activează gratuit':'Continuă la plată'}
                       </button>
                     </div>
-                    <div style={{padding:'10px 10px 12px'}}>
-                      <div style={{fontWeight:800,fontSize:15,color:'#0a1f44',marginBottom:3}}>
-                        {l.price?`${l.price.toLocaleString('ro-RO')} lei`:<span style={{color:'#6b7280',fontSize:13,fontWeight:400}}>Negociabil</span>}
-                      </div>
-                      <div style={{fontSize:12,color:'#111827',lineHeight:1.4,marginBottom:6,display:'-webkit-box',WebkitLineClamp:2,WebkitBoxOrient:'vertical',overflow:'hidden'}}>{l.title}</div>
-                      <div style={{fontSize:11,color:'#6b7280',display:'flex',justifyContent:'space-between'}}>
-                        <span>📍 {l.city||'România'}</span>
-                        <span>{daysAgo===0?'Azi':daysAgo===1?'Ieri':`${daysAgo}z`}</span>
-                      </div>
-                    </div>
-                  </a>
-                )
-              })}
+                  </div>
+                </div>
+              )}
             </div>
-          )}
+
+            {/* Seller card */}
+            {seller&&(
+              <div style={{background:S.white,borderRadius:16,border:`1px solid ${S.border}`,padding:16,marginBottom:14,boxShadow:'0 2px 12px rgba(10,31,68,0.06)'}}>
+                <h3 style={{fontFamily:"'Sora',sans-serif",fontWeight:700,fontSize:13,color:S.muted,textTransform:'uppercase',letterSpacing:0.5,marginBottom:12}}>Vânzător</h3>
+                <div style={{display:'flex',alignItems:'center',gap:12,marginBottom:12}}>
+                  <div style={{width:44,height:44,background:'#eaf3ff',borderRadius:12,display:'flex',alignItems:'center',justifyContent:'center',fontSize:18,fontWeight:700,color:S.blue,fontFamily:"'Sora',sans-serif",overflow:'hidden',flexShrink:0}}>
+                    {seller.avatar_url?<img src={seller.avatar_url} alt="" style={{width:'100%',height:'100%',objectFit:'cover'}}/>:seller.full_name?.charAt(0)?.toUpperCase()||'U'}
+                  </div>
+                  <div>
+                    <div style={{fontWeight:700,fontSize:14,color:S.navy,marginBottom:2}}>{seller.full_name||'Utilizator Reparo'}</div>
+                    <div style={{fontSize:12,color:S.muted}}>📍 {seller.city||listing.city}</div>
+                  </div>
+                </div>
+                <div style={{fontSize:12,color:S.muted,background:S.bg,borderRadius:8,padding:'8px 12px'}}>
+                  Membru din {new Date(seller.created_at).toLocaleDateString('ro-RO',{month:'long',year:'numeric'})}
+                </div>
+              </div>
+            )}
+
+            {/* Safety tips */}
+            <div style={{background:S.amberBg,borderRadius:16,border:'1px solid rgba(217,119,6,0.2)',padding:16}}>
+              <div style={{fontFamily:"'Sora',sans-serif",fontWeight:700,fontSize:13,color:S.amber,marginBottom:8}}>⚠️ Sfaturi siguranță</div>
+              {['Nu plăti în avans fără a vedea produsul','Verifică produsul înainte de tranzacție','Preferă întâlniri în locuri publice','Reparo nu garantează tranzacțiile'].map(tip=>(
+                <div key={tip} style={{fontSize:12,color:S.amber,marginBottom:4,display:'flex',gap:5}}>
+                  <span>•</span><span>{tip}</span>
+                </div>
+              ))}
+            </div>
+          </div>
         </div>
       </div>
-
-      {showAdd&&<AddListingModal
-        onClose={()=>setShowAdd(false)}
-        onAdd={(data)=>setListings(prev=>[{...data,listing_media:[]},  ...prev])}
-        user={user}
-        supabase={supabase}
-      />}
     </div>
   )
-}
-
-export default function ListingPage() {
-  return <Suspense><ListingsContent/></Suspense>
 }
