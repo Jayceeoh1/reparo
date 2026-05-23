@@ -236,14 +236,30 @@ function ListingsContent() {
   async function loadListings() {
     setLoading(true)
     let q = supabase.from('listings')
-      .select('id,title,price,city,category,condition,created_at,is_promoted,promoted_until,negotiable,parts_type,listing_media(url,is_cover)')
+      .select('id,title,price,city,category,condition,created_at,is_promoted,promoted_until,negotiable,parts_type,status')
       .eq('status','activ')
     if (activeCategory !== 'toate') q = q.eq('category', activeCategory)
     if (sortBy === 'pret_asc') q = q.order('price',{ascending:true})
     else if (sortBy === 'pret_desc') q = q.order('price',{ascending:false})
     else q = q.order('is_promoted',{ascending:false}).order('created_at',{ascending:false})
-    const {data} = await q.limit(80)
-    let results = data||[]
+    const {data, error} = await q.limit(80)
+    if (error) console.error('[listings query]', error.message)
+
+    // Load media separately - avoid 400 if listing_media table missing
+    let mediaMap = {}
+    if (data?.length) {
+      const {data:media} = await supabase.from('listing_media')
+        .select('listing_id,url,is_cover')
+        .in('listing_id', data.map(l=>l.id))
+      if (media) {
+        for (const m of media) {
+          if (!mediaMap[m.listing_id]) mediaMap[m.listing_id] = []
+          mediaMap[m.listing_id].push(m)
+        }
+      }
+    }
+
+    let results = (data||[]).map(l=>({...l, listing_media: mediaMap[l.id]||[]}))
     const now = new Date()
     results = results.map(l=>({...l,is_promoted:l.is_promoted&&(!l.promoted_until||new Date(l.promoted_until)>now)}))
     if (query) results = results.filter(l=>l.title.toLowerCase().includes(query.toLowerCase()))
