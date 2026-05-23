@@ -11,16 +11,16 @@ const S = {
 }
 
 const CATEGORIES = [
-  {key:'toate',label:'Toate categoriile',icon:'📦'},
-  {key:'piese-noi',label:'Piese noi',icon:'🔵'},
-  {key:'dezmembrari',label:'Dezmembrări',icon:'♻️'},
-  {key:'anvelope',label:'Anvelope & jante',icon:'⭕'},
-  {key:'accesorii',label:'Accesorii',icon:'🎯'},
-  {key:'electronice',label:'Electronice auto',icon:'💡'},
-  {key:'caroserie',label:'Caroserie',icon:'🚘'},
-  {key:'motoare',label:'Motoare & cutii',icon:'⚙️'},
-  {key:'unelte',label:'Unelte & utilaje',icon:'🛠️'},
-  {key:'altele',label:'Altele',icon:'📦'},
+  {key:'toate',label:'Toate categoriile',icon:'ti-layout-grid'},
+  {key:'piese-noi',label:'Piese noi',icon:'ti-box'},
+  {key:'dezmembrari',label:'Dezmembrări',icon:'ti-refresh'},
+  {key:'anvelope',label:'Anvelope & jante',icon:'ti-circle'},
+  {key:'accesorii',label:'Accesorii',icon:'ti-tool'},
+  {key:'electronice',label:'Electronice auto',icon:'ti-cpu'},
+  {key:'caroserie',label:'Caroserie',icon:'ti-car'},
+  {key:'motoare',label:'Motoare & cutii',icon:'ti-engine'},
+  {key:'unelte',label:'Unelte & utilaje',icon:'ti-hammer'},
+  {key:'altele',label:'Altele',icon:'ti-dots'},
 ]
 
 const CONDITIONS = [
@@ -399,7 +399,9 @@ function ListingsContent() {
                       </div>
                     )}
                     <div style={{height:150,background:'#f4f6f9',position:'relative',display:'flex',alignItems:'center',justifyContent:'center',overflow:'hidden'}}>
-                      {cover?<img src={cover} alt={l.title} style={{width:'100%',height:'100%',objectFit:'cover'}}/>:<span style={{fontSize:36}}>{CATEGORIES.find(c=>c.key===l.category)?.icon||'📦'}</span>}
+                      {cover?<img src={cover} alt={l.title} style={{width:'100%',height:'100%',objectFit:'cover'}}/>:(
+                        <i className={`ti ${CATEGORIES.find(c=>c.key===l.category)?.icon||'ti-box'}`} aria-hidden="true" style={{fontSize:36,color:'#9ca3af'}}/>
+                      )}
                       {cond&&<span style={{position:'absolute',top:6,left:6,fontSize:10,fontWeight:700,padding:'2px 7px',borderRadius:50,background:cond.bg,color:cond.color}}>{cond.label}</span>}
                       <button onClick={e=>{e.preventDefault();e.stopPropagation();setFavorites(prev=>{const n=new Set(prev);n.has(l.id)?n.delete(l.id):n.add(l.id);return n})}}
                         style={{position:'absolute',top:6,right:6,width:28,height:28,background:'rgba(255,255,255,0.92)',borderRadius:'50%',border:'none',cursor:'pointer',fontSize:13,display:'flex',alignItems:'center',justifyContent:'center'}}>
