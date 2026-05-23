@@ -437,7 +437,7 @@ function ListingsContent() {
                 const promoted = l.is_promoted
                 const daysAgo = Math.floor((Date.now()-new Date(l.created_at))/(86400000))
                 return (
-                  <a key={l.id} href={`/listing/\${l.id}`} className={`lst-card\${promoted?' lst-promoted':''}`}>
+                  <a key={l.id} href={`/listing/${l.id}`} className={`lst-card\${promoted?' lst-promoted':''}`}>
                     {promoted&&(
                       <div style={{background:'#f59e0b',display:'flex',alignItems:'center',justifyContent:'center',gap:4,padding:'3px 0'}}>
                         <svg width="9" height="9" viewBox="0 0 12 12" fill="white"><path d="M6 1l1.3 2.6 2.9.4-2.1 2 .5 2.9L6 7.5l-2.6 1.4.5-2.9-2.1-2 2.9-.4z"/></svg>
@@ -456,12 +456,12 @@ function ListingsContent() {
                     </div>
                     <div style={{padding:'10px 10px 12px'}}>
                       <div style={{fontWeight:800,fontSize:15,color:'#0a1f44',marginBottom:3}}>
-                        {l.price?`\${l.price.toLocaleString('ro-RO')} lei`:<span style={{color:'#6b7280',fontSize:13,fontWeight:400}}>Negociabil</span>}
+                        {l.price?`${l.price.toLocaleString('ro-RO')} lei`:<span style={{color:'#6b7280',fontSize:13,fontWeight:400}}>Negociabil</span>}
                       </div>
                       <div style={{fontSize:12,color:'#111827',lineHeight:1.4,marginBottom:6,display:'-webkit-box',WebkitLineClamp:2,WebkitBoxOrient:'vertical',overflow:'hidden'}}>{l.title}</div>
                       <div style={{fontSize:11,color:'#6b7280',display:'flex',justifyContent:'space-between'}}>
                         <span>📍 {l.city||'România'}</span>
-                        <span>{daysAgo===0?'Azi':daysAgo===1?'Ieri':`\${daysAgo}z`}</span>
+                        <span>{daysAgo===0?'Azi':daysAgo===1?'Ieri':`${daysAgo}z`}</span>
                       </div>
                     </div>
                   </a>
