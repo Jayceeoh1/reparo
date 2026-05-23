@@ -11,17 +11,30 @@ const S = {
 }
 
 const CATEGORIES = [
-  {key:'toate',label:'Toate categoriile',icon:'ti-layout-grid'},
-  {key:'piese-noi',label:'Piese noi',icon:'ti-box'},
-  {key:'dezmembrari',label:'Dezmembrări',icon:'ti-refresh'},
-  {key:'anvelope',label:'Anvelope & jante',icon:'ti-circle'},
-  {key:'accesorii',label:'Accesorii',icon:'ti-tool'},
-  {key:'electronice',label:'Electronice auto',icon:'ti-cpu'},
-  {key:'caroserie',label:'Caroserie',icon:'ti-car'},
-  {key:'motoare',label:'Motoare & cutii',icon:'ti-engine'},
-  {key:'unelte',label:'Unelte & utilaje',icon:'ti-hammer'},
-  {key:'altele',label:'Altele',icon:'ti-dots'},
+  {key:'toate',label:'Toate categoriile',color:'#1a56db'},
+  {key:'piese-noi',label:'Piese noi',color:'#1a56db'},
+  {key:'dezmembrari',label:'Dezmembrări',color:'#0F6E56'},
+  {key:'anvelope',label:'Anvelope & jante',color:'#854F0B'},
+  {key:'accesorii',label:'Accesorii',color:'#7c3aed'},
+  {key:'electronice',label:'Electronice auto',color:'#dc2626'},
+  {key:'caroserie',label:'Caroserie',color:'#db2777'},
+  {key:'motoare',label:'Motoare & cutii',color:'#16a34a'},
+  {key:'unelte',label:'Unelte & utilaje',color:'#d97706'},
+  {key:'altele',label:'Altele',color:'#6b7280'},
 ]
+
+const CAT_ICONS = {
+  'toate': <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>,
+  'piese-noi': <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg>,
+  'dezmembrari': <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"><path d="M21 12a9 9 0 0 1-9 9m9-9a9 9 0 0 0-9-9m9 9H3m9 9a9 9 0 0 1-9-9m9 9c1.66 0 3-4.03 3-9s-1.34-9-3-9m0 18c-1.66 0-3-4.03-3-9s1.34-9 3-9m-9 9a9 9 0 0 1 9-9"/></svg>,
+  'anvelope': <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="3"/></svg>,
+  'accesorii': <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>,
+  'electronice': <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"><rect x="4" y="4" width="16" height="16" rx="2"/><rect x="9" y="9" width="6" height="6"/><path d="M9 2v2M15 2v2M9 20v2M15 20v2M2 9h2M2 15h2M20 9h2M20 15h2"/></svg>,
+  'caroserie': <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"><path d="M5 17H3a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v5"/><circle cx="15.5" cy="17.5" r="2.5"/><circle cx="5.5" cy="17.5" r="2.5"/></svg>,
+  'motoare': <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"><circle cx="12" cy="12" r="3"/><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/></svg>,
+  'unelte': <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>,
+  'altele': <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/><circle cx="5" cy="12" r="1"/></svg>,
+}
 
 const CONDITIONS = [
   {key:'nou',label:'Nou',bg:'#dcfce7',color:'#16a34a'},
@@ -400,7 +413,7 @@ function ListingsContent() {
                     )}
                     <div style={{height:150,background:'#f4f6f9',position:'relative',display:'flex',alignItems:'center',justifyContent:'center',overflow:'hidden'}}>
                       {cover?<img src={cover} alt={l.title} style={{width:'100%',height:'100%',objectFit:'cover'}}/>:(
-                        <i className={`ti ${CATEGORIES.find(c=>c.key===l.category)?.icon||'ti-box'}`} aria-hidden="true" style={{fontSize:36,color:'#9ca3af'}}/>
+                        <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="#d1d5db" strokeWidth="1.5" strokeLinecap="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg>
                       )}
                       {cond&&<span style={{position:'absolute',top:6,left:6,fontSize:10,fontWeight:700,padding:'2px 7px',borderRadius:50,background:cond.bg,color:cond.color}}>{cond.label}</span>}
                       <button onClick={e=>{e.preventDefault();e.stopPropagation();setFavorites(prev=>{const n=new Set(prev);n.has(l.id)?n.delete(l.id):n.add(l.id);return n})}}
