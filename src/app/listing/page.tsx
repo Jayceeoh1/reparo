@@ -502,8 +502,17 @@ function ListingsContent() {
                               await supabase.from('favorites').delete().eq('id',favIds[l.id])
                               setFavIds(prev=>{const n={...prev};delete n[l.id];return n})
                             } else {
-                              const {data} = await supabase.from('favorites').upsert({user_id:user.id,listing_id:l.id,type:'listing'}).select('id').single()
-                              if (data) setFavIds(prev=>({...prev,[l.id]:data.id}))
+                              let favRowId = null
+                              // Try insert first; if duplicate, fetch existing row
+                              const {data:ins, error:insErr} = await supabase.from('favorites').insert({user_id:user.id,listing_id:l.id,type:'listing'}).select('id').single()
+                              if (ins) {
+                                favRowId = ins.id
+                              } else {
+                                // Row already exists (duplicate) — fetch it
+                                const {data:existing} = await supabase.from('favorites').select('id').eq('user_id',user.id).eq('listing_id',l.id).eq('type','listing').single()
+                                if (existing) favRowId = existing.id
+                              }
+                              if (favRowId) setFavIds(prev=>({...prev,[l.id]:favRowId}))
                             }
                           } else {
                             // Save to localStorage for guests
