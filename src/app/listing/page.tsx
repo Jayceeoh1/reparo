@@ -216,6 +216,7 @@ function ListingsContent() {
   const [query, setQuery] = useState('')
   const [user, setUser] = useState(null)
   const [favorites, setFavorites] = useState(new Set())
+  const [favIds, setFavIds] = useState({}) // listingId -> favoriteRowId
   const [filterPretMin, setFilterPretMin] = useState('')
   const [filterPretMax, setFilterPretMax] = useState('')
   const [filterJudet, setFilterJudet] = useState('')
@@ -224,7 +225,19 @@ function ListingsContent() {
   const supabase = createClient()
 
   useEffect(() => {
-    supabase.auth.getUser().then(({data:{user}})=>setUser(user))
+    supabase.auth.getUser().then(async ({data:{user}})=>{
+      setUser(user)
+      if (user) {
+        const {data:favs} = await supabase.from('favorites').select('id,listing_id').eq('user_id',user.id).eq('type','listing')
+        if (favs?.length) {
+          setFavorites(new Set(favs.map(f=>f.listing_id)))
+          const map = {}; favs.forEach(f=>{ map[f.listing_id]=f.id }); setFavIds(map)
+        }
+      } else {
+        // localStorage fallback for guests
+        try { const saved = JSON.parse(localStorage.getItem('reparo_favs')||'[]'); setFavorites(new Set(saved)) } catch{}
+      }
+    })
     if (typeof window !== 'undefined') {
       const p = new URLSearchParams(window.location.search)
       if (p.get('categorie')) setActiveCategory(p.get('categorie'))
@@ -479,7 +492,28 @@ function ListingsContent() {
                         <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="#d1d5db" strokeWidth="1.5" strokeLinecap="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg>
                       )}
                       {cond&&<span style={{position:'absolute',top:6,left:6,fontSize:10,fontWeight:700,padding:'2px 7px',borderRadius:50,background:cond.bg,color:cond.color}}>{cond.label}</span>}
-                      <button onClick={e=>{e.preventDefault();e.stopPropagation();setFavorites(prev=>{const n=new Set(prev);n.has(l.id)?n.delete(l.id):n.add(l.id);return n})}}
+                      <button onClick={async e=>{
+                          e.preventDefault();e.stopPropagation()
+                          const isFav = favorites.has(l.id)
+                          // Optimistic update
+                          setFavorites(prev=>{const n=new Set(prev);isFav?n.delete(l.id):n.add(l.id);return n})
+                          if (user) {
+                            if (isFav) {
+                              await supabase.from('favorites').delete().eq('id',favIds[l.id])
+                              setFavIds(prev=>{const n={...prev};delete n[l.id];return n})
+                            } else {
+                              const {data} = await supabase.from('favorites').upsert({user_id:user.id,listing_id:l.id,type:'listing'}).select('id').single()
+                              if (data) setFavIds(prev=>({...prev,[l.id]:data.id}))
+                            }
+                          } else {
+                            // Save to localStorage for guests
+                            setFavorites(prev=>{
+                              const arr = [...prev]
+                              try { localStorage.setItem('reparo_favs', JSON.stringify(arr)) } catch{}
+                              return prev
+                            })
+                          }
+                        }}
                         style={{position:'absolute',top:6,right:6,width:28,height:28,background:'rgba(255,255,255,0.92)',borderRadius:'50%',border:'none',cursor:'pointer',fontSize:13,display:'flex',alignItems:'center',justifyContent:'center'}}>
                         {favorites.has(l.id)?'❤️':'🤍'}
                       </button>
