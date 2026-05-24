@@ -94,13 +94,14 @@ export default function HomeClient() {
       await supabase.from('favorites').delete()
         .eq('user_id', user.id)
         .eq(type === 'service' ? 'service_id' : 'listing_id', id)
+        .eq('type', type)
     } else {
-      await supabase.from('favorites').upsert({
+      const {error} = await supabase.from('favorites').insert({
         user_id: user.id,
         [type === 'service' ? 'service_id' : 'listing_id']: id,
         type,
-        created_at: new Date().toISOString()
       })
+      // Dacă există deja (duplicate), ignorăm eroarea
     }
   }
 
