@@ -288,7 +288,7 @@ function ListingsContent() {
   return (
     <div style={{minHeight:'100vh',background:'#f4f6f9',fontFamily:"'DM Sans',sans-serif"}}>
       <style dangerouslySetInnerHTML={{__html:`
-        .lst-card{text-decoration:none;color:inherit;display:block;background:#fff;border-radius:8px;border:1px solid #e5e7eb;overflow:hidden;transition:box-shadow .15s}
+        .lst-card{text-decoration:none;color:inherit;display:block;background:#fff;border-radius:8px;border:1px solid #e5e7eb;overflow:hidden;transition:box-shadow .15s}.lst-card *{text-decoration:none!important}
         .lst-card:hover{box-shadow:0 4px 16px rgba(26,86,219,0.1);border-color:#1a56db}
         .lst-promoted{border:2px solid #f59e0b!important;box-shadow:0 2px 12px rgba(245,158,11,0.15)!important}
         .cat-item{display:flex;align-items:center;gap:8px;padding:9px 12px;border-radius:8px;cursor:pointer;font-size:13px;color:#6b7280;transition:all .15s;border:none;background:none;width:100%;text-align:left;font-family:'DM Sans',sans-serif}
