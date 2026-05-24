@@ -83,25 +83,35 @@ export default function HomeClient() {
 
   async function toggleFav(id: string, type: string = 'service') {
     if (!user) { window.location.href = '/auth/login'; return }
+    const col = type === 'service' ? 'service_id' : 'listing_id'
     const isFav = favorites.has(id)
-    // Optimistic update
-    setFavorites(prev => {
-      const n = new Set(prev)
-      isFav ? n.delete(id) : n.add(id)
-      return n
-    })
+
+    // Optimistic UI
+    setFavorites(prev => { const n = new Set(prev); isFav ? n.delete(id) : n.add(id); return n })
+
     if (isFav) {
-      await supabase.from('favorites').delete()
-        .eq('user_id', user.id)
-        .eq(type === 'service' ? 'service_id' : 'listing_id', id)
-        .eq('type', type)
+      // Șterge din DB
+      const { error } = await supabase.from('favorites').delete()
+        .eq('user_id', user.id).eq(col, id).eq('type', type)
+      if (error) {
+        // Revert dacă a eșuat
+        setFavorites(prev => { const n = new Set(prev); n.add(id); return n })
+      }
     } else {
-      const {error} = await supabase.from('favorites').insert({
-        user_id: user.id,
-        [type === 'service' ? 'service_id' : 'listing_id']: id,
-        type,
-      })
-      // Dacă există deja (duplicate), ignorăm eroarea
+      // Verifică dacă există deja înainte să insereze
+      const { data: existing } = await supabase.from('favorites')
+        .select('id').eq('user_id', user.id).eq(col, id).eq('type', type).maybeSingle()
+      if (!existing) {
+        const { error } = await supabase.from('favorites').insert({
+          user_id: user.id,
+          [col]: id,
+          type,
+        })
+        if (error) {
+          // Revert dacă a eșuat
+          setFavorites(prev => { const n = new Set(prev); n.delete(id); return n })
+        }
+      }
     }
   }
 
@@ -272,7 +282,7 @@ export default function HomeClient() {
                     )}
                     <div className="listing-card-img" style={{ height: promoted ? 110 : 130, background: promoted ? '#fef3c7' : '#eaf3ff', position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' }}>
                       {coverImg ? <img src={coverImg} alt={l.title} style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : <span style={{ fontSize: 40 }}>📦</span>}
-                      <button onClick={e => { e.stopPropagation(); toggleFav(l.id) }}
+                      <button onClick={e => { e.stopPropagation(); toggleFav(l.id, 'listing') }}
                         style={{ position: 'absolute', top: 8, right: 8, width: 28, height: 28, background: 'rgba(255,255,255,0.92)', borderRadius: '50%', border: 'none', cursor: 'pointer', fontSize: 14, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                         {favorites.has(l.id) ? '❤️' : '🤍'}
                       </button>

@@ -499,20 +499,23 @@ function ListingsContent() {
                           setFavorites(prev=>{const n=new Set(prev);isFav?n.delete(l.id):n.add(l.id);return n})
                           if (user) {
                             if (isFav) {
-                              await supabase.from('favorites').delete().eq('id',favIds[l.id])
+                              // Șterge după listing_id+user_id (mai sigur decât după favIds[id])
+                              await supabase.from('favorites').delete()
+                                .eq('user_id',user.id).eq('listing_id',l.id).eq('type','listing')
                               setFavIds(prev=>{const n={...prev};delete n[l.id];return n})
                             } else {
-                              let favRowId = null
-                              // Try insert first; if duplicate, fetch existing row
-                              const {data:ins, error:insErr} = await supabase.from('favorites').insert({user_id:user.id,listing_id:l.id,type:'listing'}).select('id').single()
-                              if (ins) {
-                                favRowId = ins.id
+                              // Check if exists first
+                              const {data:ex} = await supabase.from('favorites').select('id')
+                                .eq('user_id',user.id).eq('listing_id',l.id).eq('type','listing').maybeSingle()
+                              if (ex) {
+                                setFavIds(prev=>({...prev,[l.id]:ex.id}))
                               } else {
-                                // Row already exists (duplicate) — fetch it
-                                const {data:existing} = await supabase.from('favorites').select('id').eq('user_id',user.id).eq('listing_id',l.id).eq('type','listing').single()
-                                if (existing) favRowId = existing.id
+                                const {data:ins} = await supabase.from('favorites')
+                                  .insert({user_id:user.id,listing_id:l.id,type:'listing'})
+                                  .select('id').single()
+                                if (ins) setFavIds(prev=>({...prev,[l.id]:ins.id}))
+                                else setFavorites(prev=>{const n=new Set(prev);n.delete(l.id);return n})
                               }
-                              if (favRowId) setFavIds(prev=>({...prev,[l.id]:favRowId}))
                             }
                           } else {
                             // Save to localStorage for guests
