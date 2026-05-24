@@ -446,7 +446,7 @@ export default function ServiceDashboard() {
           .eq('service_id', svc.id)
           .order('created_at', { ascending: false })
           .limit(1)
-          .single()
+          .maybeSingle()
         if (verReq) {
           setExistingRequest(verReq)
           if (verReq.status !== 'rejected') setVerifyDone(true)
@@ -530,6 +530,7 @@ export default function ServiceDashboard() {
     {name:'Oferte trimise',icon:'💬',badge:offers.filter(o=>o.status==='trimisa').length||null},
     {name:'Anunțuri',icon:'📦',badge:null},
     {name:'Recenzii',icon:'⭐',badge:reviews.length||null},
+    {name:'Analytics',icon:'📊',badge:null},
     {name:'Setări',icon:'⚙️',badge:null},
   ]
 
@@ -567,6 +568,7 @@ export default function ServiceDashboard() {
           .dash-hero{padding:16px!important;border-radius:14px!important}
           .dash-hero h1{font-size:18px!important}
           .dash-stats{grid-template-columns:repeat(2,1fr)!important;gap:8px!important}
+          .analytics-grid{grid-template-columns:1fr!important}
           .dash-stat{padding:12px!important}
           .dash-stat-val{font-size:20px!important}
           .dash-card{padding:14px!important}
@@ -2063,6 +2065,178 @@ export default function ServiceDashboard() {
               }
             </div>
           )}
+
+          {/* ══ ANALYTICS ══ */}
+          {tab==='Analytics'&&(()=>{
+            const now = new Date()
+            const thisMonth = now.getMonth()
+            const thisYear = now.getFullYear()
+            const last30 = new Date(now); last30.setDate(last30.getDate()-30)
+            const last7 = new Date(now); last7.setDate(last7.getDate()-7)
+
+            // Appointments stats
+            const aptsTotal = appointments.length
+            const aptsThisMonth = appointments.filter(a=>{ const d=new Date(a.scheduled_date); return d.getMonth()===thisMonth&&d.getFullYear()===thisYear }).length
+            const aptsFinished = appointments.filter(a=>(aptStatuses[a.id]||a.status)==='finalizata').length
+            const aptsConvRate = aptsTotal>0?Math.round(aptsFinished/aptsTotal*100):0
+
+            // Offers stats
+            const offersTotal = offers.length
+            const offersAccepted = offers.filter(o=>o.status==='acceptata').length
+            const offersRate = offersTotal>0?Math.round(offersAccepted/offersTotal*100):0
+            const avgRevenue = offers.filter(o=>o.status==='acceptata'&&o.price_total).reduce((s,o,_,a)=>s+(o.price_total/a.length),0)
+
+            // Reviews stats
+            const avgRating = reviews.length>0?(reviews.reduce((s,r)=>s+r.rating,0)/reviews.length).toFixed(1):null
+            const ratingDist = [5,4,3,2,1].map(r=>({r,count:reviews.filter(rv=>rv.rating===r).length}))
+
+            // Monthly appointments (last 6 months)
+            const monthLabels = []
+            const monthData = []
+            for (let i=5; i>=0; i--) {
+              const d = new Date(thisYear, thisMonth-i, 1)
+              const m = d.getMonth(); const y = d.getFullYear()
+              monthLabels.push(d.toLocaleDateString('ro-RO',{month:'short'}))
+              monthData.push(appointments.filter(a=>{ const ad=new Date(a.scheduled_date); return ad.getMonth()===m&&ad.getFullYear()===y }).length)
+            }
+            const maxMonth = Math.max(...monthData, 1)
+
+            // Status breakdown
+            const aptByStatus = ['in_asteptare','confirmata','in_lucru','finalizata','anulata'].map(s=>({
+              s, count: appointments.filter(a=>(aptStatuses[a.id]||a.status)===s).length,
+              ...APT_STATUS[s]
+            }))
+
+            const StatCard = ({icon,label,value,sub,accent,accentBg,big}) => (
+              <div style={{background:S.white,borderRadius:16,padding:'18px 20px',border:`1px solid ${S.border}`,boxShadow:'0 2px 8px rgba(10,31,68,0.04)'}}>
+                <div style={{display:'flex',alignItems:'center',gap:10,marginBottom:12}}>
+                  <div style={{width:36,height:36,background:accentBg||'#eaf3ff',borderRadius:10,display:'flex',alignItems:'center',justifyContent:'center',fontSize:16}}>{icon}</div>
+                  <div style={{fontSize:11,fontWeight:700,color:S.muted,textTransform:'uppercase',letterSpacing:.8,fontFamily:"'Sora',sans-serif"}}>{label}</div>
+                </div>
+                <div style={{fontFamily:"'Sora',sans-serif",fontWeight:800,fontSize:big?32:26,color:accent||S.navy}}>{value||'—'}</div>
+                {sub&&<div style={{fontSize:11,color:S.muted,marginTop:4}}>{sub}</div>}
+              </div>
+            )
+
+            return (
+              <div>
+                <h1 style={{fontFamily:"'Sora',sans-serif",fontWeight:800,fontSize:22,color:S.navy,marginBottom:6}}>Analytics & Performanță</h1>
+                <p style={{fontSize:14,color:S.muted,marginBottom:24}}>Statistici despre activitatea și performanța service-ului tău.</p>
+
+                {/* KPI Cards */}
+                <div style={{display:'grid',gridTemplateColumns:'repeat(4,1fr)',gap:12,marginBottom:20}} className="dash-stats">
+                  <StatCard icon="📅" label="Programări total" value={aptsTotal} sub={`${aptsThisMonth} luna aceasta`} accent={S.blue} accentBg="#eaf3ff"/>
+                  <StatCard icon="✅" label="Rată finalizare" value={`${aptsConvRate}%`} sub={`${aptsFinished} finalizate`} accent={S.green} accentBg={S.greenBg}/>
+                  <StatCard icon="💬" label="Rată acceptare" value={`${offersRate}%`} sub={`${offersAccepted}/${offersTotal} oferte`} accent={S.purple} accentBg={S.purpleBg}/>
+                  <StatCard icon="⭐" label="Rating mediu" value={avgRating} sub={`${reviews.length} recenzii`} accent={S.amber} accentBg={S.amberBg}/>
+                </div>
+
+                <div style={{display:'grid',gridTemplateColumns:'2fr 1fr',gap:16,marginBottom:16}} className="analytics-grid">
+
+                  {/* Grafic programări lunare */}
+                  <div style={{...card()}}>
+                    <h3 style={{fontFamily:"'Sora',sans-serif",fontWeight:700,fontSize:15,color:S.navy,marginBottom:18}}>📈 Programări — ultimele 6 luni</h3>
+                    <div style={{display:'flex',alignItems:'flex-end',gap:8,height:120,padding:'0 4px'}}>
+                      {monthData.map((v,i)=>(
+                        <div key={i} style={{flex:1,display:'flex',flexDirection:'column',alignItems:'center',gap:6}}>
+                          <div style={{fontSize:11,fontWeight:700,color:S.blue,fontFamily:"'Sora',sans-serif"}}>{v||''}</div>
+                          <div style={{width:'100%',background:`linear-gradient(180deg,${S.blue},${S.blueLight})`,borderRadius:'6px 6px 0 0',height:`${Math.max(v/maxMonth*90,v>0?8:2)}px`,minHeight:2,transition:'height .3s'}}/>
+                          <div style={{fontSize:10,color:S.muted,textTransform:'uppercase'}}>{monthLabels[i]}</div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Distribuție rating */}
+                  <div style={{...card()}}>
+                    <h3 style={{fontFamily:"'Sora',sans-serif",fontWeight:700,fontSize:15,color:S.navy,marginBottom:16}}>⭐ Distribuție rating</h3>
+                    {reviews.length===0 ? (
+                      <div style={{textAlign:'center',padding:'20px 0',color:S.muted,fontSize:13}}>Nicio recenzie încă</div>
+                    ) : ratingDist.map(({r,count})=>(
+                      <div key={r} style={{display:'flex',alignItems:'center',gap:8,marginBottom:8}}>
+                        <div style={{fontSize:12,fontWeight:600,color:S.amber,width:12,textAlign:'center'}}>{r}</div>
+                        <div style={{fontSize:10}}>⭐</div>
+                        <div style={{flex:1,background:S.bg,borderRadius:50,height:8,overflow:'hidden'}}>
+                          <div style={{width:`${reviews.length>0?count/reviews.length*100:0}%`,height:'100%',background:`linear-gradient(90deg,${S.amber},${S.yellow})`,borderRadius:50,transition:'width .4s'}}/>
+                        </div>
+                        <div style={{fontSize:11,color:S.muted,width:18,textAlign:'right'}}>{count}</div>
+                      </div>
+                    ))}
+                    {avgRating&&<div style={{marginTop:14,paddingTop:14,borderTop:`1px solid ${S.border}`,textAlign:'center'}}><span style={{fontFamily:"'Sora',sans-serif",fontWeight:800,fontSize:28,color:S.amber}}>{avgRating}</span><span style={{fontSize:12,color:S.muted}}> / 5</span></div>}
+                  </div>
+                </div>
+
+                <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:16,marginBottom:16}}>
+
+                  {/* Status programări */}
+                  <div style={{...card()}}>
+                    <h3 style={{fontFamily:"'Sora',sans-serif",fontWeight:700,fontSize:15,color:S.navy,marginBottom:16}}>📋 Status programări</h3>
+                    {aptByStatus.filter(s=>s.count>0).length===0 ? (
+                      <div style={{textAlign:'center',padding:'20px 0',color:S.muted,fontSize:13}}>Nicio programare încă</div>
+                    ) : aptByStatus.map(({s,count,label,bg,color})=>(
+                      <div key={s} style={{display:'flex',alignItems:'center',justifyContent:'space-between',padding:'10px 12px',background:S.bg,borderRadius:10,marginBottom:6}}>
+                        <div style={{display:'flex',alignItems:'center',gap:8}}>
+                          <div style={{width:10,height:10,borderRadius:'50%',background:color}}/>
+                          <span style={{fontSize:13,color:S.text}}>{label}</span>
+                        </div>
+                        <div style={{display:'flex',alignItems:'center',gap:8}}>
+                          <div style={{width:60,background:S.border,borderRadius:50,height:6,overflow:'hidden'}}>
+                            <div style={{width:`${aptsTotal>0?count/aptsTotal*100:0}%`,height:'100%',background:color,borderRadius:50}}/>
+                          </div>
+                          <span style={{fontFamily:"'Sora',sans-serif",fontWeight:700,fontSize:13,color:S.navy,minWidth:20}}>{count}</span>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+
+                  {/* Oferte & conversii */}
+                  <div style={{...card()}}>
+                    <h3 style={{fontFamily:"'Sora',sans-serif",fontWeight:700,fontSize:15,color:S.navy,marginBottom:16}}>💬 Performanță oferte</h3>
+                    <div style={{display:'flex',flexDirection:'column',gap:10}}>
+                      {[
+                        {label:'Oferte trimise',value:offersTotal,color:S.blue,accentBg:'#eaf3ff'},
+                        {label:'Oferte acceptate',value:offersAccepted,color:S.green,accentBg:S.greenBg},
+                        {label:'Oferte refuzate',value:offers.filter(o=>o.status==='refuzata').length,color:S.red,accentBg:S.redBg},
+                        {label:'Oferte active',value:offers.filter(o=>o.status==='trimisa').length,color:S.amber,accentBg:S.amberBg},
+                      ].map(({label,value,color,accentBg})=>(
+                        <div key={label} style={{display:'flex',alignItems:'center',justifyContent:'space-between',padding:'10px 14px',background:accentBg,borderRadius:10}}>
+                          <span style={{fontSize:13,color:S.text}}>{label}</span>
+                          <span style={{fontFamily:"'Sora',sans-serif",fontWeight:800,fontSize:18,color}}>{value}</span>
+                        </div>
+                      ))}
+                      {avgRevenue>0&&(
+                        <div style={{marginTop:4,padding:'12px 14px',background:S.navy,borderRadius:12,textAlign:'center'}}>
+                          <div style={{fontSize:11,color:'rgba(255,255,255,0.5)',marginBottom:4}}>Valoare medie ofertă acceptată</div>
+                          <div style={{fontFamily:"'Sora',sans-serif",fontWeight:800,fontSize:20,color:'#fff'}}>{Math.round(avgRevenue).toLocaleString()} RON</div>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Recenzii recente */}
+                {reviews.length>0&&(
+                  <div style={{...card()}}>
+                    <h3 style={{fontFamily:"'Sora',sans-serif",fontWeight:700,fontSize:15,color:S.navy,marginBottom:14}}>💬 Recenzii recente</h3>
+                    {reviews.slice(0,3).map(r=>(
+                      <div key={r.id} style={{display:'flex',gap:12,padding:'12px',background:S.bg,borderRadius:12,marginBottom:8}}>
+                        <div style={{flexShrink:0}}>
+                          {'⭐'.repeat(r.rating)}<span style={{color:S.bg}}>{'⭐'.repeat(5-r.rating)}</span>
+                        </div>
+                        <div>
+                          <div style={{fontSize:13,color:S.text,lineHeight:1.5}}>{r.comment||r.title||'Fără comentariu'}</div>
+                          <div style={{fontSize:11,color:S.muted,marginTop:4}}>{new Date(r.created_at).toLocaleDateString('ro-RO')}</div>
+                        </div>
+                      </div>
+                    ))}
+                    <button onClick={()=>setTab('Recenzii')} style={{...btn('ghost'),padding:'7px 14px',fontSize:12,marginTop:4}}>
+                      Vezi toate recenziile →
+                    </button>
+                  </div>
+                )}
+              </div>
+            )
+          })()}
 
           {/* ══ SETARI ══ */}
           {tab==='Setări'&&(
