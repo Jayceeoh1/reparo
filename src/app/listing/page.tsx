@@ -294,7 +294,22 @@ function ListingsContent() {
         .cat-item{display:flex;align-items:center;gap:8px;padding:9px 12px;border-radius:8px;cursor:pointer;font-size:13px;color:#6b7280;transition:all .15s;border:none;background:none;width:100%;text-align:left;font-family:'DM Sans',sans-serif}
         .cat-item:hover,.cat-item.active{background:#eaf3ff;color:#1a56db}
         .cat-item.active{font-weight:700}
-        .lst-sidebar{display:flex!important;flex-direction:column!important} @media(max-width:768px){.lst-layout{flex-direction:column!important}.lst-sidebar{display:none!important}.lst-grid{grid-template-columns:repeat(2,1fr)!important;gap:8px!important}}
+        .lst-sidebar{display:flex!important;flex-direction:column!important}
+        .cat-chips{display:none}
+        .lst-topbar-add{display:flex}
+        @media(max-width:480px){
+          .lst-topbar-add{display:none!important}
+          .lst-topbar-sort{display:none!important}
+        }
+        @media(max-width:768px){
+          .lst-layout{flex-direction:column!important}
+          .lst-sidebar{display:none!important}
+          .lst-grid{grid-template-columns:repeat(2,1fr)!important;gap:8px!important}
+          .cat-chips{display:flex!important;gap:8px;overflow-x:auto;padding:10px 16px 8px;scrollbar-width:none;-webkit-overflow-scrolling:touch;background:#fff;border-bottom:1px solid #e5e7eb}
+          .cat-chips::-webkit-scrollbar{display:none}
+          .cat-chip{flex-shrink:0;display:inline-flex;align-items:center;gap:6px;padding:7px 14px;border-radius:50px;font-size:12px;font-weight:600;cursor:pointer;border:1.5px solid #e5e7eb;background:#fff;color:#6b7280;font-family:'DM Sans',sans-serif;white-space:nowrap;transition:all .15s}
+          .cat-chip.active{background:#eaf3ff;border-color:#1a56db;color:#1a56db}
+        }
       `}}/>
 
       {/* TOP BAR */}
@@ -313,13 +328,13 @@ function ListingsContent() {
             Filtre {activeFiltersCount>0&&<span style={{background:'#1a56db',color:'#fff',borderRadius:'50%',width:18,height:18,display:'inline-flex',alignItems:'center',justifyContent:'center',fontSize:10,fontWeight:700}}>{activeFiltersCount}</span>}
           </button>
           <select value={sortBy} onChange={e=>setSortBy(e.target.value)}
-            style={{padding:'9px 14px',border:'1.5px solid #e5e7eb',borderRadius:50,fontSize:13,background:'#fff',color:'#0a1f44',fontFamily:"'DM Sans',sans-serif",outline:'none',cursor:'pointer',flexShrink:0}}>
+            className="lst-topbar-sort" style={{padding:'9px 14px',border:'1.5px solid #e5e7eb',borderRadius:50,fontSize:13,background:'#fff',color:'#0a1f44',fontFamily:"'DM Sans',sans-serif",outline:'none',cursor:'pointer',flexShrink:0}}>
             <option value="recent">Cele mai recente</option>
             <option value="pret_asc">Preț ↑</option>
             <option value="pret_desc">Preț ↓</option>
           </select>
           <button onClick={()=>user?setShowAdd(true):window.location.href='/auth/login'}
-            style={{display:'flex',alignItems:'center',gap:6,padding:'10px 18px',background:'#f59e0b',color:'#fff',border:'none',borderRadius:50,fontSize:13,fontWeight:700,cursor:'pointer',fontFamily:"'Sora',sans-serif",whiteSpace:'nowrap',flexShrink:0}}>
+            className="lst-topbar-add" style={{display:'flex',alignItems:'center',gap:6,padding:'10px 18px',background:'#f59e0b',color:'#fff',border:'none',borderRadius:50,fontSize:13,fontWeight:700,cursor:'pointer',fontFamily:"'Sora',sans-serif",whiteSpace:'nowrap',flexShrink:0}}>
             + Adaugă anunț
           </button>
         </div>
@@ -377,6 +392,21 @@ function ListingsContent() {
           </div>
         </div>
       )}
+
+      {/* CATEGORY CHIPS — mobile only */}
+      <div className="cat-chips">
+        {CATEGORIES.map(c=>(
+          <button key={c.key} onClick={()=>setActiveCategory(c.key)}
+            className={`cat-chip${activeCategory===c.key?' active':''}`}
+            style={activeCategory===c.key?{borderColor:c.color,color:c.color,background:'#eaf3ff'}:{}}>
+            <CatIcon k={c.key} color={activeCategory===c.key?c.color:'#9ca3af'}/>
+            {c.key==='toate'?'Toate':c.label}
+          </button>
+        ))}
+        <a href="/piese-oferta" className="cat-chip" style={{borderColor:'#854F0B',color:'#854F0B',background:'#fef3c7',flexShrink:0}}>
+          ⚡ Cere ofertă
+        </a>
+      </div>
 
       <div style={{maxWidth:1200,margin:'0 auto',padding:'16px',display:'flex',gap:16,alignItems:'flex-start'}} className="lst-layout">
         {/* SIDEBAR */}
