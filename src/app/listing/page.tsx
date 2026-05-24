@@ -467,7 +467,7 @@ function ListingsContent() {
                 const promoted = l.is_promoted
                 const daysAgo = Math.floor((Date.now()-new Date(l.created_at))/(86400000))
                 return (
-                  <a key={l.id} href={`/listing/${l.id}`} className={`lst-card\${promoted?' lst-promoted':''}`}>
+                  <a key={l.id} href={`/listing/${l.id}`} className={`lst-card${promoted?' lst-promoted':''}`}>
                     {promoted&&(
                       <div style={{background:'#f59e0b',display:'flex',alignItems:'center',justifyContent:'center',gap:4,padding:'3px 0'}}>
                         <svg width="9" height="9" viewBox="0 0 12 12" fill="white"><path d="M6 1l1.3 2.6 2.9.4-2.1 2 .5 2.9L6 7.5l-2.6 1.4.5-2.9-2.1-2 2.9-.4z"/></svg>
