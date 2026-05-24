@@ -410,7 +410,7 @@ function ListingsContent() {
 
       <div style={{maxWidth:1200,margin:'0 auto',padding:'16px',display:'flex',gap:16,alignItems:'flex-start'}} className="lst-layout">
         {/* SIDEBAR */}
-        <div style={{width:210,flexShrink:0,background:'#fff',borderRadius:12,border:'.5px solid #e5e7eb',padding:'10px 8px',position:'sticky',top:70}}>
+        <div className="lst-sidebar" style={{width:210,flexShrink:0,background:'#fff',borderRadius:12,border:'.5px solid #e5e7eb',padding:'10px 8px',position:'sticky',top:70}}>
           <div style={{fontSize:10,fontWeight:600,color:'#9ca3af',textTransform:'uppercase',letterSpacing:'.08em',padding:'0 8px 8px'}}>Categorii</div>
           {CATEGORIES.map(c=>{
             const isActive = activeCategory===c.key
