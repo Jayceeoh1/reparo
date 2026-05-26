@@ -558,6 +558,7 @@ export default function ServiceDashboard() {
         .nav-link:hover{color:${S.navy}!important}
         .card-hover:hover{border-color:${S.blueLight}!important;box-shadow:0 4px 20px rgba(26,86,219,0.1)!important}
         .apt-btn:hover{border-color:${S.blue}!important;color:${S.blue}!important}
+        .dash-hamburger{display:none!important}
         @media(max-width:768px){
           .dash-main{padding:14px 12px!important;padding-bottom:100px!important}
           .apt-layout{grid-template-columns:1fr!important}
@@ -586,7 +587,6 @@ export default function ServiceDashboard() {
           .gallery-grid{grid-template-columns:repeat(2,1fr)!important}
           .req-modal-overlay{display:flex!important}
         }
-        .dash-hamburger{display:none!important}
         @media(max-width:480px){
           .dash-stats{grid-template-columns:1fr 1fr!important}
           .dash-hero-btns{flex-direction:column!important;gap:8px!important}
