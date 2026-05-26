@@ -595,7 +595,7 @@ export default function ServiceDashboard() {
 
       {/* TOP BAR */}
       <div style={{background:'#0a1f44',height:56,display:'flex',alignItems:'center',padding:'0 24px',position:'sticky',top:0,zIndex:100,gap:12}}>
-        <button onClick={()=>setSidebarOpen(o=>!o)} className="dash-hamburger" style={{background:'none',border:'none',cursor:'pointer',padding:4,display:'flex',flexDirection:'column',gap:4,flexShrink:0}}>
+        <button onClick={()=>setSidebarOpen(o=>!o)} className="dash-hamburger" style={{background:'none',border:'none',cursor:'pointer',padding:4,flexDirection:'column',gap:4,flexShrink:0}}>
           {[0,1,2].map(i=><span key={i} style={{display:'block',width:18,height:2,background:'rgba(255,255,255,0.7)',borderRadius:2}}/>)}
         </button>
         <a href="/home" style={{display:'flex',alignItems:'center',gap:7,textDecoration:'none',flexShrink:0}}>
