@@ -564,7 +564,7 @@ export default function ServiceDashboard() {
           .dash-sidebar{transform:translateX(-100%);position:fixed!important;z-index:200!important;height:100vh!important;top:0!important;width:260px!important;transition:transform .25s ease!important}
           .dash-sidebar.open{transform:translateX(0)!important}
           .dash-overlay{display:block!important}
-          .dash-hamburger{display:none!important}
+          .dash-hamburger{display:flex!important}
           .dash-hero{padding:16px!important;border-radius:14px!important}
           .dash-hero h1{font-size:18px!important}
           .dash-stats{grid-template-columns:repeat(2,1fr)!important;gap:8px!important}
@@ -586,7 +586,7 @@ export default function ServiceDashboard() {
           .gallery-grid{grid-template-columns:repeat(2,1fr)!important}
           .req-modal-overlay{display:flex!important}
         }
-        .dash-hamburger{display:flex!important}
+        .dash-hamburger{display:none!important}
         @media(max-width:480px){
           .dash-stats{grid-template-columns:1fr 1fr!important}
           .dash-hero-btns{flex-direction:column!important;gap:8px!important}
