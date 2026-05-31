@@ -13,7 +13,6 @@ const inp = {width:'100%',padding:'12px 16px',border:`1.5px solid ${S.border}`,b
 
 const ROLE_OPTIONS = [
   {key:'user',icon:'🚗',title:'Șofer / Proprietar auto',desc:'Caut service-uri, cer oferte și programez reparații.'},
-  {key:'service',icon:'🔧',title:'Service auto',desc:'Ofer servicii auto și vreau să primesc cereri de la clienți.'},
 ]
 
 export default function RegisterPage() {
@@ -97,7 +96,7 @@ export default function RegisterPage() {
           ):step===1?(
             <>
               <h1 style={{fontFamily:"'Sora',sans-serif",fontWeight:800,fontSize:20,color:S.navy,marginBottom:4,textAlign:'center'}}>Cum vrei să folosești Reparo?</h1>
-              <p style={{fontSize:13,color:S.muted,textAlign:'center',marginBottom:24}}>Alege tipul de cont potrivit pentru tine</p>
+              <p style={{fontSize:13,color:S.muted,textAlign:'center',marginBottom:24}}>Creează-ți contul personal gratuit</p>
 
               <div style={{display:'flex',flexDirection:'column',gap:12,marginBottom:24}}>
                 {ROLE_OPTIONS.map(r=>(
