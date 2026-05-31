@@ -1,4 +1,5 @@
 // @ts-nocheck
+// v3-final
 'use client'
 import { useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
@@ -13,7 +14,11 @@ const inp = {width:'100%',padding:'12px 16px',border:`1.5px solid ${S.border}`,b
 
 const ROLE_OPTIONS = [
   {key:'user',icon:'🚗',title:'Șofer / Proprietar auto',desc:'Caut service-uri, cer oferte și programez reparații.'},
-  {key:'service',icon:'🔧',title:'Service auto',desc:'Ofer servicii auto și vreau să primesc cereri de la clienți.'},
+]
+
+const BUSINESS_OPTIONS = [
+  {key:'service',icon:'🔧',title:'Service auto',desc:'Ofer servicii auto și vreau să primesc cereri de la clienți.',href:'/auth/register-business?type=service'},
+  {key:'business',icon:'⚡',title:'Magazin / Dezmembrări / Mixt',desc:'Vinzi piese, ai parc dezmembrări sau cont mixt service + piese.',href:'/auth/register-business'},
 ]
 
 export default function RegisterPage() {
@@ -43,24 +48,23 @@ export default function RegisterPage() {
       await supabase.from('profiles').upsert({
         id: data.user.id, full_name: form.full_name, role, city: form.city, phone: form.phone
       })
-      if (role === 'service') {
-        await supabase.from('services').insert({
-          owner_id: data.user.id, name: form.full_name || 'Service-ul meu',
-          city: form.city || 'București', is_active: true, plan: 'free'
-        })
-      }
     }
 
     setLoading(false)
     setDone(true)
-    setTimeout(() => {
-      if (role === 'service') window.location.href = '/dashboard/service'
-      else window.location.href = '/home'
-    }, 2000)
+    setTimeout(() => { window.location.href = '/home' }, 2000)
   }
 
   return (
     <div style={{minHeight:'100vh',background:'linear-gradient(135deg,#eaf3ff 0%,#f8fbff 60%,#fff8ed 100%)',display:'flex',alignItems:'center',justifyContent:'center',padding:16,fontFamily:"'DM Sans',sans-serif"}}>
+      <style>{`
+        @import url('https://fonts.googleapis.com/css2?family=Sora:wght@700;800&family=DM+Sans:wght@400;500;600&display=swap');
+        @keyframes fadeUp{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+        .fade-up{animation:fadeUp .35s ease forwards}
+        .role-card:hover{border-color:#1a56db!important}
+        .biz-card:hover{border-color:#d97706!important;background:#fffbeb!important}
+        .auth-inp:focus{border-color:#1a56db!important;outline:none!important}
+      `}</style>
 
       <div style={{width:'100%',maxWidth:480}}>
         {/* Logo */}
@@ -73,7 +77,7 @@ export default function RegisterPage() {
         </div>
 
         {/* Progress */}
-        <div className="fade-up" style={{display:'flex',alignItems:'center',gap:0,marginBottom:24,animationDelay:'.05s'}}>
+        <div className="fade-up" style={{display:'flex',alignItems:'center',marginBottom:24,animationDelay:'.05s'}}>
           {[1,2].map((s,i)=>(
             <div key={s} style={{display:'flex',alignItems:'center',flex:1}}>
               <div style={{width:32,height:32,borderRadius:'50%',display:'flex',alignItems:'center',justifyContent:'center',fontSize:13,fontWeight:700,fontFamily:"'Sora',sans-serif",background:step>=s?S.blue:'#e5e7eb',color:step>=s?'#fff':S.muted,flexShrink:0,transition:'all .3s'}}>
@@ -86,36 +90,56 @@ export default function RegisterPage() {
         </div>
 
         {/* Card */}
-        <div className="fade-up" style={{background:S.white,borderRadius:20,border:`1px solid ${S.border}`,boxShadow:'0 8px 40px rgba(10,31,68,0.1)',padding:32,animationDelay:'.1s'}}>
+        <div className="fade-up" style={{background:S.white,borderRadius:20,border:`1px solid ${S.border}`,boxShadow:'0 8px 40px rgba(10,31,68,0.1)',padding:28,animationDelay:'.1s'}}>
 
-          {done?(
+          {done ? (
             <div style={{textAlign:'center',padding:'20px 0'}}>
               <div style={{fontSize:64,marginBottom:16}}>🎉</div>
               <h2 style={{fontFamily:"'Sora',sans-serif",fontWeight:800,fontSize:22,color:S.navy,marginBottom:8}}>Cont creat cu succes!</h2>
               <p style={{fontSize:14,color:S.muted}}>Te redirecționăm acum...</p>
             </div>
-          ):step===1?(
+          ) : step === 1 ? (
             <>
               <h1 style={{fontFamily:"'Sora',sans-serif",fontWeight:800,fontSize:20,color:S.navy,marginBottom:4,textAlign:'center'}}>Cum vrei să folosești Reparo?</h1>
-              <p style={{fontSize:13,color:S.muted,textAlign:'center',marginBottom:24}}>Alege tipul de cont potrivit pentru tine</p>
+              <p style={{fontSize:13,color:S.muted,textAlign:'center',marginBottom:20}}>Alege tipul de cont potrivit pentru tine</p>
 
-              <div style={{display:'flex',flexDirection:'column',gap:12,marginBottom:24}}>
+              <div style={{display:'flex',flexDirection:'column',gap:10,marginBottom:20}}>
+                {/* Cont personal */}
                 {ROLE_OPTIONS.map(r=>(
                   <button key={r.key} onClick={()=>setRole(r.key)} className="role-card"
-                    style={{display:'flex',alignItems:'center',gap:14,padding:'18px 16px',borderRadius:14,border:`1.5px solid ${role===r.key?S.blue:S.border}`,background:role===r.key?'#eaf3ff':S.white,cursor:'pointer',textAlign:'left',transition:'all .2s'}}>
-                    <div style={{width:52,height:52,background:role===r.key?S.blue:'#f0f6ff',borderRadius:12,display:'flex',alignItems:'center',justifyContent:'center',fontSize:24,flexShrink:0,transition:'all .2s'}}>
+                    style={{display:'flex',alignItems:'center',gap:14,padding:'16px',borderRadius:14,border:`1.5px solid ${role===r.key?S.blue:S.border}`,background:role===r.key?'#eaf3ff':S.white,cursor:'pointer',textAlign:'left',transition:'all .2s'}}>
+                    <div style={{width:48,height:48,background:role===r.key?S.blue:'#f0f6ff',borderRadius:12,display:'flex',alignItems:'center',justifyContent:'center',fontSize:22,flexShrink:0,transition:'all .2s'}}>
                       {r.icon}
                     </div>
-                    <div>
-                      <div style={{fontFamily:"'Sora',sans-serif",fontWeight:700,fontSize:15,color:S.navy,marginBottom:3}}>{r.title}</div>
+                    <div style={{flex:1}}>
+                      <div style={{fontFamily:"'Sora',sans-serif",fontWeight:700,fontSize:15,color:S.navy,marginBottom:2}}>{r.title}</div>
                       <div style={{fontSize:12,color:S.muted,lineHeight:1.5}}>{r.desc}</div>
                     </div>
-                    {role===r.key&&(
-                      <div style={{marginLeft:'auto',width:22,height:22,borderRadius:'50%',background:S.blue,display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0}}>
-                        <span style={{color:'#fff',fontSize:12,fontWeight:700}}>✓</span>
-                      </div>
-                    )}
+                    {role===r.key&&<div style={{width:22,height:22,borderRadius:'50%',background:S.blue,display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0}}><span style={{color:'#fff',fontSize:12,fontWeight:700}}>✓</span></div>}
                   </button>
+                ))}
+
+                {/* Separator */}
+                <div style={{position:'relative',margin:'2px 0'}}>
+                  <div style={{position:'absolute',top:'50%',left:0,right:0,borderTop:'1px dashed #e5e7eb'}}/>
+                  <div style={{position:'relative',textAlign:'center'}}>
+                    <span style={{background:'#fff',padding:'0 12px',fontSize:11,color:'#9ca3af',fontFamily:"'DM Sans',sans-serif"}}>sau dacă ești business</span>
+                  </div>
+                </div>
+
+                {/* Conturi business */}
+                {BUSINESS_OPTIONS.map(b=>(
+                  <a key={b.key} href={b.href} className="biz-card"
+                    style={{display:'flex',alignItems:'center',gap:14,padding:'16px',borderRadius:14,border:'1.5px solid #f59e0b',background:'#fffbeb',textDecoration:'none',transition:'all .2s'}}>
+                    <div style={{width:48,height:48,background:'#fef3c7',borderRadius:12,display:'flex',alignItems:'center',justifyContent:'center',fontSize:22,flexShrink:0}}>
+                      {b.icon}
+                    </div>
+                    <div style={{flex:1}}>
+                      <div style={{fontFamily:"'Sora',sans-serif",fontWeight:700,fontSize:15,color:'#92400e',marginBottom:2}}>{b.title}</div>
+                      <div style={{fontSize:12,color:'#a16207',lineHeight:1.5}}>{b.desc}</div>
+                    </div>
+                    <div style={{fontSize:18,color:'#f59e0b',flexShrink:0}}>→</div>
+                  </a>
                 ))}
               </div>
 
@@ -124,63 +148,54 @@ export default function RegisterPage() {
                 Continuă →
               </button>
             </>
-          ):(
+          ) : (
             <>
               <div style={{display:'flex',alignItems:'center',gap:10,marginBottom:20}}>
                 <button onClick={()=>setStep(1)} style={{background:S.bg,border:'none',borderRadius:8,width:32,height:32,cursor:'pointer',fontSize:16,display:'flex',alignItems:'center',justifyContent:'center',color:S.muted}}>←</button>
                 <div>
-                  <h1 style={{fontFamily:"'Sora',sans-serif",fontWeight:800,fontSize:20,color:S.navy,margin:0}}>
-                    {role==='service'?'Date service':'Date personale'}
-                  </h1>
+                  <h1 style={{fontFamily:"'Sora',sans-serif",fontWeight:800,fontSize:20,color:S.navy,margin:0}}>Date personale</h1>
                   <p style={{fontSize:12,color:S.muted,margin:0}}>Completează informațiile contului</p>
                 </div>
               </div>
 
-              {error&&(
-                <div style={{background:'#fee2e2',border:'1px solid #fecaca',borderRadius:10,padding:'10px 14px',fontSize:13,color:S.red,marginBottom:16}}>⚠️ {error}</div>
-              )}
+              {error&&<div style={{background:'#fee2e2',border:'1px solid #fecaca',borderRadius:10,padding:'10px 14px',fontSize:13,color:S.red,marginBottom:16}}>⚠️ {error}</div>}
 
               <form onSubmit={handleRegister}>
-                <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:12,marginBottom:12}}>
-                  <div style={{gridColumn:'1/-1'}}>
-                    <label style={{display:'block',fontSize:11,fontWeight:700,color:S.muted,textTransform:'uppercase',letterSpacing:1,marginBottom:5,fontFamily:"'Sora',sans-serif"}}>
-                      {role==='service'?'Numele service-ului *':'Numele complet *'}
-                    </label>
-                    <input className="auth-inp" type="text" required value={form.full_name} onChange={e=>setForm(p=>({...p,full_name:e.target.value}))}
-                      placeholder={role==='service'?'AutoPro Service SRL':'Ion Popescu'} style={inp}/>
+                <div style={{display:'flex',flexDirection:'column',gap:12,marginBottom:16}}>
+                  <div>
+                    <label style={{display:'block',fontSize:11,fontWeight:700,color:S.muted,textTransform:'uppercase',letterSpacing:1,marginBottom:5,fontFamily:"'Sora',sans-serif"}}>Numele complet *</label>
+                    <input className="auth-inp" type="text" required value={form.full_name} onChange={e=>setForm(p=>({...p,full_name:e.target.value}))} placeholder="Ion Popescu" style={inp}/>
                   </div>
-                  <div style={{gridColumn:'1/-1'}}>
+                  <div>
                     <label style={{display:'block',fontSize:11,fontWeight:700,color:S.muted,textTransform:'uppercase',letterSpacing:1,marginBottom:5,fontFamily:"'Sora',sans-serif"}}>Email *</label>
-                    <input className="auth-inp" type="email" required value={form.email} onChange={e=>setForm(p=>({...p,email:e.target.value}))}
-                      placeholder="ion@exemplu.ro" style={inp}/>
+                    <input className="auth-inp" type="email" required value={form.email} onChange={e=>setForm(p=>({...p,email:e.target.value}))} placeholder="ion@exemplu.ro" style={inp}/>
                   </div>
-                  <div>
-                    <label style={{display:'block',fontSize:11,fontWeight:700,color:S.muted,textTransform:'uppercase',letterSpacing:1,marginBottom:5,fontFamily:"'Sora',sans-serif"}}>Telefon</label>
-                    <input className="auth-inp" type="tel" value={form.phone} onChange={e=>setForm(p=>({...p,phone:e.target.value}))}
-                      placeholder="07xx xxx xxx" style={inp}/>
+                  <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:12}}>
+                    <div>
+                      <label style={{display:'block',fontSize:11,fontWeight:700,color:S.muted,textTransform:'uppercase',letterSpacing:1,marginBottom:5,fontFamily:"'Sora',sans-serif"}}>Telefon</label>
+                      <input className="auth-inp" type="tel" value={form.phone} onChange={e=>setForm(p=>({...p,phone:e.target.value}))} placeholder="07xx xxx xxx" style={inp}/>
+                    </div>
+                    <div>
+                      <label style={{display:'block',fontSize:11,fontWeight:700,color:S.muted,textTransform:'uppercase',letterSpacing:1,marginBottom:5,fontFamily:"'Sora',sans-serif"}}>Oraș</label>
+                      <input className="auth-inp" type="text" value={form.city} onChange={e=>setForm(p=>({...p,city:e.target.value}))} placeholder="București" style={inp}/>
+                    </div>
                   </div>
-                  <div>
-                    <label style={{display:'block',fontSize:11,fontWeight:700,color:S.muted,textTransform:'uppercase',letterSpacing:1,marginBottom:5,fontFamily:"'Sora',sans-serif"}}>Oraș</label>
-                    <input className="auth-inp" type="text" value={form.city} onChange={e=>setForm(p=>({...p,city:e.target.value}))}
-                      placeholder="București" style={inp}/>
-                  </div>
-                  <div>
-                    <label style={{display:'block',fontSize:11,fontWeight:700,color:S.muted,textTransform:'uppercase',letterSpacing:1,marginBottom:5,fontFamily:"'Sora',sans-serif"}}>Parolă *</label>
-                    <input className="auth-inp" type="password" required value={form.password} onChange={e=>setForm(p=>({...p,password:e.target.value}))}
-                      placeholder="minim 6 caractere" style={inp}/>
-                  </div>
-                  <div>
-                    <label style={{display:'block',fontSize:11,fontWeight:700,color:S.muted,textTransform:'uppercase',letterSpacing:1,marginBottom:5,fontFamily:"'Sora',sans-serif"}}>Confirmă parola *</label>
-                    <input className="auth-inp" type="password" required value={form.confirm_password} onChange={e=>setForm(p=>({...p,confirm_password:e.target.value}))}
-                      placeholder="••••••••" style={inp}/>
+                  <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:12}}>
+                    <div>
+                      <label style={{display:'block',fontSize:11,fontWeight:700,color:S.muted,textTransform:'uppercase',letterSpacing:1,marginBottom:5,fontFamily:"'Sora',sans-serif"}}>Parolă *</label>
+                      <input className="auth-inp" type="password" required value={form.password} onChange={e=>setForm(p=>({...p,password:e.target.value}))} placeholder="minim 6 caractere" style={inp}/>
+                    </div>
+                    <div>
+                      <label style={{display:'block',fontSize:11,fontWeight:700,color:S.muted,textTransform:'uppercase',letterSpacing:1,marginBottom:5,fontFamily:"'Sora',sans-serif"}}>Confirmă *</label>
+                      <input className="auth-inp" type="password" required value={form.confirm_password} onChange={e=>setForm(p=>({...p,confirm_password:e.target.value}))} placeholder="••••••••" style={inp}/>
+                    </div>
                   </div>
                 </div>
 
                 <button type="submit" disabled={loading}
-                  style={{width:'100%',padding:'13px',background:loading?'#93c5fd':S.blue,color:'#fff',border:'none',borderRadius:50,fontSize:15,fontWeight:700,cursor:loading?'not-allowed':'pointer',fontFamily:"'Sora',sans-serif",boxShadow:'0 4px 16px rgba(26,86,219,0.25)',transition:'all .2s',marginBottom:14}}>
+                  style={{width:'100%',padding:'13px',background:loading?'#93c5fd':S.blue,color:'#fff',border:'none',borderRadius:50,fontSize:15,fontWeight:700,cursor:loading?'not-allowed':'pointer',fontFamily:"'Sora',sans-serif",boxShadow:'0 4px 16px rgba(26,86,219,0.25)',transition:'all .2s',marginBottom:12}}>
                   {loading?'Se creează contul...':'🎉 Creează contul gratuit'}
                 </button>
-
                 <p style={{textAlign:'center',fontSize:12,color:S.muted,lineHeight:1.5}}>
                   Prin înregistrare, ești de acord cu{' '}
                   <a href="/termeni" style={{color:S.blue,textDecoration:'none',fontWeight:600}}>Termenii și Condițiile</a>
@@ -193,13 +208,6 @@ export default function RegisterPage() {
         <div className="fade-up" style={{textAlign:'center',marginTop:16,fontSize:13,color:S.muted,animationDelay:'.2s'}}>
           Ai deja cont?{' '}
           <a href="/auth/login" style={{color:S.blue,fontWeight:700,textDecoration:'none',fontFamily:"'Sora',sans-serif"}}>Intră în cont</a>
-        </div>
-
-        <div className="fade-up" style={{marginTop:12,background:'#fff8ed',border:'1px solid #f59e0b40',borderRadius:14,padding:'14px 18px',textAlign:'center',animationDelay:'.25s'}}>
-          <div style={{fontFamily:"'Sora',sans-serif",fontWeight:700,fontSize:13,color:'#92400e',marginBottom:4}}>🏢 Ești business? Magazin, parc dezmembrări?</div>
-          <a href="/auth/register-business" style={{display:'inline-flex',alignItems:'center',gap:6,padding:'8px 20px',background:'#f59e0b',color:'#fff',borderRadius:50,fontSize:13,fontWeight:700,textDecoration:'none',fontFamily:"'Sora',sans-serif",boxShadow:'0 2px 8px rgba(245,158,11,0.3)'}}>
-            ⚡ Înregistrare cont business →
-          </a>
         </div>
       </div>
     </div>
