@@ -133,6 +133,8 @@ export default function HomeClient() {
   }
 
   const S = { navy:'#0a1f44', blue:'#1a56db', yellow:'#f59e0b', bg:'#f0f6ff', border:'#e5e7eb', muted:'#6b7280' }
+  const [isMounted, setIsMounted] = useState(false)
+  useEffect(() => setIsMounted(true), [])
 
   return (
     <div style={{ fontFamily: "'DM Sans', sans-serif", background: S.bg, minHeight: '100vh' }}>
@@ -305,8 +307,8 @@ export default function HomeClient() {
             <div className="listings-grid" style={{ marginBottom: 12 }}>
               {listings.map(l => {
                 const coverImg = l.listing_media?.find(m => m.is_cover)?.url || l.listing_media?.[0]?.url
-                const daysAgo = Math.floor((new Date().getTime() - new Date(l.created_at).getTime()) / (1000 * 60 * 60 * 24))
-                const promoted = l.is_promoted && l.promoted_until && new Date(l.promoted_until) > new Date()
+                const daysAgo = isMounted ? Math.floor((new Date().getTime() - new Date(l.created_at).getTime()) / (1000 * 60 * 60 * 24)) : 0
+                const promoted = isMounted && l.is_promoted && l.promoted_until && new Date(l.promoted_until) > new Date()
                 return (
                   <div key={l.id} onClick={() => window.location.href = `/listing/${l.id}`} className="listing-card"
                     style={{ background: '#fff', borderRadius: 14, border: `2px solid ${promoted ? S.yellow : S.border}`, overflow: 'hidden', cursor: 'pointer', transition: 'all .2s', boxShadow: promoted ? '0 4px 16px rgba(245,158,11,0.15)' : '0 2px 8px rgba(10,31,68,0.04)', position: 'relative' }}>
