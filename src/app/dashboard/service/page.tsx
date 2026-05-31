@@ -1,5 +1,6 @@
 // @ts-nocheck
 'use client'
+import DezmembrariModule from '@/app/dashboard/dezmembrari/DezmembrariModule'
 import React, { useEffect, useState, useRef } from 'react'
 import { createClient } from '@/lib/supabase/client'
 
@@ -38,8 +39,38 @@ const input = {
 const label = {display:'block',fontSize:11,fontWeight:700,color:S.muted,
   textTransform:'uppercase',letterSpacing:1,marginBottom:5,fontFamily:"'Sora',sans-serif"}
 
-const ALL_SERVICES = ['Schimb ulei & filtre','Frâne & discuri','Geometrie roți','Echilibrare roți','Diagnoză electronică','Suspensie','Transmisie & cutie viteze','Vopsitorie','Caroserie','Climatizare & AC','Electrică auto','Motor','ITP','RAR','Anvelope & jante','Injecție & turbo','Polishing & detailing','Tractare','Verificare pre-cumpărare','Recondiționare faruri','Folie auto','Detailing interior']
-const ALL_BRANDS = ['Toate mărcile','Alfa Romeo','Audi','BMW','Chevrolet','Citroën','Dacia','Fiat','Ford','Honda','Hyundai','Jaguar','Jeep','Kia','Land Rover','Lexus','Mazda','Mercedes-Benz','Mini','Mitsubishi','Nissan','Opel','Peugeot','Porsche','Renault','Seat','Skoda','Subaru','Suzuki','Tesla','Toyota','Volkswagen','Volvo']
+const SERVICE_CATEGORIES = [
+  { cat:'🔧 Revizie & Mentenanță', items:['Schimb ulei motor','Schimb filtre (aer, polen, combustibil)','Verificare generală','Schimb lichid frână','Schimb lichid răcire (antigel)','Schimb lichid servo','Schimb bujii / bujii incandescente'] },
+  { cat:'🛑 Frâne', items:['Schimb plăcuțe frână','Schimb discuri frână','Schimb etrieri','Recondiționare etrieri','Aerisire sistem frânare','Diagnoză sistem frânare'] },
+  { cat:'⚙️ Mecanică generală', items:['Suspensie (amortizoare, arcuri)','Direcție (bielete, capete bară)','Planetare','Rulmenți roată','Sistem evacuare','Reparații motor generale','Reparații cutie viteze','Revizie cutie viteze'] },
+  { cat:'🔥 Distribuție & Motor', items:['Schimb kit distribuție','Schimb curea accesorii','Reparații motor','Garnitură chiulasă','Rectificare motor'] },
+  { cat:'⚡ Electrică auto', items:['Diagnoză electrică','Reparații instalație electrică','Alternator','Electromotor','Senzori','Probleme bord / martori'] },
+  { cat:'💻 Diagnoză electronică', items:['Scanare erori','Resetare erori','Codări / adaptări','Actualizări software'] },
+  { cat:'❄️ Climatizare & AC', items:['Încărcare freon','Verificare instalație AC','Reparații compresor','Curățare instalație AC'] },
+  { cat:'🎨 Vopsitorie & Caroserie', items:['Vopsitorie element','Vopsitorie integrală','Tinichigerie','Îndreptare caroserie','Polish auto','Reparații daune'] },
+  { cat:'🛞 Anvelope & Roți', items:['Montaj anvelope','Demontaj anvelope','Echilibrare roți','Geometrie roți','Vulcanizare'] },
+  { cat:'🚗 ITP', items:['ITP autoturisme','ITP autoutilitare'] },
+  { cat:'🔋 Baterii & Electric Hibrid', items:['Schimb baterie','Test baterie','Sisteme hibride / electrice'] },
+  { cat:'⛽ Sistem combustibil', items:['Reparații injectoare','Curățare injectoare','Reparații pompă combustibil','Reparații sistem alimentare'] },
+  { cat:'🚘 Transmisie', items:['Ambreiaj','Volantă','Cutie manuală','Cutie automată','Schimb ulei cutie'] },
+  { cat:'🚨 Tractări & Asistență', items:['Tractare auto','Asistență rutieră','Pornire baterie','Transport auto'] },
+  { cat:'🧼 Detailing & Estetică', items:['Spălare auto','Detailing interior','Detailing exterior','Polish','Protecție ceramică','Curățare tapițerie'] },
+  { cat:'🛡️ Accesorii & Protecții', items:['Folii geamuri','PPF (protecție vopsea)','Montaj accesorii'] },
+  { cat:'🔑 Chei & Închideri', items:['Chei auto','Programare chei','Reparații închideri'] },
+  { cat:'🔥 Tuning & Performance', items:['Remap ECU','Stage 1','Stage 2','Tuning motor'] },
+]
+const ALL_SERVICES = SERVICE_CATEGORIES.flatMap(c=>c.items)
+const ALL_BRANDS = [
+  'Alfa Romeo','Aston Martin','Audi','BMW','Bentley','Bugatti','Buick',
+  'Cadillac','Chevrolet','Chrysler','Citroën','Cupra','Dacia','Daewoo',
+  'Dodge','DS','Ferrari','Fiat','Ford','Genesis','GMC','Honda','Hummer',
+  'Hyundai','Infiniti','Jaguar','Jeep','Kia','Lada','Lamborghini',
+  'Land Rover','Lexus','Lincoln','Lotus','Maserati','Mazda','McLaren',
+  'Mercedes-Benz','Mini','Mitsubishi','Nissan','Oldsmobile','Opel',
+  'Peugeot','Pontiac','Porsche','Ram','Renault','Rolls-Royce','Saab',
+  'Seat','Skoda','Smart','SsangYong','Subaru','Suzuki','Tesla','Toyota',
+  'Volkswagen','Volvo','Zastava','Daihatsu','Isuzu','Acura','Infiniti',
+]
 const COUNTIES = ['Alba','Arad','Argeș','Bacău','Bihor','Bistrița-Năsăud','Botoșani','Brăila','Brașov','București','Buzău','Călărași','Caraș-Severin','Cluj','Constanța','Covasna','Dâmbovița','Dolj','Galați','Giurgiu','Gorj','Harghita','Hunedoara','Ialomița','Iași','Ilfov','Maramureș','Mehedinți','Mureș','Neamț','Olt','Prahova','Sălaj','Satu Mare','Sibiu','Suceava','Teleorman','Timiș','Tulcea','Vâlcea','Vaslui','Vrancea']
 const APT_STATUS = {in_asteptare:{label:'Așteptare',bg:S.amberBg,color:S.amber},confirmata:{label:'Confirmată',bg:'#dbeafe',color:S.blue},in_lucru:{label:'În lucru',bg:S.purpleBg,color:S.purple},finalizata:{label:'Finalizată',bg:S.greenBg,color:S.green},anulata:{label:'Anulată',bg:S.redBg,color:S.red}}
 
@@ -216,6 +247,8 @@ function MapPicker({ address, city, onAddressChange }) {
     setTimeout(() => setSaved(false), 2500)
   }
 
+
+
   return (
     <div>
       {/* Search */}
@@ -273,6 +306,7 @@ function MapPicker({ address, city, onAddressChange }) {
 
 export default function ServiceDashboard() {
   const [tab, setTab] = useState('Acasă')
+  const [user, setUser] = useState(null)
   const [service, setService] = useState(null)
   const [requests, setRequests] = useState([])
   const [appointments, setAppointments] = useState([])
@@ -281,7 +315,7 @@ export default function ServiceDashboard() {
   const [offerings, setOfferings] = useState([])
   const [loading, setLoading] = useState(true)
   const [selectedReq, setSelectedReq] = useState(null)
-  const [offerForm, setOfferForm] = useState({price_total:'',price_parts:'',price_labor:'',description:'',available_date:'',available_time:'09:00-12:00',warranty_months:'6'})
+  const [offerForm, setOfferForm] = useState({price_total:'',price_parts:'',price_labor:'',description:'',available_date:'',available_time:'09:00-12:00',warranty_months:'6',parts_type:'oem'})
   const [offerSent, setOfferSent] = useState(false)
   const [replyingTo, setReplyingTo] = useState(null)
   const [replyText, setReplyText] = useState('')
@@ -291,37 +325,133 @@ export default function ServiceDashboard() {
   const [profileSaved, setProfileSaved] = useState(false)
   const [newOffering, setNewOffering] = useState({name:'',price_from:'',price_to:'',duration_min:'',description:''})
   const [sidebarOpen, setSidebarOpen] = useState(false)
-  const [pf, setPf] = useState({name:'',description:'',phone:'',email:'',website:'',facebook_url:'',address:'',city:'',county:'',postal_code:'',brands_accepted:[],fuel_types:[],min_year_accepted:'',is_authorized_rar:false,has_itp:false,warranty_months:'0',opening_hours:{Lu:'08:00-18:00',Ma:'08:00-18:00',Mi:'08:00-18:00',Jo:'08:00-18:00',Vi:'08:00-18:00',Sâ:'09:00-14:00',Du:'Închis'}})
+  const [mounted, setMounted] = useState(false)
+  const [csvLoading, setCsvLoading] = useState(false)
+  const [csvResult, setCsvResult] = useState(null)
+  const [relistLoading, setRelistLoading] = useState(false)
+  const [relistResult, setRelistResult] = useState(null)
+  const [myListings, setMyListings] = useState([])
+  const [listingsLoading, setListingsLoading] = useState(false)
+  const [editingListing, setEditingListing] = useState(null)
+  const [verifyLoading, setVerifyLoading] = useState(false)
+  const [verifyDone, setVerifyDone] = useState(false)
+  const [verifyStep, setVerifyStep] = useState(1) // 1=info, 2=upload, 3=done
+  const [verifyDocs, setVerifyDocs] = useState({cui:'',rar:'',foto:''}) // URLs
+  const [verifyUploading, setVerifyUploading] = useState('')
+  const [existingRequest, setExistingRequest] = useState(null)
+  const [pushEnabled, setPushEnabled] = useState(false)
+  const [pushLoading, setPushLoading] = useState(false)
+  const [showAddApt, setShowAddApt] = useState(false)
+  const [newApt, setNewApt] = useState({client_name:'',car_info:'',scheduled_date:'',scheduled_time:'',duration_min:'60',work_description:'',notes:''})
+  const [addingApt, setAddingApt] = useState(false)
+  const [pf, setPf] = useState({name:'',description:'',phone:'',email:'',website:'',facebook_url:'',address:'',city:'',county:'',postal_code:'',brands_accepted:[],fuel_types:[],min_year_accepted:'',is_authorized_rar:false,has_itp:false,warranty_months:'0',is_multibrand:true,is_dismantling:false,opening_hours:{Lu:'08:00-18:00',Ma:'08:00-18:00',Mi:'08:00-18:00',Jo:'08:00-18:00',Vi:'08:00-18:00',Sa:'09:00-14:00',Du:'Inchis'}})
   const supabase = createClient()
   const today = new Date().toISOString().split('T')[0]
 
+  // Sync tab from URL query param (reads ?tab= on mount)
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const params = new URLSearchParams(window.location.search)
+      const t = params.get('tab')
+      if (t) setTab(t)
+    }
+  }, [])
+
+  // Check push subscription status
+  useEffect(() => {
+    if (typeof window !== 'undefined' && 'serviceWorker' in navigator && 'PushManager' in window) {
+      navigator.serviceWorker.ready.then(reg => {
+        reg.pushManager.getSubscription().then(sub => {
+          setPushEnabled(!!sub)
+        })
+      }).catch(() => {})
+    }
+  }, [])
+
+  // Listen for mobile hamburger from GlobalLayout bottom nav
+  useEffect(() => {
+    setMounted(true)
+    const handler = () => {
+      setSidebarOpen(o => !o)
+    }
+    window.addEventListener('dash-open-sidebar', handler)
+    return () => window.removeEventListener('dash-open-sidebar', handler)
+  }, [])
+
+  async function addManualAppointment() {
+    if (!newApt.scheduled_date||!newApt.scheduled_time) return
+    setAddingApt(true)
+    const {data,error} = await supabase.from('appointments').insert({
+      service_id:service.id,
+      scheduled_date:newApt.scheduled_date,
+      scheduled_time:newApt.scheduled_time,
+      duration_min:newApt.duration_min?parseInt(newApt.duration_min):null,
+      client_name:newApt.client_name||null,
+      car_info:newApt.car_info||null,
+      work_description:newApt.work_description||null,
+      notes:newApt.notes||null,
+      status:'confirmata',
+    }).select().single()
+    if (!error&&data) {
+      setAppointments(prev=>[...prev,data].sort((a,b)=>a.scheduled_date.localeCompare(b.scheduled_date)))
+      setAptStatuses(prev=>({...prev,[data.id]:'confirmata'}))
+      setNewApt({client_name:'',car_info:'',scheduled_date:'',scheduled_time:'',duration_min:'60',work_description:'',notes:''})
+      setShowAddApt(false)
+    }
+    setAddingApt(false)
+  }
   useEffect(() => {
     async function load() {
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) { window.location.href = '/auth/login'; return }
+      setUser(user)
+      // Verifică rolul — doar service_owner poate accesa dashboard-ul
+      const { data: prof } = await supabase.from('profiles').select('*').eq('id', user.id).single()
+      if (prof?.role === 'user') { window.location.href = '/home'; return }
       let { data: svc } = await supabase.from('services').select('*').eq('owner_id', user.id).single()
       if (!svc) {
-        const { data: prof } = await supabase.from('profiles').select('*').eq('id', user.id).single()
+        // Creează service doar dacă userul are rol de service_owner
         const { data: newSvc } = await supabase.from('services').insert({owner_id:user.id,name:prof?.full_name||'Service-ul meu',city:prof?.city||'București',is_active:true,plan:'free'}).select().single()
         svc = newSvc
       }
       setService(svc)
       if (svc) {
-        setPf(p => ({...p,name:svc.name||'',description:svc.description||'',phone:svc.phone||'',email:svc.email||'',website:svc.website||'',facebook_url:svc.facebook_url||'',address:svc.address||'',city:svc.city||'',county:svc.county||'',postal_code:svc.postal_code||'',brands_accepted:svc.brands_accepted||[],fuel_types:svc.fuel_types||[],is_authorized_rar:svc.is_authorized_rar||false,has_itp:svc.has_itp||false,warranty_months:svc.warranty_months?.toString()||'0'}))
+        setPf(p => ({...p,name:svc.name||'',description:svc.description||'',phone:svc.phone||'',email:svc.email||'',website:svc.website||'',facebook_url:svc.facebook_url||'',address:svc.address||'',city:svc.city||'',county:svc.county||'',postal_code:svc.postal_code||'',brands_accepted:svc.brands_accepted||[],fuel_types:svc.fuel_types||[],is_authorized_rar:svc.is_authorized_rar||false,has_itp:svc.has_itp||false,warranty_months:svc.warranty_months?.toString()||'0',is_multibrand:svc.is_multibrand!==false,is_dismantling:svc.is_dismantling||false}))
         const [reqs,apts,revs,offs,offrs] = await Promise.all([
-          supabase.from('quote_requests').select('*').eq('city',svc.city||'').eq('status','activa').order('created_at',{ascending:false}).limit(50),
+          supabase.from('quote_requests').select('*').eq('status','activa').order('created_at',{ascending:false}).limit(50),
           supabase.from('appointments').select('*').eq('service_id',svc.id).order('scheduled_date',{ascending:true}),
           supabase.from('reviews').select('*').eq('service_id',svc.id).order('created_at',{ascending:false}),
           supabase.from('offers').select('*').eq('service_id',svc.id).order('created_at',{ascending:false}),
           supabase.from('service_offerings').select('*').eq('service_id',svc.id),
         ])
-        setRequests(reqs.data||[])
+        const allReqs = reqs.data||[]
+        // Show requests targeted to this service OR from same city
+        const filteredReqs = allReqs.filter(r => 
+          r.target_service_id === svc.id || 
+          (r.city||'').toLowerCase().trim() === (svc.city||'').toLowerCase().trim() ||
+          (!r.target_service_id && !r.city)
+        )
+        setRequests(filteredReqs)
         setAppointments(apts.data||[])
         const sm={}; (apts.data||[]).forEach(a=>sm[a.id]=a.status); setAptStatuses(sm)
         setReviews(revs.data||[])
         setOffers(offs.data||[])
         setOfferings(offrs.error ? [] : (offrs.data||[]))
         if (offrs.error) console.warn('service_offerings table missing - run SQL fix:', offrs.error.message)
+      }
+      // Check existing verification request
+      if (svc?.id) {
+        const { data: verReq } = await supabase
+          .from('verification_requests')
+          .select('*')
+          .eq('service_id', svc.id)
+          .order('created_at', { ascending: false })
+          .limit(1)
+          .maybeSingle()
+        if (verReq) {
+          setExistingRequest(verReq)
+          if (verReq.status !== 'rejected') setVerifyDone(true)
+        }
       }
       setLoading(false)
     }
@@ -331,17 +461,19 @@ export default function ServiceDashboard() {
   async function saveProfile() {
     if (!service) return
     setProfileSaving(true)
-    await supabase.from('services').update({name:pf.name,description:pf.description,phone:pf.phone,email:pf.email,website:pf.website,facebook_url:pf.facebook_url,address:pf.address,city:pf.city,county:pf.county,postal_code:pf.postal_code,brands_accepted:pf.brands_accepted.length?pf.brands_accepted:null,fuel_types:pf.fuel_types.length?pf.fuel_types:null,min_year_accepted:pf.min_year_accepted?parseInt(pf.min_year_accepted):null,is_authorized_rar:pf.is_authorized_rar,has_itp:pf.has_itp,warranty_months:parseInt(pf.warranty_months)||0,is_active:true}).eq('id',service.id)
+    await supabase.from('services').update({name:pf.name,description:pf.description,phone:pf.phone,email:pf.email,website:pf.website,facebook_url:pf.facebook_url,address:pf.address,city:pf.city,county:pf.county,postal_code:pf.postal_code,brands_accepted:pf.brands_accepted.length?pf.brands_accepted:null,fuel_types:pf.fuel_types.length?pf.fuel_types:null,min_year_accepted:pf.min_year_accepted?parseInt(pf.min_year_accepted):null,is_authorized_rar:pf.is_authorized_rar,has_itp:pf.has_itp,warranty_months:parseInt(pf.warranty_months)||0,is_multibrand:pf.is_multibrand,is_dismantling:pf.is_dismantling,is_active:true}).eq('id',service.id)
     setProfileSaving(false); setProfileSaved(true)
     setTimeout(()=>setProfileSaved(false),2500)
   }
 
   async function sendOffer() {
     if (!service||!selectedReq) return
-    await supabase.from('offers').insert({request_id:selectedReq.id,service_id:service.id,price_total:offerForm.price_total?parseFloat(offerForm.price_total):null,price_parts:offerForm.price_parts?parseFloat(offerForm.price_parts):null,price_labor:offerForm.price_labor?parseFloat(offerForm.price_labor):null,description:offerForm.description,available_date:offerForm.available_date||null,available_time:offerForm.available_time,warranty_months:parseInt(offerForm.warranty_months),status:'trimisa'})
+    const {data} = await supabase.from('offers').insert({request_id:selectedReq.id,service_id:service.id,price_total:offerForm.price_total?parseFloat(offerForm.price_total):null,price_parts:offerForm.price_parts?parseFloat(offerForm.price_parts):null,price_labor:offerForm.price_labor?parseFloat(offerForm.price_labor):null,description:offerForm.description,available_date:offerForm.available_date||null,available_time:offerForm.available_time,warranty_months:parseInt(offerForm.warranty_months),parts_type:offerForm.parts_type,status:'trimisa'}).select().single()
     setOfferSent(true)
+    // Add to offers list immediately
+    if (data) setOffers(prev=>[data,...prev])
     setRequests(prev=>prev.filter(r=>r.id!==selectedReq.id))
-    setTimeout(()=>{setSelectedReq(null);setOfferSent(false);setOfferForm({price_total:'',price_parts:'',price_labor:'',description:'',available_date:'',available_time:'09:00-12:00',warranty_months:'6'})},1800)
+    setTimeout(()=>{setSelectedReq(null);setOfferSent(false);setOfferForm({price_total:'',price_parts:'',price_labor:'',description:'',available_date:'',available_time:'09:00-12:00',warranty_months:'6',parts_type:'oem'})},1800)
   }
 
   async function updateAptStatus(id, status) {
@@ -371,39 +503,95 @@ export default function ServiceDashboard() {
     setNewOffering({name:'',price_from:'',price_to:'',duration_min:'',description:''})
   }
 
+  async function addWholeCategory(catItems) {
+    if (!service) return
+    const existing = offerings.map(o=>o.name)
+    const toAdd = catItems.filter(s=>!existing.includes(s))
+    if (toAdd.length===0) {
+      alert('Toate serviciile din această categorie sunt deja adăugate.')
+      return
+    }
+    const inserts = toAdd.map(name=>({name, service_id:service.id, is_active:true}))
+    const {data, error} = await supabase.from('service_offerings').insert(inserts).select()
+    if (error) { alert('Eroare: ' + error.message); return }
+    if (data) setOfferings(prev=>[...data,...prev])
+  }
+
   async function deleteOffering(id) {
     await supabase.from('service_offerings').delete().eq('id',id)
     setOfferings(prev=>prev.filter(o=>o.id!==id))
   }
 
-  const firstDay = (() => { const d=new Date(calMonth.getFullYear(),calMonth.getMonth(),1).getDay(); return d===0?6:d-1 })()
-  const daysInMonth = new Date(calMonth.getFullYear(),calMonth.getMonth()+1,0).getDate()
-  const aptsForDay = (day) => { const ds=`${calMonth.getFullYear()}-${String(calMonth.getMonth()+1).padStart(2,'0')}-${String(day).padStart(2,'0')}`; return appointments.filter(a=>a.scheduled_date===ds) }
+  const bizType = service?.business_type || 'service'
 
-  const TABS = [
+  // Tab-uri comune tuturor tipurilor de business
+  const TABS_COMMON_START = [
     {name:'Acasă',icon:'🏠',badge:null},
     {name:'Profil public',icon:'🏪',badge:(!pf.description||!pf.phone||!pf.address)?'!':null},
+  ]
+  const TABS_COMMON_END = [
+    {name:'Recenzii',icon:'⭐',badge:reviews.length||null},
+    {name:'Analytics',icon:'📊',badge:null},
+    {name:'Setări',icon:'⚙️',badge:null},
+  ]
+
+  // Tab-uri specifice per tip business
+  const TABS_SERVICE = [
     {name:'Servicii oferite',icon:'🔧',badge:offerings.length||null},
     {name:'Cereri',icon:'📋',badge:requests.length||null},
     {name:'Programări',icon:'📅',badge:appointments.filter(a=>['in_asteptare','confirmata','in_lucru'].includes(aptStatuses[a.id]||a.status)).length||null},
     {name:'Oferte trimise',icon:'💬',badge:offers.filter(o=>o.status==='trimisa').length||null},
     {name:'Anunțuri',icon:'📦',badge:null},
-    {name:'Recenzii',icon:'⭐',badge:reviews.length||null},
-    {name:'Setări',icon:'⚙️',badge:null},
+  ]
+  const TABS_PIESE = [
+    {name:'Cereri piese',icon:'📋',badge:requests.length||null},
+    {name:'Anunțuri piese',icon:'📦',badge:null},
+    {name:'Oferte trimise',icon:'💬',badge:offers.filter(o=>o.status==='trimisa').length||null},
+    {name:'Mesaje',icon:'💬',badge:null},
+    {name:'Promovări',icon:'🚀',badge:null},
+  ]
+  const TABS_DEZMEMBRARI = [
+    {name:'Cereri piese SH',icon:'📋',badge:requests.length||null},
+    {name:'Mașini dezmembrate',icon:'🚗',badge:null},
+    {name:'Piese listate',icon:'📦',badge:null},
+    {name:'Oferte trimise',icon:'💬',badge:offers.filter(o=>o.status==='trimisa').length||null},
+    {name:'Mesaje',icon:'💬',badge:null},
+    {name:'Promovări',icon:'🚀',badge:null},
+  ]
+  const TABS_MIXT = [
+    {name:'Servicii oferite',icon:'🔧',badge:offerings.length||null},
+    {name:'Cereri service',icon:'📋',badge:requests.length||null},
+    {name:'Cereri piese',icon:'📦',badge:null},
+    {name:'Programări',icon:'📅',badge:appointments.filter(a=>['in_asteptare','confirmata','in_lucru'].includes(aptStatuses[a.id]||a.status)).length||null},
+    {name:'Oferte trimise',icon:'💬',badge:offers.filter(o=>o.status==='trimisa').length||null},
+    {name:'Anunțuri',icon:'📦',badge:null},
+    {name:'Mesaje',icon:'💬',badge:null},
+    {name:'Promovări',icon:'🚀',badge:null},
   ]
 
-  if (loading) return (
-    <div style={{minHeight:'100vh',display:'flex',alignItems:'center',justifyContent:'center',background:S.bg,fontFamily:"'DM Sans',sans-serif"}}>
-      <div style={{textAlign:'center'}}>
-        <div style={{width:40,height:40,border:`3px solid ${S.blue}`,borderTopColor:'transparent',borderRadius:'50%',animation:'spin 1s linear infinite',margin:'0 auto 12px'}}/>
-        <div style={{color:S.muted,fontSize:14}}>Se încarcă...</div>
-        <style>{`@keyframes spin{to{transform:rotate(360deg)}}`}</style>
-      </div>
-    </div>
-  )
+  const TABS_MIDDLE = bizType==='magazin_piese' ? TABS_PIESE
+    : bizType==='dezmembrari' ? TABS_DEZMEMBRARI
+    : bizType==='mixt' ? TABS_MIXT
+    : TABS_SERVICE
+
+  const TABS = [...TABS_COMMON_START, ...TABS_MIDDLE, ...TABS_COMMON_END]
+
+  const firstDay = (() => { const d=new Date(calMonth.getFullYear(),calMonth.getMonth(),1).getDay(); return d===0?6:d-1 })()
+  const daysInMonth = new Date(calMonth.getFullYear(),calMonth.getMonth()+1,0).getDate()
+  const aptsForDay = (day) => { const ds=`${calMonth.getFullYear()}-${String(calMonth.getMonth()+1).padStart(2,'0')}-${String(day).padStart(2,'0')}`; return appointments.filter(a=>a.scheduled_date===ds) }
+
+
 
   return (
     <div style={{minHeight:'100vh',background:S.bg,fontFamily:"'DM Sans',sans-serif",display:'flex',flexDirection:'column'}}>
+      {loading&&(
+        <div style={{position:'fixed',inset:0,background:S.bg,display:'flex',alignItems:'center',justifyContent:'center',zIndex:9999}}>
+          <div style={{textAlign:'center'}}>
+            <div style={{width:40,height:40,border:`3px solid ${S.blue}`,borderTopColor:'transparent',borderRadius:'50%',animation:'spin 1s linear infinite',margin:'0 auto 12px'}}/>
+            <div style={{color:S.muted,fontSize:14}}>Se încarcă...</div>
+          </div>
+        </div>
+      )}
       <style>{`
         @keyframes spin{to{transform:rotate(360deg)}}
         .dash-input:focus{border-color:${S.blue}!important;box-shadow:0 0 0 3px rgba(26,86,219,0.1)!important}
@@ -412,14 +600,18 @@ export default function ServiceDashboard() {
         .nav-link:hover{color:${S.navy}!important}
         .card-hover:hover{border-color:${S.blueLight}!important;box-shadow:0 4px 20px rgba(26,86,219,0.1)!important}
         .apt-btn:hover{border-color:${S.blue}!important;color:${S.blue}!important}
+        .dash-hamburger{display:none!important}
         @media(max-width:768px){
-          .dash-sidebar{transform:translateX(-100%);position:fixed!important;z-index:200!important;height:100vh!important;top:0!important;width:260px!important}
+          .dash-main{padding:14px 12px!important;padding-bottom:100px!important}
+          .apt-layout{grid-template-columns:1fr!important}
+          .dash-sidebar{transform:translateX(-100%);position:fixed!important;z-index:200!important;height:100vh!important;top:0!important;width:260px!important;transition:transform .25s ease!important}
           .dash-sidebar.open{transform:translateX(0)!important}
           .dash-overlay{display:block!important}
-          .dash-main{padding:14px 12px!important}
+          .dash-hamburger{display:flex!important}
           .dash-hero{padding:16px!important;border-radius:14px!important}
           .dash-hero h1{font-size:18px!important}
           .dash-stats{grid-template-columns:repeat(2,1fr)!important;gap:8px!important}
+          .analytics-grid{grid-template-columns:1fr!important}
           .dash-stat{padding:12px!important}
           .dash-stat-val{font-size:20px!important}
           .dash-card{padding:14px!important}
@@ -435,60 +627,88 @@ export default function ServiceDashboard() {
           .offer-actions{flex-direction:column!important;gap:6px!important}
           .review-row{flex-direction:column!important;gap:8px!important}
           .gallery-grid{grid-template-columns:repeat(2,1fr)!important}
+          .req-modal-overlay{display:flex!important}
         }
         @media(max-width:480px){
           .dash-stats{grid-template-columns:1fr 1fr!important}
           .dash-hero-btns{flex-direction:column!important;gap:8px!important}
+          .dash-hero-btns a,.dash-hero-btns button{width:100%!important;justify-content:center!important}
+          .promo-grid{grid-template-columns:1fr!important}
+          .type-badge{display:none!important}
         }
+        /* Comune mobile */
+        .dash-topbar-title{display:none}
+        .dash-tab-label{display:inline}
+        @media(max-width:768px){
+          .dash-topbar-title{display:block!important}
+          .dash-content-header{flex-direction:column!important;align-items:flex-start!important;gap:10px!important}
+          .dash-content-header button{width:100%!important;justify-content:center!important}
+          .promo-grid{grid-template-columns:1fr!important}
+          .req-card-row{flex-direction:column!important;gap:8px!important}
+          .req-card-row button{width:100%!important;justify-content:center!important}
+          .biz-type-banner{display:flex!important}
+        }
+        .biz-type-banner{display:none}
       `}</style>
 
       {/* TOP BAR */}
-      <div style={{background:S.navy,height:56,display:'flex',alignItems:'center',padding:'0 24px',position:'sticky',top:0,zIndex:100,gap:12}}>
-        <button onClick={()=>setSidebarOpen(o=>!o)} style={{background:'none',border:'none',cursor:'pointer',padding:4,display:'flex',flexDirection:'column',gap:4,flexShrink:0}}>
+      <div style={{background:'#0a1f44',height:56,display:'flex',alignItems:'center',padding:'0 24px',position:'sticky',top:0,zIndex:100,gap:12}}>
+        <button onClick={()=>setSidebarOpen(o=>!o)} className="dash-hamburger" style={{background:'none',border:'none',cursor:'pointer',padding:4,flexDirection:'column',gap:4,flexShrink:0}}>
           {[0,1,2].map(i=><span key={i} style={{display:'block',width:18,height:2,background:'rgba(255,255,255,0.7)',borderRadius:2}}/>)}
         </button>
         <a href="/home" style={{display:'flex',alignItems:'center',gap:7,textDecoration:'none',flexShrink:0}}>
-          <div style={{width:28,height:28,background:S.blue,borderRadius:8,display:'flex',alignItems:'center',justifyContent:'center',fontWeight:800,fontSize:14,color:'#fff',fontFamily:"'Sora',sans-serif"}}>R</div>
-          <span style={{fontFamily:"'Sora',sans-serif",fontWeight:700,fontSize:16,color:'#fff'}}>Reparo</span>
+          <div style={{width:28,height:28,background:'#1a56db',borderRadius:8,display:'flex',alignItems:'center',justifyContent:'center',fontWeight:800,fontSize:14,color:'#fff',fontFamily:"'Sora',sans-serif"}}>R</div>
+          <div>
+            <span style={{fontFamily:"'Sora',sans-serif",fontWeight:700,fontSize:16,color:'#fff'}}>Reparo</span>
+            <div className="biz-type-banner" style={{fontSize:9,color:'rgba(255,255,255,0.55)',marginTop:-2,display:'none',alignItems:'center',gap:3}}>
+              <span>{bizType==='magazin_piese'?'📦':bizType==='dezmembrari'?'🚗':bizType==='mixt'?'⚡':'🔧'}</span>
+              <span>{bizType==='magazin_piese'?'Magazin piese':bizType==='dezmembrari'?'Dezmembrări':bizType==='mixt'?'Cont mixt':'Service auto'}</span>
+            </div>
+          </div>
         </a>
         <div style={{width:1,height:20,background:'rgba(255,255,255,0.15)'}}/>
         <span style={{fontSize:12,color:'rgba(255,255,255,0.4)',fontFamily:"'Sora',sans-serif",fontWeight:600,letterSpacing:0.5}}>DASHBOARD SERVICE</span>
         <div style={{marginLeft:'auto',display:'flex',alignItems:'center',gap:12}}>
-          {service?.id && <a href={`/service/${service.id}`} target="_blank" style={{fontSize:12,color:'rgba(255,255,255,0.5)',textDecoration:'none',display:'flex',alignItems:'center',gap:4}}>👁️ <span style={{display:'none'}}>Profil public</span></a>}
+          {service?.id&&<a href={`/service/${service.id}`} target="_blank" style={{fontSize:12,color:'rgba(255,255,255,0.5)',textDecoration:'none'}}>👁️ Profil public</a>}
           <button onClick={async()=>{await supabase.auth.signOut();window.location.href='/home'}} style={{fontSize:12,color:'rgba(255,255,255,0.4)',background:'none',border:'none',cursor:'pointer',fontFamily:"'DM Sans',sans-serif"}}>Ieși</button>
         </div>
       </div>
 
       <div style={{display:'flex',flex:1,overflow:'hidden',position:'relative'}}>
 
-        {/* SIDEBAR — Dark Navy */}
-        <aside className={`dash-sidebar${sidebarOpen?' open':''}`}
+        {/* SIDEBAR — Desktop only */}
+        <aside className={`dash-sidebar${mounted && sidebarOpen?' open':''}`}
           style={{width:220,background:'#0a1f44',display:'flex',flexDirection:'column',flexShrink:0,transition:'transform .25s',overflow:'hidden auto'}}>
-          
+
           {/* Service info */}
           <div style={{padding:'20px 16px 16px',borderBottom:'1px solid rgba(255,255,255,0.08)'}}>
-            <div style={{width:44,height:44,background:'rgba(26,86,219,0.3)',border:'1.5px solid rgba(26,86,219,0.5)',borderRadius:12,display:'flex',alignItems:'center',justifyContent:'center',fontSize:22,marginBottom:12}}>🔧</div>
-            <div style={{fontSize:10,color:'rgba(255,255,255,0.35)',fontWeight:700,textTransform:'uppercase',letterSpacing:1.5,fontFamily:"'Sora',sans-serif",marginBottom:4}}>Service</div>
-            <div style={{fontSize:14,fontWeight:700,color:'#fff',fontFamily:"'Sora',sans-serif",marginBottom:2}}>{service?.name||'—'}</div>
-            <div style={{fontSize:12,color:'rgba(255,255,255,0.45)',marginBottom:10}}>{service?.city}</div>
-            <span style={{display:'inline-flex',alignItems:'center',padding:'3px 10px',borderRadius:50,background:service?.plan==='pro'?'rgba(245,158,11,0.2)':'rgba(255,255,255,0.08)',color:service?.plan==='pro'?S.yellow:'rgba(255,255,255,0.45)',fontSize:11,fontWeight:700,fontFamily:"'Sora',sans-serif"}}>
+            <div style={{width:44,height:44,background:'rgba(26,86,219,0.3)',border:'1.5px solid rgba(26,86,219,0.4)',borderRadius:12,display:'flex',alignItems:'center',justifyContent:'center',marginBottom:10}}>
+              <span style={{fontSize:20}}>🔧</span>
+            </div>
+            <div style={{fontSize:10,color:'rgba(255,255,255,0.35)',fontWeight:700,textTransform:'uppercase',letterSpacing:1,marginBottom:4}}>Service</div>
+            <div style={{fontSize:14,fontWeight:700,color:'#fff',fontFamily:"'Sora',sans-serif",marginBottom:2}}>{service?.name||'Service'}</div>
+            <div style={{fontSize:12,color:'rgba(255,255,255,0.45)',marginBottom:10}}>{service?.city||''}</div>
+            <span style={{display:'inline-flex',alignItems:'center',padding:'3px 10px',borderRadius:50,background:'rgba(245,158,11,0.15)',border:'1px solid rgba(245,158,11,0.3)',fontSize:11,fontWeight:700,color:'#f59e0b',fontFamily:"'Sora',sans-serif"}}>
               {service?.plan==='pro'?'⭐ Pro':'🔓 Free'}
             </span>
           </div>
 
           {/* Nav */}
-          <nav style={{padding:'10px 10px',flex:1}}>
+          <nav style={{padding:'10px',flex:1}}>
             {TABS.map(t=>(
               <button key={t.name}
                 onClick={()=>{setTab(t.name);setSidebarOpen(false)}}
-                style={{width:'100%',display:'flex',alignItems:'center',gap:10,padding:'10px 12px',borderRadius:10,border:'none',cursor:'pointer',marginBottom:2,transition:'all .15s',
+                className={`tab-btn${tab===t.name?' active':''}`}
+                style={{
+                  width:'100%',display:'flex',alignItems:'center',gap:10,padding:'10px 12px',
+                  borderRadius:10,marginBottom:2,cursor:'pointer',border:'none',textAlign:'left',
                   background:tab===t.name?'rgba(26,86,219,0.25)':'transparent',
                   color:tab===t.name?'#fff':'rgba(255,255,255,0.5)',
                   fontFamily:"'DM Sans',sans-serif",fontSize:13,fontWeight:tab===t.name?600:400,
                   borderRight:tab===t.name?`2px solid ${S.blue}`:'2px solid transparent'}}>
                 <span style={{fontSize:15}}>{t.icon}</span>
                 <span style={{flex:1,textAlign:'left'}}>{t.name}</span>
-                {t.badge&&<span style={{background:tab===t.name?S.blue:'rgba(255,255,255,0.15)',color:'#fff',borderRadius:50,padding:'2px 7px',fontSize:10,fontWeight:700}}>{t.badge}</span>}
+                {t.badge&&<span style={{background:tab===t.name?S.blue:'rgba(255,255,255,0.15)',color:'#fff',fontSize:10,fontWeight:700,padding:'1px 6px',borderRadius:50,minWidth:18,textAlign:'center'}}>{t.badge}</span>}
               </button>
             ))}
           </nav>
@@ -499,10 +719,11 @@ export default function ServiceDashboard() {
         </aside>
 
         {/* Overlay mobile */}
-        {sidebarOpen&&<div onClick={()=>setSidebarOpen(false)} style={{position:'fixed',inset:0,background:'rgba(10,31,68,0.4)',zIndex:199,display:'none'}} className="dash-overlay"/>}
+        {sidebarOpen&&<div onClick={()=>setSidebarOpen(false)} style={{position:'fixed',inset:0,background:'rgba(10,31,68,0.4)',zIndex:199}} className="dash-overlay"/>}
 
         {/* MAIN */}
-        <main className="dash-main" style={{flex:1,overflowY:'auto',padding:'24px',minWidth:0}}>
+        <div className="dash-main" style={{overflowY:'auto',padding:'24px',minWidth:0,paddingBottom:'100px',flex:1}}>
+          <div style={{maxWidth:1400,margin:'0 auto'}}>
 
           {/* ══ ACASĂ ══ */}
           {tab==='Acasă'&&(
@@ -607,6 +828,195 @@ export default function ServiceDashboard() {
           {/* ══ PROFIL PUBLIC ══ */}
           {tab==='Profil public'&&(
             <div>
+          {/* Verificare service - flux complet */}
+          {tab==='Profil public'&&service&&(
+            <div style={{marginBottom:16}}>
+              {/* Badge verificat */}
+              {service.is_verified?(
+                <div style={{background:'#dcfce7',border:'1.5px solid #16a34a',borderRadius:14,padding:'14px 20px',display:'flex',alignItems:'center',gap:12}}>
+                  <span style={{fontSize:28}}>✅</span>
+                  <div>
+                    <div style={{fontFamily:"'Sora',sans-serif",fontWeight:700,fontSize:15,color:'#065f46'}}>Service verificat Reparo</div>
+                    <div style={{fontSize:13,color:'#047857'}}>Badge-ul ✓ Verificat apare pe profilul tău public și în rezultatele de căutare.</div>
+                  </div>
+                </div>
+              ):(
+                <div style={{background:'#fef3c7',border:'1.5px solid #f59e0b',borderRadius:16,padding:'20px',marginBottom:8}}>
+                  {/* Header */}
+                  <div style={{display:'flex',alignItems:'flex-start',gap:12,marginBottom:16}}>
+                    <span style={{fontSize:28,flexShrink:0}}>🛡️</span>
+                    <div>
+                      <div style={{fontFamily:"'Sora',sans-serif",fontWeight:700,fontSize:16,color:'#92400e',marginBottom:4}}>Verifică-ți service-ul — gratuit</div>
+                      <div style={{fontSize:13,color:'#a16207',lineHeight:1.6}}>Service-urile verificate apar mai sus în căutări și au un badge care crește rata de conversie cu ~40%.</div>
+                    </div>
+                  </div>
+
+                  {/* Steps indicator */}
+                  <div style={{display:'flex',gap:0,marginBottom:20}}>
+                    {['Documente','Upload','Confirmare'].map((s,i)=>(
+                      <div key={s} style={{flex:1,display:'flex',alignItems:'center'}}>
+                        <div style={{display:'flex',flexDirection:'column',alignItems:'center',flex:1}}>
+                          <div style={{width:28,height:28,borderRadius:'50%',background:verifyStep>i+1?'#16a34a':verifyStep===i+1?'#f59e0b':'#e5e7eb',color:verifyStep>=i+1?'#fff':'#9ca3af',display:'flex',alignItems:'center',justifyContent:'center',fontSize:12,fontWeight:700,marginBottom:4}}>
+                            {verifyStep>i+1?'✓':i+1}
+                          </div>
+                          <div style={{fontSize:10,fontWeight:600,color:verifyStep===i+1?'#92400e':'#9ca3af'}}>{s}</div>
+                        </div>
+                        {i<2&&<div style={{height:2,flex:1,background:verifyStep>i+1?'#16a34a':'#e5e7eb',marginBottom:16,marginTop:0}}/>}
+                      </div>
+                    ))}
+                  </div>
+
+                  {/* Step 1 — Info + documente necesare */}
+                  {verifyStep===1&&!verifyDone&&!existingRequest&&(
+                    <div>
+                      <div style={{fontSize:12,fontWeight:700,color:'#92400e',marginBottom:10,textTransform:'uppercase',letterSpacing:.5}}>Ce documente sunt necesare:</div>
+                      <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fit,minmax(160px,1fr))',gap:8,marginBottom:16}}>
+                        {[
+                          {icon:'📄',label:'CUI / CIF',desc:'Certificat înreg. fiscală',req:true},
+                          {icon:'🏢',label:'Certificat RAR',desc:'Dacă ești autorizat RAR',req:false},
+                          {icon:'🖼️',label:'Foto sediu',desc:'Exterior service, minim 2 poze',req:true},
+                          {icon:'📋',label:'Act constitutiv',desc:'Sau altă dovadă activitate',req:false},
+                        ].map(d=>(
+                          <div key={d.label} style={{background:'rgba(255,255,255,0.75)',borderRadius:10,padding:'10px 12px',display:'flex',gap:8,alignItems:'flex-start'}}>
+                            <span style={{fontSize:22,flexShrink:0}}>{d.icon}</span>
+                            <div>
+                              <div style={{fontSize:12,fontWeight:700,color:'#92400e'}}>{d.label} {d.req&&<span style={{color:'#dc2626'}}>*</span>}</div>
+                              <div style={{fontSize:11,color:'#a16207'}}>{d.desc}</div>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                      <div style={{fontSize:11,color:'#a16207',marginBottom:14}}>* obligatoriu · Procesul e gratuit și durează 24-48h</div>
+                      <button onClick={()=>setVerifyStep(2)}
+                        style={{padding:'11px 28px',background:'#f59e0b',color:'#fff',border:'none',borderRadius:50,fontSize:14,fontWeight:700,cursor:'pointer'}}>
+                        Continuă →
+                      </button>
+                    </div>
+                  )}
+
+                  {/* Step 2 — Upload documente */}
+                  {verifyStep===2&&!verifyDone&&!existingRequest&&(
+                    <div>
+                      <div style={{fontSize:12,fontWeight:700,color:'#92400e',marginBottom:12,textTransform:'uppercase',letterSpacing:.5}}>Încarcă documentele:</div>
+                      {[
+                        {key:'cui',label:'CUI / Certificat înregistrare fiscală',icon:'📄',accept:'image/*,application/pdf',req:true},
+                        {key:'rar',label:'Certificat RAR (opțional)',icon:'🏢',accept:'image/*,application/pdf',req:false},
+                        {key:'foto',label:'Foto sediu exterior (minim 1)',icon:'🖼️',accept:'image/*',req:true},
+                      ].map(doc=>(
+                        <div key={doc.key} style={{background:'rgba(255,255,255,0.75)',borderRadius:12,padding:'12px 14px',marginBottom:10,display:'flex',alignItems:'center',gap:12}}>
+                          <span style={{fontSize:24,flexShrink:0}}>{doc.icon}</span>
+                          <div style={{flex:1,minWidth:0}}>
+                            <div style={{fontSize:13,fontWeight:600,color:'#92400e',marginBottom:2}}>{doc.label}</div>
+                            {verifyDocs[doc.key]?(
+                              <div style={{fontSize:12,color:'#16a34a',display:'flex',alignItems:'center',gap:4}}>✅ Încărcat
+                                <button onClick={()=>setVerifyDocs(prev=>({...prev,[doc.key]:''}))}
+                                  style={{fontSize:11,color:'#dc2626',background:'none',border:'none',cursor:'pointer',marginLeft:4}}>Șterge</button>
+                              </div>
+                            ):(
+                              <div style={{fontSize:12,color:'#a16207'}}>{doc.req?'Obligatoriu':'Opțional'}</div>
+                            )}
+                          </div>
+                          <label style={{padding:'7px 14px',background:verifyDocs[doc.key]?'#dcfce7':'rgba(255,255,255,0.9)',border:`1.5px solid ${verifyDocs[doc.key]?'#16a34a':'#f59e0b'}`,borderRadius:50,fontSize:12,fontWeight:700,cursor:'pointer',color:verifyDocs[doc.key]?'#065f46':'#92400e',flexShrink:0,display:'flex',alignItems:'center',gap:6}}>
+                            {verifyUploading===doc.key?'⏳...':verifyDocs[doc.key]?'✓':'+ Upload'}
+                            <input type="file" accept={doc.accept} style={{display:'none'}}
+                              onChange={async(e)=>{
+                                const file=e.target.files?.[0]; if(!file||!service) return
+                                setVerifyUploading(doc.key)
+                                const ext=file.name.split('.').pop()
+                                const path=`verification/${service.id}/${doc.key}_${Date.now()}.${ext}`
+                                const {error}=await supabase.storage.from('verification-docs').upload(path,file,{upsert:true})
+                                if(error){alert('Eroare upload: '+error.message);setVerifyUploading('');return}
+                                const {data:{publicUrl}}=supabase.storage.from('verification-docs').getPublicUrl(path)
+                                setVerifyDocs(prev=>({...prev,[doc.key]:publicUrl}))
+                                setVerifyUploading('')
+                                e.target.value=''
+                              }}/>
+                          </label>
+                        </div>
+                      ))}
+
+                      <div style={{display:'flex',gap:10,marginTop:16}}>
+                        <button onClick={()=>setVerifyStep(1)}
+                          style={{padding:'10px 20px',background:'transparent',border:'1.5px solid #f59e0b',borderRadius:50,fontSize:13,fontWeight:600,cursor:'pointer',color:'#92400e'}}>
+                          ← Înapoi
+                        </button>
+                        <button onClick={async()=>{
+                          if(!verifyDocs.cui){alert('Încarcă cel puțin CUI-ul.');return}
+                          if(!verifyDocs.foto){alert('Încarcă cel puțin o fotografie a sediului.');return}
+                          setVerifyLoading(true)
+                          try {
+                            const {error}=await supabase.from('verification_requests').insert({
+                              service_id:service.id,
+                              owner_id:user?.id,
+                              status:'pending',
+                              submitted_at:new Date().toISOString(),
+                              doc_cui:verifyDocs.cui,
+                              doc_rar:verifyDocs.rar||null,
+                              doc_foto:verifyDocs.foto,
+                              notes:`CUI: ${verifyDocs.cui} | RAR: ${verifyDocs.rar||'N/A'} | Foto: ${verifyDocs.foto}`,
+                            })
+                            if(error) throw error
+                            setVerifyStep(3)
+                            setVerifyDone(true)
+                            setExistingRequest({status:'pending'})
+                          } catch(e){alert('Eroare: '+e.message)}
+                          setVerifyLoading(false)
+                        }} disabled={verifyLoading||!verifyDocs.cui||!verifyDocs.foto}
+                          style={{flex:1,padding:'11px 24px',background:verifyDocs.cui&&verifyDocs.foto?'#f59e0b':'#e5e7eb',color:verifyDocs.cui&&verifyDocs.foto?'#fff':'#9ca3af',border:'none',borderRadius:50,fontSize:14,fontWeight:700,cursor:verifyDocs.cui&&verifyDocs.foto?'pointer':'not-allowed',opacity:verifyLoading?.6:1}}>
+                          {verifyLoading?'Se trimite...':'🛡️ Trimite cererea'}
+                        </button>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Request pending / in review */}
+                  {existingRequest&&existingRequest.status==='pending'&&(
+                    <div style={{background:'rgba(255,255,255,0.8)',borderRadius:12,padding:'16px',display:'flex',gap:12,alignItems:'flex-start'}}>
+                      <span style={{fontSize:28}}>⏳</span>
+                      <div>
+                        <div style={{fontWeight:700,fontSize:14,color:'#92400e',marginBottom:4}}>Cerere în așteptare</div>
+                        <div style={{fontSize:13,color:'#a16207',lineHeight:1.6}}>Documentele tale au fost trimise. Echipa Reparo le va analiza în 24-48h și vei primi o notificare.</div>
+                      </div>
+                    </div>
+                  )}
+                  {existingRequest&&existingRequest.status==='in_review'&&(
+                    <div style={{background:'rgba(255,255,255,0.8)',borderRadius:12,padding:'16px',display:'flex',gap:12,alignItems:'flex-start'}}>
+                      <span style={{fontSize:28}}>🔍</span>
+                      <div>
+                        <div style={{fontWeight:700,fontSize:14,color:'#1d4ed8',marginBottom:4}}>În curs de analiză</div>
+                        <div style={{fontSize:13,color:'#1e40af',lineHeight:1.6}}>Echipa Reparo analizează documentele tale. Vei fi notificat când procesul e finalizat.</div>
+                      </div>
+                    </div>
+                  )}
+                  {existingRequest&&existingRequest.status==='rejected'&&(
+                    <div style={{background:'#fee2e2',borderRadius:12,padding:'16px',display:'flex',gap:12,alignItems:'flex-start'}}>
+                      <span style={{fontSize:28}}>❌</span>
+                      <div>
+                        <div style={{fontWeight:700,fontSize:14,color:'#991b1b',marginBottom:4}}>Cerere respinsă</div>
+                        <div style={{fontSize:13,color:'#b91c1c',lineHeight:1.6,marginBottom:10}}>{existingRequest.rejection_reason||'Documentele nu au putut fi validate. Te rugăm să încerci din nou cu documente clare.'}</div>
+                        <button onClick={()=>{setExistingRequest(null);setVerifyDone(false);setVerifyStep(1);setVerifyDocs({cui:'',rar:'',foto:''})}}
+                          style={{padding:'8px 18px',background:'#dc2626',color:'#fff',border:'none',borderRadius:50,fontSize:13,fontWeight:700,cursor:'pointer'}}>
+                          Reîncarcă documente
+                        </button>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Step 3 — Confirmare */}
+                  {verifyStep===3&&(
+                    <div style={{background:'rgba(255,255,255,0.8)',borderRadius:12,padding:'16px',display:'flex',gap:12,alignItems:'center'}}>
+                      <span style={{fontSize:36}}>🎉</span>
+                      <div>
+                        <div style={{fontWeight:700,fontSize:15,color:'#065f46',marginBottom:4}}>Cerere trimisă cu succes!</div>
+                        <div style={{fontSize:13,color:'#047857',lineHeight:1.6}}>Echipa Reparo va analiza documentele în 24-48h. Vei primi un email cu rezultatul verificării.</div>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+          )}
+
               <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:20,flexWrap:'wrap',gap:12}}>
                 <div>
                   <h1 style={{fontFamily:"'Sora',sans-serif",fontWeight:800,fontSize:22,color:S.navy,marginBottom:4}}>Profilul public</h1>
@@ -705,7 +1115,7 @@ export default function ServiceDashboard() {
                   {Object.entries(pf.opening_hours).map(([day,hours])=>(
                     <div key={day} style={{display:'flex',alignItems:'center',gap:10,marginBottom:8}}>
                       <span style={{fontSize:12,fontWeight:700,color:S.navy,width:24,fontFamily:"'Sora',sans-serif"}}>{day}</span>
-                      <input className="dash-input" value={hours} onChange={e=>setPf(p=>({...p,opening_hours:{...p.opening_hours,[day]:e.target.value}}))} placeholder="08:00-18:00 sau Închis" style={{...input,padding:'8px 12px',fontSize:12}}/>
+                      <input className="dash-input" value={hours} onChange={e=>setPf(p=>({...p,opening_hours:{...p.opening_hours,[day]:e.target.value}}))} placeholder="08:00-18:00 sau Inchis" style={{...input,padding:'8px 12px',fontSize:12}}/>
                     </div>
                   ))}
                 </div>
@@ -713,18 +1123,96 @@ export default function ServiceDashboard() {
                 {/* Specializari */}
                 <div style={{...card(),gridColumn:'1/-1'}}>
                   <h3 style={{fontFamily:"'Sora',sans-serif",fontWeight:700,fontSize:14,color:S.navy,marginBottom:16}}>🚗 Specializări & certificări</h3>
+
+                  {/* Tip service */}
+                  <div style={{marginBottom:20}}>
+                    <label style={label}>Tip service</label>
+                    <div style={{display:'flex',gap:10,flexWrap:'wrap'}}>
+                      {[{val:true,icon:'🌐',label:'Multimarcă',desc:'Repară orice marcă'},{val:false,icon:'🎯',label:'Unimarcă',desc:'Mărci specifice'}].map(opt=>(
+                        <button key={String(opt.val)} onClick={()=>setPf(p=>({...p,is_multibrand:opt.val,brands_accepted:opt.val?[]:p.brands_accepted}))}
+                          style={{flex:1,padding:'14px 16px',borderRadius:14,border:`2px solid ${pf.is_multibrand===opt.val?S.blue:S.border}`,background:pf.is_multibrand===opt.val?'#eaf3ff':S.white,cursor:'pointer',textAlign:'left',transition:'all .15s'}}>
+                          <div style={{fontSize:20,marginBottom:4}}>{opt.icon}</div>
+                          <div style={{fontFamily:"'Sora',sans-serif",fontWeight:700,fontSize:13,color:pf.is_multibrand===opt.val?S.blue:S.navy,marginBottom:2}}>{opt.label}</div>
+                          <div style={{fontSize:11,color:S.muted}}>{opt.desc}</div>
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Parc dezmembrari */}
+                  <div style={{marginBottom:20}}>
+                    <label style={label}>Tip unitate</label>
+                    <button onClick={()=>setPf(p=>({...p,is_dismantling:!p.is_dismantling}))}
+                      style={{display:'flex',alignItems:'center',gap:14,width:'100%',padding:'16px',borderRadius:14,border:`2px solid ${pf.is_dismantling?'#d97706':S.border}`,background:pf.is_dismantling?'#fef3c7':S.white,cursor:'pointer',textAlign:'left',transition:'all .15s'}}>
+                      <div style={{width:48,height:48,background:pf.is_dismantling?'#fef3c7':'#f0f0f0',borderRadius:12,display:'flex',alignItems:'center',justifyContent:'center',fontSize:24,flexShrink:0}}>🔩</div>
+                      <div style={{flex:1}}>
+                        <div style={{fontFamily:"'Sora',sans-serif",fontWeight:700,fontSize:14,color:pf.is_dismantling?'#d97706':S.navy,marginBottom:2}}>
+                          {pf.is_dismantling ? '✅ Parc dezmembrări activ' : 'Activează Parc dezmembrări'}
+                        </div>
+                        <div style={{fontSize:12,color:S.muted}}>Poți adăuga piese dezmembrate și vehicule pentru dezmembrare</div>
+                      </div>
+                      <div style={{width:44,height:24,borderRadius:12,background:pf.is_dismantling?'#d97706':'#e5e7eb',position:'relative',transition:'background .2s',flexShrink:0}}>
+                        <div style={{position:'absolute',top:2,left:pf.is_dismantling?20:2,width:20,height:20,borderRadius:'50%',background:'#fff',transition:'left .2s',boxShadow:'0 1px 4px rgba(0,0,0,0.2)'}}/>
+                      </div>
+                    </button>
+                    {pf.is_dismantling&&(
+                      <div style={{marginTop:8,padding:'12px 14px',background:'#fef3c7',borderRadius:10,border:'1px solid #d9770620',fontSize:12,color:'#92400e'}}>
+                        <div style={{marginBottom:8}}>🔩 Ca parc dezmembrări, poți adăuga piese și vehicule în secțiunea <strong>Anunțuri</strong>. Profilul tău va apărea în categoria Dezmembrări.</div>
+                        <a href="/dezmembrari-abonamente" target="_blank"
+                          style={{display:'inline-flex',alignItems:'center',gap:6,padding:'7px 14px',background:'#d97706',color:'#fff',borderRadius:50,fontSize:12,fontWeight:700,textDecoration:'none',fontFamily:"'Sora',sans-serif"}}>
+                          📦 Vezi abonamente speciale pentru dezmembrări →
+                        </a>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Mărci acceptate — afișat întotdeauna, cu buton Toate mai proeminent */}
+                  <div style={{marginBottom:20}}>
+                    <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:8}}>
+                      <label style={label}>
+                        {pf.is_multibrand ? 'Mărci acceptate (toate implicit)' : 'Mărci specializate *'}
+                      </label>
+                      <div style={{display:'flex',gap:6}}>
+                        <button onClick={()=>setPf(p=>({...p,brands_accepted:[]}))}
+                          style={{padding:'4px 12px',borderRadius:50,border:`1.5px solid ${pf.brands_accepted.length===0?S.blue:S.border}`,background:pf.brands_accepted.length===0?S.blue:'#fff',color:pf.brands_accepted.length===0?'#fff':S.muted,fontSize:11,fontWeight:600,cursor:'pointer'}}>
+                          ✓ Toate
+                        </button>
+                        <button onClick={()=>setPf(p=>({...p,brands_accepted:[...ALL_BRANDS]}))}
+                          style={{padding:'4px 12px',borderRadius:50,border:`1.5px solid ${S.border}`,background:'#fff',color:S.muted,fontSize:11,fontWeight:600,cursor:'pointer'}}>
+                          Selectează toate
+                        </button>
+                      </div>
+                    </div>
+                    <div style={{border:`1px solid ${S.border}`,borderRadius:12,padding:12,background:S.bg,maxHeight:160,overflowY:'auto',display:'flex',flexWrap:'wrap',gap:6}}>
+                      {ALL_BRANDS.map(brand=>(
+                        <button key={brand} onClick={()=>setPf(p=>({...p,brands_accepted:p.brands_accepted.includes(brand)?p.brands_accepted.filter(b=>b!==brand):[...p.brands_accepted,brand]}))}
+                          style={{padding:'5px 12px',borderRadius:50,border:`1.5px solid ${pf.brands_accepted.includes(brand)?S.blue:S.border}`,background:pf.brands_accepted.includes(brand)?'#eaf3ff':'#fff',color:pf.brands_accepted.includes(brand)?S.blue:S.muted,fontSize:11,fontWeight:pf.brands_accepted.includes(brand)?700:400,cursor:'pointer',transition:'all .1s'}}>
+                          {brand}
+                        </button>
+                      ))}
+                    </div>
+                    {pf.brands_accepted.length>0&&(
+                      <div style={{fontSize:12,color:S.blue,marginTop:6,fontWeight:600}}>
+                        {pf.brands_accepted.length} mărci selectate
+                      </div>
+                    )}
+                  </div>
+
                   <div style={{display:'grid',gridTemplateColumns:'1fr 1fr 1fr',gap:16}}>
+                    {/* Combustibil */}
                     <div>
                       <label style={label}>Combustibil acceptat</label>
                       <div style={{display:'flex',flexWrap:'wrap',gap:6}}>
-                        {['Benzină','Diesel','Hybrid','Electric','GPL'].map(f=>(
+                        {[['Benzină','⛽'],['Diesel','🛢️'],['Hybrid','🔋'],['Electric','⚡'],['GPL','🟢']].map(([f,icon])=>(
                           <button key={f} onClick={()=>setPf(p=>({...p,fuel_types:p.fuel_types.includes(f)?p.fuel_types.filter(x=>x!==f):[...p.fuel_types,f]}))}
-                            style={{padding:'6px 12px',borderRadius:50,border:`1.5px solid ${pf.fuel_types.includes(f)?S.blue:S.border}`,background:pf.fuel_types.includes(f)?'#eaf3ff':S.white,color:pf.fuel_types.includes(f)?S.blue:S.muted,fontSize:12,fontWeight:600,cursor:'pointer',transition:'all .15s'}}>
-                            {f}
+                            style={{padding:'7px 14px',borderRadius:50,border:`1.5px solid ${pf.fuel_types.includes(f)?S.blue:S.border}`,background:pf.fuel_types.includes(f)?'#eaf3ff':S.white,color:pf.fuel_types.includes(f)?S.blue:S.muted,fontSize:12,fontWeight:600,cursor:'pointer',transition:'all .15s',display:'flex',alignItems:'center',gap:4}}>
+                            {icon} {f}
                           </button>
                         ))}
                       </div>
                     </div>
+
+                    {/* Garantie + An minim */}
                     <div>
                       <label style={label}>Garanție lucrări</label>
                       <select className="dash-input" value={pf.warranty_months} onChange={e=>setPf(p=>({...p,warranty_months:e.target.value}))} style={input}>
@@ -735,6 +1223,8 @@ export default function ServiceDashboard() {
                         <input className="dash-input" type="number" value={pf.min_year_accepted} onChange={e=>setPf(p=>({...p,min_year_accepted:e.target.value}))} placeholder="ex: 2005" style={input}/>
                       </div>
                     </div>
+
+                    {/* Certificări */}
                     <div>
                       <label style={label}>Certificări</label>
                       {[{k:'is_authorized_rar',l:'🛡️ Autorizat RAR'},{k:'has_itp',l:'✅ ITP pe loc'}].map(opt=>(
@@ -744,30 +1234,14 @@ export default function ServiceDashboard() {
                         </label>
                       ))}
                     </div>
-                  </div>
-
-                  <div style={{marginTop:16}}>
-                    <label style={label}>Mărci acceptate ({pf.brands_accepted.length===0?'toate':pf.brands_accepted.length+' selectate'})</label>
-                    <div style={{maxHeight:120,overflowY:'auto',border:`1px solid ${S.border}`,borderRadius:10,padding:10,display:'flex',flexWrap:'wrap',gap:6,background:S.bg}}>
-                      <button onClick={()=>setPf(p=>({...p,brands_accepted:[]}))}
-                        style={{padding:'4px 10px',borderRadius:50,border:`1.5px solid ${pf.brands_accepted.length===0?S.blue:S.border}`,background:pf.brands_accepted.length===0?S.blue:'#fff',color:pf.brands_accepted.length===0?'#fff':S.muted,fontSize:11,fontWeight:600,cursor:'pointer'}}>
-                        Toate
-                      </button>
-                      {ALL_BRANDS.filter(b=>b!=='Toate mărcile').map(brand=>(
-                        <button key={brand} onClick={()=>setPf(p=>({...p,brands_accepted:p.brands_accepted.includes(brand)?p.brands_accepted.filter(b=>b!==brand):[...p.brands_accepted,brand]}))}
-                          style={{padding:'4px 10px',borderRadius:50,border:`1.5px solid ${pf.brands_accepted.includes(brand)?S.blue:S.border}`,background:pf.brands_accepted.includes(brand)?'#eaf3ff':'#fff',color:pf.brands_accepted.includes(brand)?S.blue:S.muted,fontSize:11,fontWeight:pf.brands_accepted.includes(brand)?700:400,cursor:'pointer'}}>
-                          {brand}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-                </div>
-              </div>
+                  </div>{/* end grid 1fr 1fr 1fr */}
+                </div>{/* end card Specializari */}
+              </div>{/* end profile grid */}
 
               <div style={{display:'flex',justifyContent:'flex-end',marginTop:16}}>
                 <button onClick={saveProfile} disabled={profileSaving}
                   style={{...btn('primary'),padding:'12px 28px',fontSize:14,background:profileSaved?S.green:S.blue}}>
-                  {profileSaved?'✅ Profil salvat!':profileSaving?'Se salvează...':'Salvează toate modificările →'}
+                  {profileSaved?'✅ Profil salvat!':profileSaving?'Se salvează...':'Salvează profilul'}
                 </button>
               </div>
             </div>
@@ -784,10 +1258,16 @@ export default function ServiceDashboard() {
                 <div style={{display:'grid',gridTemplateColumns:'2fr 1fr 1fr 1fr',gap:12,marginBottom:12}}>
                   <div>
                     <label style={label}>Serviciu *</label>
-                    <select className="dash-input" value={newOffering.name} onChange={e=>setNewOffering(p=>({...p,name:e.target.value}))} style={input}>
-                      <option value="">Selectează serviciul</option>
-                      {ALL_SERVICES.map(s=><option key={s}>{s}</option>)}
-                    </select>
+                    <div style={{position:'relative'}}>
+                      <select className="dash-input" value={newOffering.name} onChange={e=>setNewOffering(p=>({...p,name:e.target.value}))} style={input}>
+                        <option value="">Selectează serviciul</option>
+                        {SERVICE_CATEGORIES.map(cat=>(
+                          <optgroup key={cat.cat} label={cat.cat}>
+                            {cat.items.map(s=><option key={s} value={s}>{s}</option>)}
+                          </optgroup>
+                        ))}
+                      </select>
+                    </div>
                   </div>
                   <div>
                     <label style={label}>Preț de la (RON)</label>
@@ -807,6 +1287,27 @@ export default function ServiceDashboard() {
                   <input className="dash-input" value={newOffering.description} onChange={e=>setNewOffering(p=>({...p,description:e.target.value}))} placeholder="ex: include filtrul de ulei, verificare nivel lichide..." style={input}/>
                 </div>
                 <button onClick={addOffering} disabled={!newOffering.name} style={{...btn('primary'),opacity:!newOffering.name?.5:1}}>+ Adaugă serviciu</button>
+              </div>
+
+              {/* Adaugă rapid pe categorii */}
+              <div style={card({marginBottom:16})}>
+                <h3 style={{fontFamily:"'Sora',sans-serif",fontWeight:700,fontSize:14,color:S.navy,marginBottom:4}}>⚡ Adaugă rapid pe categorii</h3>
+                <p style={{fontSize:12,color:S.muted,marginBottom:14}}>Click pe o categorie pentru a adăuga toate serviciile din ea dintr-o dată.</p>
+                <div style={{display:'flex',flexWrap:'wrap',gap:8}}>
+                  {SERVICE_CATEGORIES.map(cat=>{
+                    const allAdded = cat.items.every(s=>offerings.some(o=>o.name===s))
+                    const addedCount = cat.items.filter(s=>offerings.some(o=>o.name===s)).length
+                    return (
+                      <button key={cat.cat} onClick={()=>addWholeCategory(cat.items)}
+                        style={{display:'inline-flex',alignItems:'center',gap:6,padding:'7px 14px',borderRadius:50,border:`1.5px solid ${allAdded?S.green+'50':'#1a56db30'}`,background:allAdded?S.greenBg:'#eaf3ff',color:allAdded?S.green:S.blue,fontSize:12,fontWeight:600,cursor:'pointer',transition:'all .15s'}}>
+                        {allAdded?'✓ ':''}{cat.cat}
+                        <span style={{background:allAdded?S.green:S.blue,color:'#fff',borderRadius:50,padding:'1px 7px',fontSize:10,fontWeight:700}}>
+                          {addedCount}/{cat.items.length}
+                        </span>
+                      </button>
+                    )
+                  })}
+                </div>
               </div>
 
               {offerings.length===0?<div style={{...card(),textAlign:'center',padding:'40px 20px',color:S.muted}}>
@@ -836,43 +1337,65 @@ export default function ServiceDashboard() {
 
           {/* ══ CERERI ══ */}
           {tab==='Cereri'&&(
-            <div style={{display:'flex',gap:16}}>
-              <div style={{width:300,flexShrink:0}}>
-                <h1 style={{fontFamily:"'Sora',sans-serif",fontWeight:800,fontSize:18,color:S.navy,marginBottom:16}}>Cereri în {service?.city}</h1>
-                {requests.length===0?<div style={{...card(),textAlign:'center',padding:'40px 16px',color:S.muted}}>
-                  <div style={{fontSize:36,marginBottom:10}}>📭</div>
-                  <div style={{fontWeight:600,marginBottom:4}}>Nicio cerere activă</div>
-                  <div style={{fontSize:12}}>Vei fi notificat când apar cereri noi.</div>
-                </div>:
-                  requests.map(r=>(
-                    <button key={r.id} onClick={()=>setSelectedReq(r)} className="card-hover"
-                      style={{...card({padding:14,marginBottom:8}),width:'100%',textAlign:'left',cursor:'pointer',border:`1.5px solid ${selectedReq?.id===r.id?S.blue:S.border}`,background:selectedReq?.id===r.id?'#eaf3ff':S.white}}>
-                      <div style={{display:'flex',justifyContent:'space-between',marginBottom:8}}>
-                        <div>
-                          <div style={{fontWeight:700,fontSize:13,color:S.navy}}>{r.car_brand} {r.car_model} {r.car_year?`(${r.car_year})`:''}</div>
-                          <div style={{fontSize:11,color:S.muted,marginTop:1}}>{r.car_fuel}{r.car_km?` · ${r.car_km.toLocaleString()} km`:''}</div>
-                        </div>
-                        <span style={pill(r.urgency==='urgent'?S.redBg:r.urgency==='saptamana'?S.amberBg:S.greenBg,r.urgency==='urgent'?S.red:r.urgency==='saptamana'?S.amber:S.green,'')}>{r.urgency}</span>
-                      </div>
-                      <div style={{display:'flex',flexWrap:'wrap',gap:4,marginBottom:6}}>
-                        {r.services?.slice(0,3).map(s=><span key={s} style={pill('#eaf3ff',S.blue,'')}>{s}</span>)}
-                        {(r.services?.length||0)>3&&<span style={pill(S.bg,S.muted,'')}>+{r.services.length-3}</span>}
-                      </div>
-                      <div style={{fontSize:11,color:S.muted}}>{new Date(r.created_at).toLocaleDateString('ro-RO')}</div>
-                    </button>
-                  ))
-                }
-              </div>
+            <div>
+              <h1 style={{fontFamily:"'Sora',sans-serif",fontWeight:800,fontSize:18,color:S.navy,marginBottom:16}}>Cereri în {service?.city}</h1>
 
+              {/* Modal detalii cerere */}
               {selectedReq&&(
-                <div style={{flex:1,minWidth:0}}>
-                  <div style={card({marginBottom:12})}>
-                    <div style={{display:'flex',justifyContent:'space-between',alignItems:'flex-start',marginBottom:16}}>
-                      <h2 style={{fontFamily:"'Sora',sans-serif",fontWeight:700,fontSize:16,color:S.navy}}>Detalii cerere</h2>
-                      <button onClick={()=>setSelectedReq(null)} style={{background:'none',border:'none',cursor:'pointer',color:S.muted,fontSize:18}}>✕</button>
+                <div onClick={e=>{if(e.target===e.currentTarget)setSelectedReq(null)}}
+                  style={{position:'fixed',inset:0,background:'rgba(10,18,30,0.5)',zIndex:500,display:'flex',alignItems:'flex-end',justifyContent:'center'}}>
+                  <div style={{background:'#fff',borderRadius:'20px 20px 0 0',width:'100%',maxWidth:640,maxHeight:'90vh',overflowY:'auto',padding:20}}>
+                    <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:16}}>
+                      <h2 style={{fontFamily:"'Sora',sans-serif",fontWeight:700,fontSize:16,color:'#0a1f44',margin:0}}>Detalii cerere</h2>
+                      <button onClick={()=>setSelectedReq(null)} style={{background:'none',border:'none',cursor:'pointer',fontSize:22,color:'#6b7280',lineHeight:1}}>✕</button>
                     </div>
+                  <div style={card({marginBottom:12})}>
+                    {/* Contact client */}
+                    <div style={{background:'#eaf3ff',borderRadius:12,padding:'12px 16px',marginBottom:14,border:'1px solid rgba(26,86,219,0.15)'}}>
+                      <div style={{fontSize:11,color:S.blue,fontWeight:700,textTransform:'uppercase',letterSpacing:0.5,marginBottom:10}}>👤 Date contact client</div>
+                      <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:10}}>
+                        <div style={{display:'flex',alignItems:'center',gap:8}}>
+                          <span style={{fontSize:18}}>👤</span>
+                          <div>
+                            <div style={{fontSize:10,color:S.muted,fontWeight:600,textTransform:'uppercase',letterSpacing:0.5}}>Nume</div>
+                            <div style={{fontWeight:700,fontSize:14,color:S.navy}}>{selectedReq.contact_name||'—'}</div>
+                          </div>
+                        </div>
+                        <div style={{display:'flex',alignItems:'center',gap:8}}>
+                          <span style={{fontSize:18}}>📞</span>
+                          <div>
+                            <div style={{fontSize:10,color:S.muted,fontWeight:600,textTransform:'uppercase',letterSpacing:0.5}}>Telefon</div>
+                            {selectedReq.contact_phone?(
+                              <a href={`tel:${selectedReq.contact_phone}`} style={{fontWeight:700,fontSize:14,color:S.blue,textDecoration:'none'}}>{selectedReq.contact_phone}</a>
+                            ):<div style={{fontWeight:700,fontSize:14,color:S.muted}}>—</div>}
+                          </div>
+                        </div>
+                        <div style={{display:'flex',alignItems:'center',gap:8}}>
+                          <span style={{fontSize:18}}>📍</span>
+                          <div>
+                            <div style={{fontSize:10,color:S.muted,fontWeight:600,textTransform:'uppercase',letterSpacing:0.5}}>Oraș</div>
+                            <div style={{fontWeight:700,fontSize:14,color:S.navy}}>{selectedReq.city||'—'}</div>
+                          </div>
+                        </div>
+                        <div style={{display:'flex',alignItems:'center',gap:8}}>
+                          <span style={{fontSize:18}}>📅</span>
+                          <div>
+                            <div style={{fontSize:10,color:S.muted,fontWeight:600,textTransform:'uppercase',letterSpacing:0.5}}>Data cererii</div>
+                            <div style={{fontWeight:700,fontSize:14,color:S.navy}}>{new Date(selectedReq.created_at).toLocaleDateString('ro-RO',{day:'numeric',month:'long',year:'numeric'})}</div>
+                          </div>
+                        </div>
+                      </div>
+                      {selectedReq.contact_phone&&(
+                        <a href={`tel:${selectedReq.contact_phone}`}
+                          style={{display:'flex',alignItems:'center',justifyContent:'center',gap:8,marginTop:10,padding:'10px',background:S.blue,color:'#fff',borderRadius:10,textDecoration:'none',fontSize:13,fontWeight:700,fontFamily:"'Sora',sans-serif"}}>
+                          📞 Sună clientul acum
+                        </a>
+                      )}
+                    </div>
+
+                    {/* Detalii masina */}
                     <div style={{display:'grid',gridTemplateColumns:'repeat(3,1fr)',gap:10,marginBottom:14}}>
-                      {[['Mașina',`${selectedReq.car_brand} ${selectedReq.car_model} ${selectedReq.car_year||''}`],['Combustibil',selectedReq.car_fuel||'—'],['Kilometraj',selectedReq.car_km?`${selectedReq.car_km.toLocaleString()} km`:'—'],['Urgență',selectedReq.urgency],['Data preferată',selectedReq.preferred_date||'—'],['Interval',selectedReq.preferred_time||'—']].map(([l,v])=>(
+                      {[['Mașina',`${selectedReq.car_brand} ${selectedReq.car_model} ${selectedReq.car_year||''}`],['Combustibil',selectedReq.car_fuel||'—'],['Kilometraj',selectedReq.car_km?`${Number(selectedReq.car_km).toLocaleString()} km`:'—'],['Urgență',selectedReq.urgency||'—'],['Data preferată',selectedReq.preferred_date||'—'],['Interval',selectedReq.preferred_time||'—']].map(([l,v])=>(
                         <div key={l} style={{background:S.bg,borderRadius:10,padding:'10px 12px'}}>
                           <div style={{fontSize:10,color:S.muted,fontWeight:600,textTransform:'uppercase',letterSpacing:0.5,marginBottom:3}}>{l}</div>
                           <div style={{fontWeight:600,fontSize:13,color:S.navy}}>{v}</div>
@@ -925,72 +1448,254 @@ export default function ServiceDashboard() {
                               {['0','3','6','12','24'].map(m=><option key={m}>{m}</option>)}
                             </select>
                           </div>
+                          <div style={{gridColumn:'1/-1'}}>
+                            <label style={label}>Tip piese utilizate</label>
+                            <div style={{display:'flex',gap:8,marginTop:4}}>
+                              {[
+                                {value:'oem',label:'🔵 OEM',desc:'Originale'},
+                                {value:'aftermarket',label:'🟡 Aftermarket',desc:'Compatibile'},
+                                {value:'both',label:'🔵🟡 Ambele',desc:'La alegere'},
+                              ].map(pt=>(
+                                <button key={pt.value} type="button"
+                                  onClick={()=>setOfferForm(p=>({...p,parts_type:pt.value}))}
+                                  style={{flex:1,padding:'9px 6px',border:`1.5px solid ${offerForm.parts_type===pt.value?S.blue:S.border}`,borderRadius:10,background:offerForm.parts_type===pt.value?'#eaf3ff':'#fff',cursor:'pointer',textAlign:'center'}}>
+                                  <div style={{fontWeight:700,fontSize:12,color:offerForm.parts_type===pt.value?S.blue:S.navy}}>{pt.label}</div>
+                                  <div style={{fontSize:10,color:S.muted}}>{pt.desc}</div>
+                                </button>
+                              ))}
+                            </div>
+                          </div>
                         </div>
                         <button onClick={sendOffer} style={{...btn('yellow'),width:'100%',justifyContent:'center',padding:'12px',fontSize:14}}>✉️ Trimite oferta</button>
                       </div>
                     )}
+
+                  </div>
+                </div>
+                </div>
+              )}
+
+              {/* Lista cereri */}
+              {requests.length===0
+                ?<div style={{...card(),textAlign:'center',padding:'40px 16px',color:S.muted}}>
+                  <div style={{fontSize:36,marginBottom:10}}>📭</div>
+                  <div style={{fontWeight:600,marginBottom:4}}>Nicio cerere activă</div>
+                  <div style={{fontSize:12}}>Vei fi notificat când apar cereri noi.</div>
+                </div>
+                :<>{requests.map(r=>(
+                  <button key={r.id} onClick={()=>setSelectedReq(r)} className="card-hover"
+                    style={{...card({padding:14,marginBottom:8}),width:'100%',textAlign:'left',cursor:'pointer',border:`1.5px solid ${selectedReq?.id===r.id?S.blue:S.border}`,background:selectedReq?.id===r.id?'#eaf3ff':S.white}}>
+                    <div style={{display:'flex',justifyContent:'space-between',marginBottom:8}}>
+                      <div>
+                        <div style={{fontWeight:700,fontSize:14,color:S.navy}}>{r.car_brand} {r.car_model} {r.car_year?`(${r.car_year})`:''}</div>
+                        <div style={{fontSize:12,color:S.muted,marginTop:2}}>{r.car_fuel}{r.car_km?` · ${r.car_km.toLocaleString()} km`:''}</div>
+                      </div>
+                      <span style={pill(r.urgency==='urgent'?S.redBg:r.urgency==='saptamana'?S.amberBg:S.greenBg,r.urgency==='urgent'?S.red:r.urgency==='saptamana'?S.amber:S.green,'')}>{r.urgency}</span>
+                    </div>
+                    <div style={{display:'flex',flexWrap:'wrap',gap:4,marginBottom:6}}>
+                      {r.services?.slice(0,3).map(s=><span key={s} style={pill('#eaf3ff',S.blue,'')}>{s}</span>)}
+                      {(r.services?.length||0)>3&&<span style={pill(S.bg,S.muted,'')}>+{r.services.length-3}</span>}
+                    </div>
+                    <div style={{display:'flex',justifyContent:'space-between',alignItems:'center'}}>
+                      <div style={{fontSize:11,color:S.muted}}>{new Date(r.created_at).toLocaleDateString('ro-RO')}</div>
+                      {r.contact_name&&<div style={{fontSize:12,fontWeight:600,color:S.blue}}>👤 {r.contact_name}</div>}
+                    </div>
+                  </button>
+                ))}</>
+              }
+            </div>
+          )}
+          {tab==='Programări'&&(
+            <div>
+              <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:20,flexWrap:'wrap',gap:10}}>
+                <h1 style={{fontFamily:"'Sora',sans-serif",fontWeight:800,fontSize:22,color:S.navy}}>Calendar programări</h1>
+                <div style={{display:'flex',alignItems:'center',gap:10}}>
+                  <span style={{fontSize:13,color:S.muted}}>{appointments.filter(a=>a.scheduled_date===today).length} programări azi</span>
+                  <button onClick={()=>setShowAddApt(true)}
+                    style={{display:'inline-flex',alignItems:'center',gap:6,padding:'9px 18px',background:S.blue,color:'#fff',border:'none',borderRadius:50,fontSize:13,fontWeight:700,cursor:'pointer',fontFamily:"'Sora',sans-serif"}}>
+                    + Adaugă programare
+                  </button>
+                </div>
+              </div>
+
+              {/* Modal adaugare programare manuala */}
+              {showAddApt&&(
+                <div onClick={e=>{if(e.target===e.currentTarget)setShowAddApt(false)}}
+                  style={{position:'fixed',inset:0,background:'rgba(10,18,30,0.6)',zIndex:2000,display:'flex',alignItems:'center',justifyContent:'center',padding:16}}>
+                  <div style={{background:'#fff',borderRadius:20,width:'100%',maxWidth:500,padding:28,maxHeight:'90vh',overflowY:'auto'}}>
+                    <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:20}}>
+                      <h3 style={{fontFamily:"'Sora',sans-serif",fontWeight:800,fontSize:17,color:S.navy}}>Adaugă programare</h3>
+                      <button onClick={()=>setShowAddApt(false)} style={{background:'none',border:'none',cursor:'pointer',fontSize:20,color:S.muted}}>✕</button>
+                    </div>
+                    <div style={{display:'grid',gap:12}}>
+                      {/* Data + Ora */}
+                      <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:10}}>
+                        <div>
+                          <label style={label}>Data *</label>
+                          <input type="date" value={newApt.scheduled_date} onChange={e=>setNewApt(p=>({...p,scheduled_date:e.target.value}))} min={today} style={input}/>
+                        </div>
+                        <div>
+                          <label style={label}>Ora *</label>
+                          <select value={newApt.scheduled_time} onChange={e=>setNewApt(p=>({...p,scheduled_time:e.target.value}))} style={input}>
+                            {Array.from({length:22},(_, i)=>{
+                              const h = Math.floor(i/2)+8
+                              const m = i%2===0?'00':'30'
+                              const t = `${String(h).padStart(2,'0')}:${m}`
+                              return <option key={t} value={t}>{t}</option>
+                            })}
+                          </select>
+                        </div>
+                      </div>
+                      {/* Durata */}
+                      <div>
+                        <label style={label}>Durată estimată</label>
+                        <select value={newApt.duration_min} onChange={e=>setNewApt(p=>({...p,duration_min:e.target.value}))} style={input}>
+                          {[['30','30 minute'],['60','1 oră'],['90','1h 30min'],['120','2 ore'],['180','3 ore'],['240','4 ore'],['480','Toată ziua']].map(([v,l])=>(
+                            <option key={v} value={v}>{l}</option>
+                          ))}
+                        </select>
+                      </div>
+                      {/* Client */}
+                      <div>
+                        <label style={label}>Numele clientului</label>
+                        <input value={newApt.client_name} onChange={e=>setNewApt(p=>({...p,client_name:e.target.value}))} placeholder="Ion Popescu" style={input}/>
+                      </div>
+                      {/* Masina */}
+                      <div>
+                        <label style={label}>Mașina</label>
+                        <input value={newApt.car_info} onChange={e=>setNewApt(p=>({...p,car_info:e.target.value}))} placeholder="ex: BMW Seria 3, B-11-XYZ" style={input}/>
+                      </div>
+                      {/* Lucrare */}
+                      <div>
+                        <label style={label}>Lucrare / Descriere</label>
+                        <textarea value={newApt.work_description} onChange={e=>setNewApt(p=>({...p,work_description:e.target.value}))} rows={2}
+                          placeholder="ex: Schimb ulei + filtre, Frâne față..." style={{...input,resize:'none'}}/>
+                      </div>
+                      {/* Note */}
+                      <div>
+                        <label style={label}>Note interne (opțional)</label>
+                        <input value={newApt.notes} onChange={e=>setNewApt(p=>({...p,notes:e.target.value}))} placeholder="ex: Client fidel, aduce piese proprii" style={input}/>
+                      </div>
+                    </div>
+                    <button onClick={addManualAppointment} disabled={addingApt||!newApt.scheduled_date||!newApt.scheduled_time}
+                      style={{...btn('primary'),width:'100%',justifyContent:'center',marginTop:16,padding:'12px',fontSize:14,opacity:(!newApt.scheduled_date||!newApt.scheduled_time)?.5:1}}>
+                      {addingApt?'Se salvează...':'✅ Salvează programarea'}
+                    </button>
                   </div>
                 </div>
               )}
-            </div>
-          )}
 
-          {/* ══ PROGRAMARI ══ */}
-          {tab==='Programări'&&(
-            <div>
-              <h1 style={{fontFamily:"'Sora',sans-serif",fontWeight:800,fontSize:22,color:S.navy,marginBottom:20}}>Calendar programări</h1>
-              <div style={{display:'grid',gridTemplateColumns:'280px 1fr',gap:16}}>
-                <div style={card()}>
-                  <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:14}}>
-                    <button onClick={()=>setCalMonth(d=>new Date(d.getFullYear(),d.getMonth()-1,1))} style={{background:S.bg,border:`1px solid ${S.border}`,borderRadius:8,width:30,height:30,cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'center'}}>‹</button>
-                    <span style={{fontFamily:"'Sora',sans-serif",fontWeight:700,fontSize:13,color:S.navy}}>{calMonth.toLocaleDateString('ro-RO',{month:'long',year:'numeric'})}</span>
-                    <button onClick={()=>setCalMonth(d=>new Date(d.getFullYear(),d.getMonth()+1,1))} style={{background:S.bg,border:`1px solid ${S.border}`,borderRadius:8,width:30,height:30,cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'center'}}>›</button>
-                  </div>
-                  <div style={{display:'grid',gridTemplateColumns:'repeat(7,1fr)',marginBottom:4}}>
-                    {['L','M','M','J','V','S','D'].map((d,i)=><div key={i} style={{textAlign:'center',fontSize:11,fontWeight:700,color:S.muted,padding:'4px 0'}}>{d}</div>)}
-                  </div>
-                  <div style={{display:'grid',gridTemplateColumns:'repeat(7,1fr)',gap:2}}>
-                    {Array.from({length:firstDay}).map((_,i)=><div key={`e${i}`}/>)}
-                    {Array.from({length:daysInMonth}).map((_,i)=>{
-                      const day=i+1
-                      const apts=aptsForDay(day)
-                      const isToday=day===new Date().getDate()&&calMonth.getMonth()===new Date().getMonth()&&calMonth.getFullYear()===new Date().getFullYear()
-                      return <div key={day} style={{textAlign:'center',padding:'5px 2px',borderRadius:8,background:isToday?S.blue:'transparent',cursor:'default'}}>
-                        <div style={{fontSize:12,color:isToday?'#fff':S.text}}>{day}</div>
-                        {apts.length>0&&<div style={{width:4,height:4,borderRadius:'50%',background:isToday?'#fff':S.yellow,margin:'2px auto 0'}}/>}
-                      </div>
-                    })}
-                  </div>
-                </div>
-
-                <div style={{display:'flex',flexDirection:'column',gap:10}}>
-                  {appointments.length===0?<div style={{...card(),textAlign:'center',padding:'40px 20px',color:S.muted}}>
-                    <div style={{fontSize:40,marginBottom:10}}>📅</div>Nicio programare
-                  </div>:appointments.map(a=>(
-                    <div key={a.id} style={card({padding:16})}>
-                      <div style={{display:'flex',justifyContent:'space-between',alignItems:'flex-start',marginBottom:12}}>
-                        <div>
-                          <div style={{fontWeight:700,fontSize:14,color:S.navy,marginBottom:2}}>
-                            {new Date(a.scheduled_date).toLocaleDateString('ro-RO',{weekday:'short',day:'numeric',month:'short'})} · {a.scheduled_time}
-                          </div>
-                          {a.notes&&<div style={{fontSize:12,color:S.muted}}>{a.notes}</div>}
-                        </div>
-                        <span style={pill((APT_STATUS[aptStatuses[a.id]||a.status]||APT_STATUS.in_asteptare).bg,(APT_STATUS[aptStatuses[a.id]||a.status]||APT_STATUS.in_asteptare).color,'')}>{(APT_STATUS[aptStatuses[a.id]||a.status]||APT_STATUS.in_asteptare).label}</span>
-                      </div>
-                      <div style={{display:'flex',gap:6,flexWrap:'wrap'}}>
-                        {[{s:'in_asteptare',l:'⏳ Așteptare'},{s:'confirmata',l:'✅ Confirmată'},{s:'in_lucru',l:'🔧 În lucru'},{s:'finalizata',l:'🏁 Finalizată'}].map(opt=>(
-                          <button key={opt.s} onClick={()=>updateAptStatus(a.id,opt.s)} className="apt-btn"
-                            style={{padding:'6px 12px',borderRadius:50,fontSize:12,fontWeight:600,cursor:'pointer',border:`1.5px solid ${(aptStatuses[a.id]||a.status)===opt.s?S.blue:S.border}`,background:(aptStatuses[a.id]||a.status)===opt.s?'#eaf3ff':S.white,color:(aptStatuses[a.id]||a.status)===opt.s?S.blue:S.muted,transition:'all .15s'}}>
-                            {opt.l}
-                          </button>
-                        ))}
-                      </div>
+              <div className="apt-layout" style={{display:'grid',gridTemplateColumns:'300px 1fr',gap:16}}>
+                {/* Mini calendar */}
+                <div>
+                  <div style={card({marginBottom:12})}>
+                    <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:14}}>
+                      <button onClick={()=>setCalMonth(d=>new Date(d.getFullYear(),d.getMonth()-1,1))} style={{background:S.bg,border:`1px solid ${S.border}`,borderRadius:8,width:30,height:30,cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'center'}}>‹</button>
+                      <span style={{fontFamily:"'Sora',sans-serif",fontWeight:700,fontSize:13,color:S.navy}}>{calMonth.toLocaleDateString('ro-RO',{month:'long',year:'numeric'})}</span>
+                      <button onClick={()=>setCalMonth(d=>new Date(d.getFullYear(),d.getMonth()+1,1))} style={{background:S.bg,border:`1px solid ${S.border}`,borderRadius:8,width:30,height:30,cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'center'}}>›</button>
                     </div>
-                  ))}
+                    <div style={{display:'grid',gridTemplateColumns:'repeat(7,1fr)',marginBottom:4}}>
+                      {['L','M','M','J','V','S','D'].map((d,i)=><div key={i} style={{textAlign:'center',fontSize:11,fontWeight:700,color:S.muted,padding:'4px 0'}}>{d}</div>)}
+                    </div>
+                    <div style={{display:'grid',gridTemplateColumns:'repeat(7,1fr)',gap:2}}>
+                      {Array.from({length:firstDay}).map((_,i)=><div key={`e${i}`}/>)}
+                      {Array.from({length:daysInMonth}).map((_,i)=>{
+                        const day=i+1
+                        const apts=aptsForDay(day)
+                        const isToday=day===new Date().getDate()&&calMonth.getMonth()===new Date().getMonth()&&calMonth.getFullYear()===new Date().getFullYear()
+                        return (
+                          <div key={day} style={{textAlign:'center',padding:'5px 2px',borderRadius:8,background:isToday?S.blue:apts.length>0?'#eaf3ff':'transparent',cursor:'default'}}>
+                            <div style={{fontSize:12,fontWeight:isToday?700:400,color:isToday?'#fff':apts.length>0?S.blue:S.text}}>{day}</div>
+                            {apts.length>0&&<div style={{fontSize:9,color:isToday?'rgba(255,255,255,0.8)':S.blue,fontWeight:700}}>{apts.length}</div>}
+                          </div>
+                        )
+                      })}
+                    </div>
+                  </div>
+
+                  {/* Rezumat rapid */}
+                  <div style={card()}>
+                    <div style={{fontSize:12,fontWeight:700,color:S.muted,textTransform:'uppercase',letterSpacing:0.5,marginBottom:10}}>Rezumat</div>
+                    {[
+                      {label:'Azi',count:appointments.filter(a=>a.scheduled_date===today).length,color:S.blue,bg:'#eaf3ff'},
+                      {label:'Această săptămână',count:appointments.filter(a=>{const d=new Date(a.scheduled_date);const now=new Date();const wk=new Date(now);wk.setDate(now.getDate()+7);return d>=now&&d<=wk}).length,color:S.green,bg:S.greenBg},
+                      {label:'În așteptare',count:appointments.filter(a=>(aptStatuses[a.id]||a.status)==='in_asteptare').length,color:S.amber,bg:S.amberBg},
+                    ].map(r=>(
+                      <div key={r.label} style={{display:'flex',justifyContent:'space-between',alignItems:'center',padding:'8px 10px',background:r.bg,borderRadius:10,marginBottom:6}}>
+                        <span style={{fontSize:12,color:r.color,fontWeight:600}}>{r.label}</span>
+                        <span style={{fontFamily:"'Sora',sans-serif",fontWeight:800,fontSize:18,color:r.color}}>{r.count}</span>
+                      </div>
+                    ))}
+                  </div>
                 </div>
-              </div>
+
+                {/* Lista programări */}
+                <div style={{display:'flex',flexDirection:'column',gap:10}}>
+                  {appointments.length===0
+                    ?<div style={{...card(),textAlign:'center',padding:'60px 20px',color:S.muted}}>
+                      <div style={{fontSize:48,marginBottom:12}}>📅</div>
+                      <div style={{fontWeight:600,fontSize:15,marginBottom:4}}>Nicio programare</div>
+                      <div style={{fontSize:13}}>Programările apar automat când clienții acceptă ofertele.</div>
+                    </div>
+                    :appointments.map(a=>{
+                      const status = aptStatuses[a.id]||a.status
+                      const st = APT_STATUS[status]||APT_STATUS.in_asteptare
+                      const isToday2 = a.scheduled_date===today
+                      return (
+                        <div key={a.id} style={{...card({padding:16}),border:`1.5px solid ${isToday2?S.blue:S.border}`}}>
+                          {/* Header */}
+                          <div style={{display:'flex',justifyContent:'space-between',alignItems:'flex-start',marginBottom:12}}>
+                            <div>
+                              <div style={{display:'flex',alignItems:'center',gap:8,marginBottom:4}}>
+                                {isToday2&&<span style={{background:S.blue,color:'#fff',fontSize:10,fontWeight:700,padding:'2px 8px',borderRadius:50,fontFamily:"'Sora',sans-serif"}}>AZI</span>}
+                                <div style={{fontFamily:"'Sora',sans-serif",fontWeight:700,fontSize:15,color:S.navy}}>
+                                  {new Date(a.scheduled_date).toLocaleDateString('ro-RO',{weekday:'long',day:'numeric',month:'long'})}
+                                </div>
+                              </div>
+                              <div style={{display:'flex',alignItems:'center',gap:12,fontSize:13,color:S.muted}}>
+                                <span>⏰ {a.scheduled_time||'Oră nespecificată'}</span>
+                                {a.duration_min&&<span>⏱️ ~{a.duration_min} min</span>}
+                              </div>
+                            </div>
+                            <span style={pill(st.bg,st.color,'')}>{st.label}</span>
+                          </div>
+
+                          {/* Lucrare + client */}
+                          {(a.work_description||a.client_name||a.car_info)&&(
+                            <div style={{background:S.bg,borderRadius:10,padding:'10px 12px',marginBottom:12}}>
+                              {a.car_info&&<div style={{fontSize:12,color:S.navy,fontWeight:600,marginBottom:4}}>🚗 {a.car_info}</div>}
+                              {a.client_name&&<div style={{fontSize:12,color:S.muted,marginBottom:4}}>👤 {a.client_name}</div>}
+                              {a.work_description&&<div style={{fontSize:13,color:S.text,lineHeight:1.5}}>{a.work_description}</div>}
+                            </div>
+                          )}
+
+                          {/* Note */}
+                          {a.notes&&<div style={{fontSize:13,color:S.muted,background:'#fffbf0',border:`1px solid ${S.amber}30`,borderRadius:8,padding:'8px 12px',marginBottom:12}}>📝 {a.notes}</div>}
+
+                          {/* Butoane status */}
+                          <div style={{display:'flex',gap:6,flexWrap:'wrap'}}>
+                            {[
+                              {s:'in_asteptare',l:'⏳ Așteptare'},
+                              {s:'confirmata',l:'✅ Confirmată'},
+                              {s:'in_lucru',l:'🔧 În lucru'},
+                              {s:'finalizata',l:'🏁 Finalizată'},
+                              {s:'anulata',l:'❌ Anulată'},
+                            ].map(opt=>(
+                              <button key={opt.s} onClick={()=>updateAptStatus(a.id,opt.s)}
+                                style={{padding:'6px 12px',borderRadius:50,fontSize:11,fontWeight:600,cursor:'pointer',border:`1.5px solid ${status===opt.s?S.blue:S.border}`,background:status===opt.s?'#eaf3ff':S.white,color:status===opt.s?S.blue:S.muted,transition:'all .15s'}}>
+                                {opt.l}
+                              </button>
+                            ))}
+                          </div>
+                        </div>
+                      )
+                    })
+                  }
+                </div>
+                </div>
             </div>
           )}
+
 
           {/* ══ OFERTE TRIMISE ══ */}
           {tab==='Oferte trimise'&&(
@@ -1003,15 +1708,43 @@ export default function ServiceDashboard() {
               </div>:
                 <div style={{display:'flex',flexDirection:'column',gap:8}}>
                   {offers.map(o=>(
-                    <div key={o.id} style={{...card({padding:'14px 16px'}),display:'flex',alignItems:'center',justifyContent:'space-between'}}>
-                      <div>
-                        <div style={{fontWeight:700,fontSize:15,color:S.navy,marginBottom:3}}>{o.price_total?`${o.price_total.toLocaleString()} RON`:'Preț negociabil'}</div>
-                        <div style={{fontSize:12,color:S.muted}}>{new Date(o.created_at).toLocaleDateString('ro-RO',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'})}</div>
-                        {o.description&&<div style={{fontSize:12,color:S.muted,marginTop:3}}>{o.description.substring(0,60)}{o.description.length>60?'...':''}</div>}
+                    <div key={o.id} style={{...card({padding:16})}}>
+                      <div style={{display:'flex',alignItems:'flex-start',justifyContent:'space-between',marginBottom:12,gap:12}}>
+                        <div style={{flex:1}}>
+                          {/* Status badge */}
+                          <div style={{marginBottom:8}}>
+                            <span style={{...pill(o.status==='acceptata'?S.greenBg:o.status==='refuzata'?S.redBg:o.status==='trimisa'?'#eaf3ff':S.bg,o.status==='acceptata'?S.green:o.status==='refuzata'?S.red:o.status==='trimisa'?S.blue:S.muted,''),fontSize:12,padding:'4px 12px'}}>
+                              {o.status==='trimisa'?'🆕 Trimisă — Așteptăm răspuns':o.status==='acceptata'?'✅ Acceptată de client':o.status==='refuzata'?'❌ Refuzată de client':'⏰ Expirată'}
+                            </span>
+                          </div>
+                          {/* Pret */}
+                          <div style={{fontFamily:"'Sora',sans-serif",fontWeight:800,fontSize:20,color:o.status==='acceptata'?S.green:S.navy,marginBottom:4}}>
+                            {o.price_total?`${o.price_total.toLocaleString()} RON`:'Preț negociabil'}
+                          </div>
+                          {/* Detalii pret */}
+                          {(o.price_parts||o.price_labor)&&(
+                            <div style={{fontSize:12,color:S.muted,marginBottom:4}}>
+                              {o.price_parts&&`Piese: ${o.price_parts} RON`}{o.price_parts&&o.price_labor&&' · '}{o.price_labor&&`Manoperă: ${o.price_labor} RON`}
+                            </div>
+                          )}
+                          {o.description&&<p style={{fontSize:13,color:S.muted,marginBottom:6,lineHeight:1.5}}>{o.description}</p>}
+                        </div>
+                        <div style={{fontSize:12,color:S.muted,flexShrink:0,textAlign:'right'}}>
+                          {new Date(o.created_at).toLocaleDateString('ro-RO',{day:'numeric',month:'short'})}
+                          <br/>{new Date(o.created_at).toLocaleTimeString('ro-RO',{hour:'2-digit',minute:'2-digit'})}
+                        </div>
                       </div>
-                      <span style={pill(o.status==='acceptata'?S.greenBg:o.status==='refuzata'?S.redBg:o.status==='trimisa'?'#eaf3ff':S.bg,o.status==='acceptata'?S.green:o.status==='refuzata'?S.red:o.status==='trimisa'?S.blue:S.muted,'')}>
-                        {o.status==='trimisa'?'🆕 Trimisă':o.status==='acceptata'?'✅ Acceptată':o.status==='refuzata'?'❌ Refuzată':'⏰ Expirată'}
-                      </span>
+                      {/* Detalii extra */}
+                      <div style={{display:'flex',gap:8,flexWrap:'wrap',paddingTop:10,borderTop:`1px solid ${S.border}`}}>
+                        {o.available_date&&<span style={{fontSize:11,color:S.muted,background:S.bg,borderRadius:6,padding:'3px 8px'}}>📅 {new Date(o.available_date).toLocaleDateString('ro-RO')}</span>}
+                        {o.available_time&&<span style={{fontSize:11,color:S.muted,background:S.bg,borderRadius:6,padding:'3px 8px'}}>⏰ {o.available_time}</span>}
+                        {o.warranty_months>0&&<span style={{fontSize:11,color:S.muted,background:S.bg,borderRadius:6,padding:'3px 8px'}}>🛡️ Garanție {o.warranty_months} luni</span>}
+                        {o.status==='acceptata'&&(
+                          <span style={{fontSize:11,color:S.green,fontWeight:700,marginLeft:'auto'}}>
+                            🎉 Clientul a acceptat oferta ta!
+                          </span>
+                        )}
+                      </div>
                     </div>
                   ))}
                 </div>
@@ -1023,7 +1756,7 @@ export default function ServiceDashboard() {
           {/* ══ ANUNTURI ══ */}
           {tab==='Anunțuri'&&(
             <div>
-              <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:20}}>
+              <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:20,flexWrap:'wrap',gap:10}}>
                 <div>
                   <h1 style={{fontFamily:"'Sora',sans-serif",fontWeight:800,fontSize:22,color:S.navy,marginBottom:4}}>Anunțurile mele</h1>
                   <p style={{color:S.muted,fontSize:13}}>Piese, accesorii sau alte produse auto pe care le vinzi.</p>
@@ -1032,8 +1765,213 @@ export default function ServiceDashboard() {
                   + Adaugă anunț
                 </a>
               </div>
+
+              <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fit,minmax(280px,1fr))',gap:14,marginBottom:20}}>
+
+                {/* Generator dezmembrari — COMING SOON */}
+                <div style={{position:'relative',borderRadius:16,overflow:'hidden'}}>
+                  <div style={{filter:'blur(3px)',pointerEvents:'none',userSelect:'none',opacity:0.6}}>
+                <div style={card()}>
+                  <div style={{display:'flex',alignItems:'center',gap:10,marginBottom:12}}>
+                    <div style={{width:40,height:40,background:'#fef3c7',borderRadius:12,display:'flex',alignItems:'center',justifyContent:'center',fontSize:20}}>🔩</div>
+                    <div>
+                      <div style={{fontFamily:"'Sora',sans-serif",fontWeight:700,fontSize:14,color:S.navy}}>Generator dezmembrări</div>
+                      <div style={{fontSize:12,color:S.muted}}>Generează automat anunțuri pentru toate piesele</div>
+                    </div>
+                  </div>
+                  <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:8,marginBottom:10}}>
+                    {[{k:'gen_brand',l:'Marcă',p:'ex: BMW'},{k:'gen_model',l:'Model',p:'ex: Seria 5'},{k:'gen_year',l:'An',p:'2015'},{k:'gen_vin',l:'VIN (opț.)',p:'17 caractere'}].map(f=>(
+                      <div key={f.k}>
+                        <label style={label}>{f.l}</label>
+                        <input className="dash-input" value={pf[f.k]||''} onChange={e=>setPf(p=>({...p,[f.k]:e.target.value}))} placeholder={f.p} style={{...input,fontSize:12}}/>
+                      </div>
+                    ))}
+                  </div>
+                  <button onClick={async()=>{
+                    if(!pf.gen_brand||!pf.gen_model){alert('Completează marca și modelul!');return}
+                    if(!service||!user) return
+                    const piese=[
+                      'Motor complet','Cutie viteze manuală','Alternator','Electromotor',
+                      'Compresor AC','Radiator apă','Radiator AC','Pompă apă','Turbină',
+                      'Injectoare set','Pompă injecție','Calculator motor',
+                      'Ușă față stânga','Ușă față dreapta','Ușă spate stânga','Ușă spate dreapta',
+                      'Capotă față','Portbagaj','Bară față','Bară spate',
+                      'Aripă față stânga','Aripă față dreapta',
+                      'Far față stânga','Far față dreapta','Stop spate stânga','Stop spate dreapta',
+                      'Planetară stânga','Planetară dreapta','Amortizor față stânga','Amortizor față dreapta',
+                      'Fuzetă față stânga','Fuzetă față dreapta',
+                      'Volan','Airbag volan','Airbag pasager','Centuri siguranță set',
+                      'Bloc instrumente bord','Radio original','Geam față','Geam spate',
+                    ]
+                    const inserts=piese.map(p=>({
+                      user_id:user.id,
+                      title:`${p} ${pf.gen_brand} ${pf.gen_model}${pf.gen_year?' '+pf.gen_year:''}`,
+                      description:`${p} demontat de pe ${pf.gen_brand} ${pf.gen_model}${pf.gen_year?' ('+pf.gen_year+')':''}${pf.gen_vin?' · VIN: '+pf.gen_vin:''}. Piesă originală testată, în stare bună de funcționare.`,
+                      category:'piese',condition:'folosit',
+                      city:service.city||'București',
+                      status:'activ',
+                    }))
+                    const{error}=await supabase.from('listings').insert(inserts)
+                    if(error){alert('Eroare: '+error.message);return}
+                    alert(`✅ ${piese.length} anunțuri generate! Editează prețurile din "Gestionează anunțuri".`)
+                    setPf(p=>({...p,gen_brand:'',gen_model:'',gen_year:'',gen_vin:''}))
+                  }} style={{...btn('primary'),width:'100%',justifyContent:'center',background:'#d97706',boxShadow:'0 2px 8px rgba(217,119,6,0.3)',fontSize:13}}>
+                    ⚡ Generează 40 anunțuri automat
+                  </button>
+                </div>
+                  </div>{/* end blur wrapper */}
+                  {/* Coming Soon overlay */}
+                  <div style={{position:'absolute',inset:0,display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',gap:8}}>
+                    <div style={{background:'rgba(10,31,68,0.85)',borderRadius:12,padding:'10px 20px',textAlign:'center',backdropFilter:'blur(4px)'}}>
+                      <div style={{fontSize:18,marginBottom:4}}>🔜</div>
+                      <div style={{fontFamily:"'Sora',sans-serif",fontWeight:700,fontSize:13,color:'#fff'}}>În curând</div>
+                      <div style={{fontSize:11,color:'rgba(255,255,255,0.6)',marginTop:2}}>Funcție în dezvoltare</div>
+                    </div>
+                  </div>
+                </div>{/* end coming soon container */}
+
+                <div style={card()}>
+                  <div style={{display:'flex',alignItems:'center',gap:10,marginBottom:12}}>
+                    <div style={{width:40,height:40,background:'#eaf3ff',borderRadius:12,display:'flex',alignItems:'center',justifyContent:'center',fontSize:20}}>📊</div>
+                    <div>
+                      <div style={{fontFamily:"'Sora',sans-serif",fontWeight:700,fontSize:14,color:S.navy}}>Import CSV / XML</div>
+                      <div style={{fontSize:12,color:S.muted}}>Importă stocul din fișier direct pe platformă</div>
+                    </div>
+                  </div>
+                  <div style={{background:S.bg,borderRadius:10,padding:'10px 12px',marginBottom:10,fontSize:11,color:S.muted,lineHeight:1.7}}>
+                    <div style={{fontWeight:700,color:S.navy,marginBottom:4}}>Format CSV acceptat:</div>
+                    <code style={{fontSize:10,color:S.blue}}>titlu, pret, categorie, oras, stare, descriere</code>
+                    <div style={{marginTop:4}}>Prima linie = antet. Câmpurile opționale pot fi goale.</div>
+                  </div>
+                  <input type="file" accept=".csv,.txt" id="csv-upload" style={{display:'none'}}
+                    onChange={async(e)=>{
+                      const file=e.target.files?.[0]; if(!file||!service||!user) return
+                      setCsvLoading(true); setCsvResult(null)
+                      try {
+                        const text=await file.text()
+                        const lines=text.split('\n').filter(l=>l.trim())
+                        if(lines.length<2){setCsvResult({error:'Fișierul e gol sau are doar antet.'});setCsvLoading(false);return}
+                        const headers=lines[0].split(',').map(h=>h.trim().toLowerCase().replace(/"/g,''))
+                        const rows=lines.slice(1)
+                        const inserts=rows.map(row=>{
+                          const cols=row.split(',').map(c=>c.trim().replace(/"/g,''))
+                          const get=(name)=>cols[headers.indexOf(name)]||''
+                          return {
+                            user_id:user.id,
+                            title:get('titlu')||get('title')||get('denumire')||cols[0]||'Piesă auto',
+                            price:parseFloat(get('pret')||get('price'))||null,
+                            category:get('categorie')||get('category')||'piese',
+                            city:get('oras')||get('city')||service.city||'București',
+                            condition:get('stare')||get('condition')||'folosit',
+                            description:get('descriere')||get('description')||'',
+                            status:'activ',
+                          }
+                        }).filter(r=>r.title&&r.title.length>1)
+                        if(inserts.length===0){setCsvResult({error:'Nu s-au găsit rânduri valide în fișier.'});setCsvLoading(false);return}
+                        const{error}=await supabase.from('listings').insert(inserts)
+                        if(error){setCsvResult({error:error.message});setCsvLoading(false);return}
+                        setCsvResult({success:inserts.length})
+                        e.target.value=''
+                      } catch(err) {
+                        setCsvResult({error:'Eroare la citirea fișierului.'})
+                      }
+                      setCsvLoading(false)
+                    }}/>
+                  <button onClick={()=>{setCsvResult(null);document.getElementById('csv-upload')?.click()}}
+                    disabled={csvLoading}
+                    style={{...btn('ghost'),width:'100%',justifyContent:'center',marginBottom:8,fontSize:13,opacity:csvLoading?.6:1}}>
+                    {csvLoading?'⏳ Se importă...':'📂 Alege fișier CSV'}
+                  </button>
+                  {csvResult?.success&&<div style={{background:S.greenBg,color:S.green,borderRadius:8,padding:'8px 12px',fontSize:12,fontWeight:600,marginBottom:8,textAlign:'center'}}>✅ {csvResult.success} anunțuri importate cu succes!</div>}
+                  {csvResult?.error&&<div style={{background:S.redBg,color:S.red,borderRadius:8,padding:'8px 12px',fontSize:12,fontWeight:600,marginBottom:8,textAlign:'center'}}>❌ {csvResult.error}</div>}
+                  <a href={'data:text/csv;charset=utf-8,titlu%2Cpret%2Ccategorie%2Coras%2Cstare%2Cdescriere%0AUsa%20fata%20stanga%20BMW%20E60%2C850%2Cpiese%2CBucuresti%2Cfolosit%2CPiesa%20originala'}
+                    download="model_import_reparo.csv"
+                    style={{display:'block',textAlign:'center',fontSize:12,color:S.blue,textDecoration:'none',fontWeight:600}}>
+                    ⬇ Descarcă model CSV
+                  </a>
+                </div>
+
+                {/* Relistare automata */}
+                <div style={card()}>
+                  <div style={{display:'flex',alignItems:'center',gap:10,marginBottom:12}}>
+                    <div style={{width:40,height:40,background:'#dcfce7',borderRadius:12,display:'flex',alignItems:'center',justifyContent:'center',fontSize:20}}>🔄</div>
+                    <div>
+                      <div style={{fontFamily:"'Sora',sans-serif",fontWeight:700,fontSize:14,color:S.navy}}>Relistare automată</div>
+                      <div style={{fontSize:12,color:S.muted}}>Anunțurile urcă automat în top</div>
+                    </div>
+                  </div>
+                  <div style={{marginBottom:12}}>
+                    {[
+                      {plan:'free',label:'Plan Free',interval:'Indisponibil',active:false,has:false},
+                      {plan:'basic',label:'Plan Basic',interval:'La 24 ore',active:service?.plan==='basic',has:service?.plan==='basic'||service?.plan==='pro'},
+                      {plan:'pro',label:'Plan Pro',interval:'La 6 ore',active:service?.plan==='pro',has:service?.plan==='pro'},
+                    ].map(p=>(
+                      <div key={p.plan} style={{display:'flex',alignItems:'center',justifyContent:'space-between',padding:'8px 12px',borderRadius:8,background:p.active?'#dcfce7':S.bg,marginBottom:6,border:`1px solid ${p.active?S.green:S.border}`}}>
+                        <div>
+                          <div style={{fontSize:12,fontWeight:600,color:S.navy}}>{p.label}</div>
+                          <div style={{fontSize:11,color:S.muted}}>{p.interval}</div>
+                        </div>
+                        {p.active?<span style={{fontSize:11,fontWeight:700,color:S.green}}>✅ Activ</span>
+                          :p.has?<span style={{fontSize:11,color:S.blue}}>Inclus</span>
+                          :<span style={{fontSize:11,color:S.muted}}>—</span>}
+                      </div>
+                    ))}
+                  </div>
+                  {service?.plan==='free'?(
+                    <button onClick={async()=>{
+                      const res=await fetch('/api/stripe/checkout',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({type:'subscription',plan:'basic',service_id:service?.id})})
+                      const{url}=await res.json()
+                      if(url) window.location.href=url
+                    }} style={{...btn('primary'),width:'100%',justifyContent:'center',fontSize:13}}>
+                      Upgrade pentru relistare →
+                    </button>
+                  ):(
+                    <div>
+                      <button onClick={async()=>{
+                        if(!service?.plan||service.plan==='free'){
+                          setRelistResult({upgrade:true})
+                          return
+                        }
+                        setRelistLoading(true); setRelistResult(null)
+                        try {
+                          const{data:myListings}=await supabase.from('listings').select('id').eq('user_id',user?.id).eq('status','activ')
+                          if(!myListings||myListings.length===0){
+                            setRelistResult({info:'Nu ai anunțuri active. Adaugă primul anunț și apoi poți relista.'})
+                            setRelistLoading(false);return
+                          }
+                          const ids=myListings.map(l=>l.id)
+                          const{error}=await supabase.from('listings').update({updated_at:new Date().toISOString()}).in('id',ids)
+                          if(error){setRelistResult({error:error.message});setRelistLoading(false);return}
+                          setRelistResult({success:ids.length})
+                        } catch(e){setRelistResult({error:'Eroare la relistare.'})}
+                        setRelistLoading(false)
+                      }} disabled={relistLoading}
+                        style={{...btn('primary'),width:'100%',justifyContent:'center',fontSize:13,marginBottom:8,opacity:relistLoading?.6:1}}>
+                        {relistLoading?'⏳ Se relistează...':'🔄 Relistează toate anunțurile acum'}
+                      </button>
+                      {relistResult?.success&&<div style={{background:S.greenBg,color:S.green,borderRadius:8,padding:'8px 12px',fontSize:12,fontWeight:600,textAlign:'center'}}>✅ {relistResult.success} anunțuri urcate în top!</div>}
+                      {relistResult?.error&&<div style={{background:S.redBg,color:S.red,borderRadius:8,padding:'8px 12px',fontSize:12,fontWeight:600,textAlign:'center'}}>❌ {relistResult.error}</div>}
+                      {relistResult?.info&&<div style={{background:S.bg,color:S.muted,borderRadius:8,padding:'10px 12px',fontSize:12,textAlign:'center'}}>
+                        {relistResult.info}
+                        <a href="/listing/create" style={{display:'block',marginTop:6,color:S.blue,fontWeight:700,textDecoration:'none'}}>+ Adaugă primul anunț →</a>
+                      </div>}
+                      {relistResult?.upgrade&&<div style={{background:S.amberBg,borderRadius:8,padding:'10px 12px',fontSize:12,textAlign:'center'}}>
+                        <div style={{fontWeight:700,color:S.amber,marginBottom:4}}>⭐ Necesită plan plătit</div>
+                        <div style={{color:S.muted,marginBottom:8}}>Relistarea automată e disponibilă pe planurile Basic și Pro.</div>
+                        <button onClick={async()=>{
+                          const res=await fetch('/api/stripe/checkout',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({type:'subscription',plan:'basic',service_id:service?.id})})
+                          const{url}=await res.json()
+                          if(url) window.location.href=url
+                        }} style={{...btn('primary'),fontSize:12,padding:'7px 16px'}}>Upgrade la Basic →</button>
+                      </div>}
+                    </div>
+                  )}
+                </div>
+
+              </div>
+
               <a href="/anunturile-mele"
-                style={{display:'flex',alignItems:'center',gap:16,padding:20,background:S.white,borderRadius:16,border:`1.5px solid ${S.border}`,textDecoration:'none',marginBottom:12,transition:'border-color .2s'}}
+                style={{display:'flex',alignItems:'center',gap:16,padding:20,background:S.white,borderRadius:16,border:`1.5px solid ${S.border}`,textDecoration:'none',transition:'border-color .2s'}}
                 onMouseEnter={e=>e.currentTarget.style.borderColor=S.blue}
                 onMouseLeave={e=>e.currentTarget.style.borderColor=S.border}>
                 <div style={{width:52,height:52,background:'#eaf3ff',borderRadius:14,display:'flex',alignItems:'center',justifyContent:'center',fontSize:26}}>📋</div>
@@ -1043,41 +1981,421 @@ export default function ServiceDashboard() {
                 </div>
                 <div style={{color:S.blue,fontSize:20,fontWeight:300}}>→</div>
               </a>
+
+              {/* Lista anunțuri */}
+              <div style={{marginTop:16}}>
+                {listingsLoading?(
+                  <div style={{textAlign:'center',padding:32,color:S.muted}}>Se încarcă...</div>
+                ):myListings.length===0?(
+                  <div style={{textAlign:'center',padding:32,color:S.muted}}>
+                    <div style={{fontSize:32,marginBottom:8}}>📦</div>
+                    <div style={{fontWeight:600,marginBottom:4}}>Nu ai anunțuri încă</div>
+                    <div style={{fontSize:13}}>Adaugă primul tău anunț folosind butonul de sus.</div>
+                  </div>
+                ):(
+                  <div style={{display:'flex',flexDirection:'column',gap:8}}>
+                    {myListings.map(l=>(
+                      <div key={l.id} style={{background:S.white,border:`1px solid ${l.status==='activ'?S.border:'#fca5a5'}`,borderRadius:12,padding:'12px 16px',display:'flex',alignItems:'center',gap:12,flexWrap:'wrap'}}>
+                        {/* Status indicator */}
+                        <div style={{width:8,height:8,borderRadius:'50%',background:l.status==='activ'?S.green:'#f87171',flexShrink:0}}/>
+                        {/* Info */}
+                        <div style={{flex:1,minWidth:200}}>
+                          <div style={{fontWeight:600,fontSize:14,color:S.navy,marginBottom:2}}>{l.title}</div>
+                          <div style={{display:'flex',gap:8,flexWrap:'wrap'}}>
+                            <span style={{fontSize:11,color:S.muted}}>{l.category}</span>
+                            <span style={{fontSize:11,color:S.muted}}>·</span>
+                            <span style={{fontSize:11,color:S.muted}}>{l.city}</span>
+                            <span style={{fontSize:11,color:S.muted}}>·</span>
+                            <span style={{fontSize:11,color:l.status==='activ'?S.green:'#ef4444',fontWeight:600}}>{l.status==='activ'?'Activ':'Inactiv'}</span>
+                            {l.is_promoted&&<span style={{fontSize:11,color:S.yellow,fontWeight:600}}>⭐ Promovat</span>}
+                          </div>
+                        </div>
+                        {/* Pret */}
+                        <div style={{flexShrink:0}}>
+                          {editingListing===l.id?(
+                            <div style={{display:'flex',gap:6,alignItems:'center'}}>
+                              <input type="number" defaultValue={l.price||0} id={`price-${l.id}`}
+                                style={{width:90,padding:'5px 8px',border:`1.5px solid ${S.blue}`,borderRadius:8,fontSize:13,outline:'none'}}/>
+                              <button onClick={()=>updateListingPrice(l.id,(document.getElementById(`price-${l.id}`) as any)?.value)}
+                                style={{padding:'5px 10px',background:S.blue,color:'#fff',border:'none',borderRadius:8,fontSize:12,cursor:'pointer',fontWeight:700}}>✓</button>
+                              <button onClick={()=>setEditingListing(null)}
+                                style={{padding:'5px 8px',background:'#f3f4f6',color:S.muted,border:'none',borderRadius:8,fontSize:12,cursor:'pointer'}}>✕</button>
+                            </div>
+                          ):(
+                            <div style={{display:'flex',gap:6,alignItems:'center'}}>
+                              <span style={{fontWeight:700,fontSize:14,color:S.navy}}>{l.price?`${l.price.toLocaleString('ro-RO')} lei`:'Preț nesetat'}</span>
+                              <button onClick={()=>setEditingListing(l.id)}
+                                style={{background:'none',border:'none',cursor:'pointer',fontSize:14,color:S.muted,padding:2}} title="Editează prețul">✏️</button>
+                            </div>
+                          )}
+                        </div>
+                        {/* Actions */}
+                        <div style={{display:'flex',gap:6,flexShrink:0}}>
+                          <a href={`/listing/${l.id}`} target="_blank"
+                            style={{padding:'6px 12px',background:'#f3f4f6',color:S.navy,border:'none',borderRadius:8,fontSize:12,fontWeight:600,cursor:'pointer',textDecoration:'none'}}>
+                            👁️ Vezi
+                          </a>
+                          <button onClick={()=>toggleListingStatus(l.id, l.status)}
+                            style={{padding:'6px 12px',background:l.status==='activ'?'#fef2f2':'#dcfce7',color:l.status==='activ'?'#ef4444':'#16a34a',border:'none',borderRadius:8,fontSize:12,fontWeight:600,cursor:'pointer'}}>
+                            {l.status==='activ'?'Dezactivează':'Activează'}
+                          </button>
+                          <button onClick={()=>deleteListing(l.id)}
+                            style={{padding:'6px 10px',background:'#fef2f2',color:'#ef4444',border:'none',borderRadius:8,fontSize:12,cursor:'pointer'}}>
+                            🗑️
+                          </button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
             </div>
           )}
 
           {tab==='Recenzii'&&(
             <div>
-              <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:20}}>
+              <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:20,flexWrap:'wrap',gap:10}}>
                 <h1 style={{fontFamily:"'Sora',sans-serif",fontWeight:800,fontSize:22,color:S.navy}}>Recenzii</h1>
                 {service?.rating_count>0&&<div style={{display:'flex',alignItems:'center',gap:8,background:S.amberBg,border:`1px solid ${S.amber}30`,padding:'8px 16px',borderRadius:50}}>
                   <span style={{fontFamily:"'Sora',sans-serif",fontWeight:800,fontSize:22,color:S.amber}}>{service.rating_avg.toFixed(1)}</span>
                   <div><div style={{display:'flex',gap:1}}>{[1,2,3,4,5].map(s=><span key={s} style={{fontSize:12,color:s<=Math.round(service.rating_avg)?S.yellow:'#ddd'}}>★</span>)}</div><div style={{fontSize:10,color:S.muted}}>{service.rating_count} recenzii</div></div>
                 </div>}
               </div>
-              {reviews.length===0?<div style={{...card(),textAlign:'center',padding:'60px 20px',color:S.muted}}><div style={{fontSize:48,marginBottom:10}}>⭐</div>Nicio recenzie încă.</div>:
-                reviews.map(r=>(
-                  <div key={r.id} style={{...card({marginBottom:10})}}>
-                    <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:10}}>
-                      <div style={{display:'flex',gap:2}}>{[1,2,3,4,5].map(s=><span key={s} style={{fontSize:16,color:s<=r.rating?S.yellow:'#e5e7eb'}}>★</span>)}</div>
-                      <span style={{fontSize:12,color:S.muted}}>{new Date(r.created_at).toLocaleDateString('ro-RO')}</span>
-                    </div>
-                    {r.comment&&<p style={{fontSize:14,color:S.text,marginBottom:12,lineHeight:1.6}}>{r.comment}</p>}
-                    {r.reply_text?<div style={{background:'#eaf3ff',borderRadius:10,padding:'10px 12px',border:`1px solid ${S.blue}20`}}>
-                      <div style={{fontSize:10,fontWeight:700,color:S.blue,marginBottom:4}}>RĂSPUNSUL TĂU</div>
-                      <p style={{fontSize:13,color:S.blue}}>{r.reply_text}</p>
-                    </div>:replyingTo===r.id?(
-                      <div>
-                        <textarea value={replyText} onChange={e=>setReplyText(e.target.value)} rows={2} placeholder="Răspunsul tău..." style={{...input,resize:'none',marginBottom:8}}/>
-                        <div style={{display:'flex',gap:8}}>
-                          <button onClick={()=>sendReply(r.id)} style={btn('primary')}>Trimite</button>
-                          <button onClick={()=>setReplyingTo(null)} style={btn('ghost')}>Anulează</button>
+
+              {/* Rating breakdown */}
+              {reviews.length>0&&(
+                <div style={{...card({marginBottom:16})}}>
+                  <div style={{fontSize:12,fontWeight:700,color:S.muted,textTransform:'uppercase',letterSpacing:0.5,marginBottom:10}}>Distribuție rating</div>
+                  {[5,4,3,2,1].map(star=>{
+                    const count = reviews.filter(r=>r.rating===star).length
+                    const pct = reviews.length?Math.round(count/reviews.length*100):0
+                    return (
+                      <div key={star} style={{display:'flex',alignItems:'center',gap:8,marginBottom:6}}>
+                        <span style={{fontSize:12,color:S.muted,width:12}}>{star}</span>
+                        <span style={{color:S.yellow,fontSize:12}}>★</span>
+                        <div style={{flex:1,height:6,background:'#f0f0f0',borderRadius:3,overflow:'hidden'}}>
+                          <div style={{width:`${pct}%`,height:'100%',background:S.yellow,borderRadius:3,transition:'width .5s'}}/>
                         </div>
+                        <span style={{fontSize:11,color:S.muted,width:28,textAlign:'right'}}>{count}</span>
                       </div>
-                    ):<button onClick={()=>setReplyingTo(r.id)} style={{...btn('ghost'),fontSize:12,padding:'6px 12px'}}>+ Răspunde la recenzie</button>}
+                    )
+                  })}
+                </div>
+              )}
+
+              {reviews.length===0
+                ?<div style={{...card(),textAlign:'center',padding:'60px 20px',color:S.muted}}><div style={{fontSize:48,marginBottom:10}}>⭐</div>Nicio recenzie încă.</div>
+                :reviews.map(r=>(
+                  <div key={r.id} style={{...card({marginBottom:10})}}>
+                    <div style={{display:'flex',alignItems:'flex-start',justifyContent:'space-between',marginBottom:10}}>
+                      <div>
+                        <div style={{display:'flex',gap:2,marginBottom:4}}>{[1,2,3,4,5].map(s=><span key={s} style={{fontSize:16,color:s<=r.rating?S.yellow:'#e5e7eb'}}>★</span>)}</div>
+                        <div style={{fontSize:12,color:S.muted}}>{r.client_name||'Client anonim'} · {new Date(r.created_at).toLocaleDateString('ro-RO')}</div>
+                      </div>
+                      <div style={{display:'flex',gap:6}}>
+                        {!r.reply_text&&<button onClick={()=>setReplyingTo(r.id)} style={{...btn('ghost'),fontSize:11,padding:'5px 10px'}}>💬 Răspunde</button>}
+                        <button onClick={async()=>{
+                          if(!confirm('Raportezi această recenzie ca falsă?')) return
+                          await supabase.from('reviews').update({is_reported:true,reported_at:new Date().toISOString()}).eq('id',r.id)
+                          setReviews(prev=>prev.map(rv=>rv.id===r.id?{...rv,is_reported:true}:rv))
+                          alert('Recenzia a fost raportată. O vom analiza în 24h.')
+                        }} style={{...btn('ghost'),fontSize:11,padding:'5px 10px',color:r.is_reported?S.muted:S.red,opacity:r.is_reported?.5:1}}
+                          disabled={r.is_reported}>
+                          {r.is_reported?'⚠️ Raportat':'🚨 Raportează'}
+                        </button>
+                      </div>
+                    </div>
+                    {r.comment&&<p style={{fontSize:14,color:S.text,marginBottom:12,lineHeight:1.6,background:'#f8faff',borderRadius:10,padding:'10px 12px'}}>{r.comment}</p>}
+                    {r.reply_text
+                      ?<div style={{background:'#eaf3ff',borderRadius:10,padding:'10px 12px',border:`1px solid ${S.blue}20`}}>
+                        <div style={{fontSize:10,fontWeight:700,color:S.blue,marginBottom:4}}>RĂSPUNSUL TĂU</div>
+                        <p style={{fontSize:13,color:S.blue,margin:0}}>{r.reply_text}</p>
+                        <button onClick={()=>{setReplyingTo(r.id);setReplyText(r.reply_text)}} style={{fontSize:11,color:S.blue,background:'none',border:'none',cursor:'pointer',marginTop:6,padding:0}}>✏️ Editează</button>
+                      </div>
+                      :replyingTo===r.id?(
+                        <div>
+                          <textarea value={replyText} onChange={e=>setReplyText(e.target.value)} rows={3}
+                            placeholder="Răspunsul tău public la această recenzie..."
+                            style={{...input,resize:'none',marginBottom:8}}/>
+                          <div style={{display:'flex',gap:8}}>
+                            <button onClick={()=>sendReply(r.id)} style={btn('primary')}>Publică răspunsul</button>
+                            <button onClick={()=>{setReplyingTo(null);setReplyText('')}} style={btn('ghost')}>Anulează</button>
+                          </div>
+                        </div>
+                      ):null
+                    }
                   </div>
                 ))
               }
+            </div>
+          )}
+
+          {/* ══ ANALYTICS ══ */}
+          {tab==='Analytics'&&(()=>{
+            const now = new Date()
+            const thisMonth = now.getMonth()
+            const thisYear = now.getFullYear()
+            const last30 = new Date(now); last30.setDate(last30.getDate()-30)
+            const last7 = new Date(now); last7.setDate(last7.getDate()-7)
+
+            // Appointments stats
+            const aptsTotal = appointments.length
+            const aptsThisMonth = appointments.filter(a=>{ const d=new Date(a.scheduled_date); return d.getMonth()===thisMonth&&d.getFullYear()===thisYear }).length
+            const aptsFinished = appointments.filter(a=>(aptStatuses[a.id]||a.status)==='finalizata').length
+            const aptsConvRate = aptsTotal>0?Math.round(aptsFinished/aptsTotal*100):0
+
+            // Offers stats
+            const offersTotal = offers.length
+            const offersAccepted = offers.filter(o=>o.status==='acceptata').length
+            const offersRate = offersTotal>0?Math.round(offersAccepted/offersTotal*100):0
+            const avgRevenue = offers.filter(o=>o.status==='acceptata'&&o.price_total).reduce((s,o,_,a)=>s+(o.price_total/a.length),0)
+
+            // Reviews stats
+            const avgRating = reviews.length>0?(reviews.reduce((s,r)=>s+r.rating,0)/reviews.length).toFixed(1):null
+            const ratingDist = [5,4,3,2,1].map(r=>({r,count:reviews.filter(rv=>rv.rating===r).length}))
+
+            // Monthly appointments (last 6 months)
+            const monthLabels = []
+            const monthData = []
+            for (let i=5; i>=0; i--) {
+              const d = new Date(thisYear, thisMonth-i, 1)
+              const m = d.getMonth(); const y = d.getFullYear()
+              monthLabels.push(d.toLocaleDateString('ro-RO',{month:'short'}))
+              monthData.push(appointments.filter(a=>{ const ad=new Date(a.scheduled_date); return ad.getMonth()===m&&ad.getFullYear()===y }).length)
+            }
+            const maxMonth = Math.max(...monthData, 1)
+
+            // Status breakdown
+            const aptByStatus = ['in_asteptare','confirmata','in_lucru','finalizata','anulata'].map(s=>({
+              s, count: appointments.filter(a=>(aptStatuses[a.id]||a.status)===s).length,
+              ...APT_STATUS[s]
+            }))
+
+            const StatCard = ({icon,label,value,sub,accent,accentBg,big}) => (
+              <div style={{background:S.white,borderRadius:16,padding:'18px 20px',border:`1px solid ${S.border}`,boxShadow:'0 2px 8px rgba(10,31,68,0.04)'}}>
+                <div style={{display:'flex',alignItems:'center',gap:10,marginBottom:12}}>
+                  <div style={{width:36,height:36,background:accentBg||'#eaf3ff',borderRadius:10,display:'flex',alignItems:'center',justifyContent:'center',fontSize:16}}>{icon}</div>
+                  <div style={{fontSize:11,fontWeight:700,color:S.muted,textTransform:'uppercase',letterSpacing:.8,fontFamily:"'Sora',sans-serif"}}>{label}</div>
+                </div>
+                <div style={{fontFamily:"'Sora',sans-serif",fontWeight:800,fontSize:big?32:26,color:accent||S.navy}}>{value||'—'}</div>
+                {sub&&<div style={{fontSize:11,color:S.muted,marginTop:4}}>{sub}</div>}
+              </div>
+            )
+
+            return (
+              <div>
+                <h1 style={{fontFamily:"'Sora',sans-serif",fontWeight:800,fontSize:22,color:S.navy,marginBottom:6}}>Analytics & Performanță</h1>
+                <p style={{fontSize:14,color:S.muted,marginBottom:24}}>Statistici despre activitatea și performanța service-ului tău.</p>
+
+                {/* KPI Cards */}
+                <div style={{display:'grid',gridTemplateColumns:'repeat(4,1fr)',gap:12,marginBottom:20}} className="dash-stats">
+                  <StatCard icon="📅" label="Programări total" value={aptsTotal} sub={`${aptsThisMonth} luna aceasta`} accent={S.blue} accentBg="#eaf3ff"/>
+                  <StatCard icon="✅" label="Rată finalizare" value={`${aptsConvRate}%`} sub={`${aptsFinished} finalizate`} accent={S.green} accentBg={S.greenBg}/>
+                  <StatCard icon="💬" label="Rată acceptare" value={`${offersRate}%`} sub={`${offersAccepted}/${offersTotal} oferte`} accent={S.purple} accentBg={S.purpleBg}/>
+                  <StatCard icon="⭐" label="Rating mediu" value={avgRating} sub={`${reviews.length} recenzii`} accent={S.amber} accentBg={S.amberBg}/>
+                </div>
+
+                <div style={{display:'grid',gridTemplateColumns:'2fr 1fr',gap:16,marginBottom:16}} className="analytics-grid">
+
+                  {/* Grafic programări lunare */}
+                  <div style={{...card()}}>
+                    <h3 style={{fontFamily:"'Sora',sans-serif",fontWeight:700,fontSize:15,color:S.navy,marginBottom:18}}>📈 Programări — ultimele 6 luni</h3>
+                    <div style={{display:'flex',alignItems:'flex-end',gap:8,height:120,padding:'0 4px'}}>
+                      {monthData.map((v,i)=>(
+                        <div key={i} style={{flex:1,display:'flex',flexDirection:'column',alignItems:'center',gap:6}}>
+                          <div style={{fontSize:11,fontWeight:700,color:S.blue,fontFamily:"'Sora',sans-serif"}}>{v||''}</div>
+                          <div style={{width:'100%',background:`linear-gradient(180deg,${S.blue},${S.blueLight})`,borderRadius:'6px 6px 0 0',height:`${Math.max(v/maxMonth*90,v>0?8:2)}px`,minHeight:2,transition:'height .3s'}}/>
+                          <div style={{fontSize:10,color:S.muted,textTransform:'uppercase'}}>{monthLabels[i]}</div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Distribuție rating */}
+                  <div style={{...card()}}>
+                    <h3 style={{fontFamily:"'Sora',sans-serif",fontWeight:700,fontSize:15,color:S.navy,marginBottom:16}}>⭐ Distribuție rating</h3>
+                    {reviews.length===0 ? (
+                      <div style={{textAlign:'center',padding:'20px 0',color:S.muted,fontSize:13}}>Nicio recenzie încă</div>
+                    ) : ratingDist.map(({r,count})=>(
+                      <div key={r} style={{display:'flex',alignItems:'center',gap:8,marginBottom:8}}>
+                        <div style={{fontSize:12,fontWeight:600,color:S.amber,width:12,textAlign:'center'}}>{r}</div>
+                        <div style={{fontSize:10}}>⭐</div>
+                        <div style={{flex:1,background:S.bg,borderRadius:50,height:8,overflow:'hidden'}}>
+                          <div style={{width:`${reviews.length>0?count/reviews.length*100:0}%`,height:'100%',background:`linear-gradient(90deg,${S.amber},${S.yellow})`,borderRadius:50,transition:'width .4s'}}/>
+                        </div>
+                        <div style={{fontSize:11,color:S.muted,width:18,textAlign:'right'}}>{count}</div>
+                      </div>
+                    ))}
+                    {avgRating&&<div style={{marginTop:14,paddingTop:14,borderTop:`1px solid ${S.border}`,textAlign:'center'}}><span style={{fontFamily:"'Sora',sans-serif",fontWeight:800,fontSize:28,color:S.amber}}>{avgRating}</span><span style={{fontSize:12,color:S.muted}}> / 5</span></div>}
+                  </div>
+                </div>
+
+                <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:16,marginBottom:16}}>
+
+                  {/* Status programări */}
+                  <div style={{...card()}}>
+                    <h3 style={{fontFamily:"'Sora',sans-serif",fontWeight:700,fontSize:15,color:S.navy,marginBottom:16}}>📋 Status programări</h3>
+                    {aptByStatus.filter(s=>s.count>0).length===0 ? (
+                      <div style={{textAlign:'center',padding:'20px 0',color:S.muted,fontSize:13}}>Nicio programare încă</div>
+                    ) : aptByStatus.map(({s,count,label,bg,color})=>(
+                      <div key={s} style={{display:'flex',alignItems:'center',justifyContent:'space-between',padding:'10px 12px',background:S.bg,borderRadius:10,marginBottom:6}}>
+                        <div style={{display:'flex',alignItems:'center',gap:8}}>
+                          <div style={{width:10,height:10,borderRadius:'50%',background:color}}/>
+                          <span style={{fontSize:13,color:S.text}}>{label}</span>
+                        </div>
+                        <div style={{display:'flex',alignItems:'center',gap:8}}>
+                          <div style={{width:60,background:S.border,borderRadius:50,height:6,overflow:'hidden'}}>
+                            <div style={{width:`${aptsTotal>0?count/aptsTotal*100:0}%`,height:'100%',background:color,borderRadius:50}}/>
+                          </div>
+                          <span style={{fontFamily:"'Sora',sans-serif",fontWeight:700,fontSize:13,color:S.navy,minWidth:20}}>{count}</span>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+
+                  {/* Oferte & conversii */}
+                  <div style={{...card()}}>
+                    <h3 style={{fontFamily:"'Sora',sans-serif",fontWeight:700,fontSize:15,color:S.navy,marginBottom:16}}>💬 Performanță oferte</h3>
+                    <div style={{display:'flex',flexDirection:'column',gap:10}}>
+                      {[
+                        {label:'Oferte trimise',value:offersTotal,color:S.blue,accentBg:'#eaf3ff'},
+                        {label:'Oferte acceptate',value:offersAccepted,color:S.green,accentBg:S.greenBg},
+                        {label:'Oferte refuzate',value:offers.filter(o=>o.status==='refuzata').length,color:S.red,accentBg:S.redBg},
+                        {label:'Oferte active',value:offers.filter(o=>o.status==='trimisa').length,color:S.amber,accentBg:S.amberBg},
+                      ].map(({label,value,color,accentBg})=>(
+                        <div key={label} style={{display:'flex',alignItems:'center',justifyContent:'space-between',padding:'10px 14px',background:accentBg,borderRadius:10}}>
+                          <span style={{fontSize:13,color:S.text}}>{label}</span>
+                          <span style={{fontFamily:"'Sora',sans-serif",fontWeight:800,fontSize:18,color}}>{value}</span>
+                        </div>
+                      ))}
+                      {avgRevenue>0&&(
+                        <div style={{marginTop:4,padding:'12px 14px',background:S.navy,borderRadius:12,textAlign:'center'}}>
+                          <div style={{fontSize:11,color:'rgba(255,255,255,0.5)',marginBottom:4}}>Valoare medie ofertă acceptată</div>
+                          <div style={{fontFamily:"'Sora',sans-serif",fontWeight:800,fontSize:20,color:'#fff'}}>{Math.round(avgRevenue).toLocaleString()} RON</div>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Recenzii recente */}
+                {reviews.length>0&&(
+                  <div style={{...card()}}>
+                    <h3 style={{fontFamily:"'Sora',sans-serif",fontWeight:700,fontSize:15,color:S.navy,marginBottom:14}}>💬 Recenzii recente</h3>
+                    {reviews.slice(0,3).map(r=>(
+                      <div key={r.id} style={{display:'flex',gap:12,padding:'12px',background:S.bg,borderRadius:12,marginBottom:8}}>
+                        <div style={{flexShrink:0}}>
+                          {'⭐'.repeat(r.rating)}<span style={{color:S.bg}}>{'⭐'.repeat(5-r.rating)}</span>
+                        </div>
+                        <div>
+                          <div style={{fontSize:13,color:S.text,lineHeight:1.5}}>{r.comment||r.title||'Fără comentariu'}</div>
+                          <div style={{fontSize:11,color:S.muted,marginTop:4}}>{new Date(r.created_at).toLocaleDateString('ro-RO')}</div>
+                        </div>
+                      </div>
+                    ))}
+                    <button onClick={()=>setTab('Recenzii')} style={{...btn('ghost'),padding:'7px 14px',fontSize:12,marginTop:4}}>
+                      Vezi toate recenziile →
+                    </button>
+                  </div>
+                )}
+              </div>
+            )
+          })()}
+
+          {/* ══ CERERI PIESE (magazin_piese) ══ */}
+          {(tab==='Cereri piese'||tab==='Cereri piese SH'||tab==='Cereri service')&&(
+            <div>
+              <h1 style={{fontFamily:"'Sora',sans-serif",fontWeight:800,fontSize:22,color:S.navy,marginBottom:6}}>
+                {tab==='Cereri piese SH'?'Cereri piese second-hand':tab==='Cereri service'?'Cereri lucrări service':'Cereri piese'}
+              </h1>
+              <p style={{fontSize:14,color:S.muted,marginBottom:20}}>
+                {tab==='Cereri piese SH'?'Clienții care caută piese SH din parcul tău de dezmembrări.'
+                  :tab==='Cereri service'?'Cereri de lucrări auto de la clienți.'
+                  :'Clienții care caută piese specifice pe care le poți furniza.'}
+              </p>
+              {requests.length===0?(
+                <div style={{...card(),textAlign:'center',padding:'60px 20px'}}>
+                  <div style={{fontSize:56,marginBottom:12}}>📋</div>
+                  <div style={{fontFamily:"'Sora',sans-serif",fontWeight:700,fontSize:18,color:S.navy,marginBottom:8}}>Nicio cerere încă</div>
+                  <p style={{fontSize:14,color:S.muted}}>Cererile de la clienți vor apărea aici automat.</p>
+                </div>
+              ):(
+                <div style={{display:'flex',flexDirection:'column',gap:12}}>
+                  {requests.map(r=>(
+                    <div key={r.id} style={{...card(),display:'flex',alignItems:'flex-start',justifyContent:'space-between',gap:12,flexWrap:'wrap'}}>
+                      <div style={{flex:1,minWidth:0}}>
+                        <div style={{fontFamily:"'Sora',sans-serif",fontWeight:700,fontSize:15,color:S.navy,marginBottom:4}}>
+                          {r.car_brand} {r.car_model} {r.car_year?`(${r.car_year})`:''}
+                        </div>
+                        <div style={{fontSize:13,color:S.muted,marginBottom:6}}>{r.services?.slice(0,3).join(' · ')}</div>
+                        <div style={{display:'flex',gap:8,flexWrap:'wrap'}}>
+                          <span style={{fontSize:11,background:'#eaf3ff',color:S.blue,padding:'2px 8px',borderRadius:50,fontWeight:600}}>📍 {r.city||'—'}</span>
+                          <span style={{fontSize:11,background:S.bg,color:S.muted,padding:'2px 8px',borderRadius:50}}>{new Date(r.created_at).toLocaleDateString('ro-RO')}</span>
+                          {r.urgency&&<span style={{fontSize:11,background:'#fee2e2',color:S.red,padding:'2px 8px',borderRadius:50,fontWeight:600}}>🚨 {r.urgency}</span>}
+                        </div>
+                      </div>
+                      <button onClick={()=>{setSelectedReq(r);setTab('Cereri')}}
+                        className="req-card-btn"
+                        style={{...btn('primary'),padding:'8px 18px',fontSize:13,flexShrink:0}}>
+                        Trimite ofertă →
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* ══ MASINI DEZMEMBRATE ══ */}
+          {tab==='Mașini dezmembrate'&&service?.id&&(
+            <DezmembrariModule serviceId={service.id}/>
+          )}
+
+          {/* ══ PIESE LISTATE ══ */}
+          {tab==='Piese listate'&&(
+            <div>
+              <div className="dash-content-header" style={{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:20,flexWrap:'wrap',gap:10}}>
+                <div>
+                  <h1 style={{fontFamily:"'Sora',sans-serif",fontWeight:800,fontSize:22,color:S.navy,marginBottom:4}}>Piese listate</h1>
+                  <p style={{fontSize:14,color:S.muted}}>Toate piesele disponibile din parcul tău.</p>
+                </div>
+                <button style={{...btn('primary'),gap:6}}>+ Adaugă piesă</button>
+              </div>
+              <div style={{...card(),textAlign:'center',padding:'60px 20px'}}>
+                <div style={{fontSize:56,marginBottom:12}}>📦</div>
+                <div style={{fontFamily:"'Sora',sans-serif",fontWeight:700,fontSize:18,color:S.navy,marginBottom:8}}>Nicio piesă listată</div>
+                <p style={{fontSize:14,color:S.muted,marginBottom:20,maxWidth:360,margin:'0 auto 20px'}}>Adaugă piese individual sau importă din mașinile dezmembrate.</p>
+                <button style={{...btn('primary')}}>+ Adaugă piesă</button>
+              </div>
+            </div>
+          )}
+
+          {/* ══ MESAJE (shortcut) ══ */}
+          {tab==='Mesaje'&&(()=>{
+            window.location.href='/messages'
+            return null
+          })()}
+
+          {/* ══ PROMOVARI ══ */}
+          {tab==='Promovări'&&(
+            <div>
+              <h1 style={{fontFamily:"'Sora',sans-serif",fontWeight:800,fontSize:22,color:S.navy,marginBottom:6}}>Promovări</h1>
+              <p style={{fontSize:14,color:S.muted,marginBottom:20}}>Crește vizibilitatea anunțurilor și profilului tău pe platformă.</p>
+              <div className="promo-grid" style={{display:'grid',gridTemplateColumns:'repeat(auto-fit,minmax(260px,1fr))',gap:16}}>
+                {[
+                  {icon:'⭐',title:'Anunț promovat',desc:'Anunțul tău apare primul în rezultate și pe homepage.',price:'29 RON / 7 zile',color:S.yellow,bg:'#fef3c7'},
+                  {icon:'🏆',title:'Profil verificat Premium',desc:'Badge special, poziție prioritară în căutări, mai multă încredere.',price:'49 RON / lună',color:S.blue,bg:'#eaf3ff'},
+                  {icon:'🚀',title:'Boost vizibilitate',desc:'Trimis automat clienților din zona ta care caută serviciile tale.',price:'19 RON / 3 zile',color:S.green,bg:'#dcfce7'},
+                ].map(p=>(
+                  <div key={p.title} style={{...card(),border:`1.5px solid ${p.color}30`}}>
+                    <div style={{width:48,height:48,background:p.bg,borderRadius:12,display:'flex',alignItems:'center',justifyContent:'center',fontSize:24,marginBottom:12}}>{p.icon}</div>
+                    <div style={{fontFamily:"'Sora',sans-serif",fontWeight:700,fontSize:16,color:S.navy,marginBottom:6}}>{p.title}</div>
+                    <p style={{fontSize:13,color:S.muted,lineHeight:1.6,marginBottom:14}}>{p.desc}</p>
+                    <div style={{fontFamily:"'Sora',sans-serif",fontWeight:800,fontSize:18,color:p.color,marginBottom:12}}>{p.price}</div>
+                    <button style={{...btn('primary'),width:'100%',justifyContent:'center',background:p.color}}>Activează →</button>
+                  </div>
+                ))}
+              </div>
             </div>
           )}
 
@@ -1089,6 +2407,7 @@ export default function ServiceDashboard() {
 
               <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:16,marginBottom:16}}>
 
+
                 {/* Plan curent */}
                 <div style={{...card(),gridColumn:'1/-1'}}>
                   <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:16}}>
@@ -1097,12 +2416,13 @@ export default function ServiceDashboard() {
                   </div>
                   <div className="settings-plans" style={{display:'grid',gridTemplateColumns:'repeat(3,1fr)',gap:12}}>
                     {[
-                      {plan:'free',label:'Free',price:'0',period:'',color:S.muted,features:['Profil public basic','10 cereri/lună','Fără badge verificat']},
-                      {plan:'basic',label:'Basic',price:'99',period:'/lună',color:S.blue,features:['Cereri nelimitate','Notificări instant','Badge verificat','Statistici de bază']},
-                      {plan:'pro',label:'Pro',price:'199',period:'/lună',color:S.amber,features:['Tot din Basic','Prioritate în căutări','Badge Pro ⭐','Statistici avansate','Suport dedicat']},
+                      {plan:'free',label:'Free',price:'0',period:'',color:S.muted,features:['Profil public basic','Cereri limitate','Notificări in-app','Fără badge verificat','Statistici de bază']},
+                      {plan:'basic',label:'Basic',price:'99',period:'/lună',color:S.blue,features:['Cereri nelimitate','Notificări instant + email','Badge ✓ Verificat','Statistici avansate','Prioritate medie în căutări','Suport prin email']},
+                      {plan:'pro',label:'Pro',price:'199',period:'/lună',color:S.amber,features:['Tot din Basic','Prioritate maximă în căutări','Badge Pro ⭐','Promovare inclusă 7 zile/lună','Statistici complete','Suport dedicat prioritar','API integrare externe']},
                     ].map(p=>(
                       <div key={p.plan} style={{borderRadius:14,padding:16,border:`2px solid ${service?.plan===p.plan?p.color:S.border}`,background:service?.plan===p.plan?p.plan==='pro'?S.amberBg:p.plan==='basic'?'#eaf3ff':S.bg:S.white,position:'relative',transition:'all .2s'}}>
                         {service?.plan===p.plan&&<div style={{position:'absolute',top:-1,right:12,background:p.color,color:'#fff',fontSize:10,fontWeight:700,padding:'3px 10px',borderRadius:'0 0 8px 8px',fontFamily:"'Sora',sans-serif"}}>ACTIV</div>}
+                        {p.plan==='pro'&&service?.plan!=='pro'&&<div style={{position:'absolute',top:-1,left:12,background:'#7c3aed',color:'#fff',fontSize:10,fontWeight:700,padding:'3px 10px',borderRadius:'0 0 8px 8px',fontFamily:"'Sora',sans-serif"}}>RECOMANDAT</div>}
                         <div style={{fontFamily:"'Sora',sans-serif",fontWeight:700,fontSize:13,color:S.navy,marginBottom:6}}>{p.label}</div>
                         <div style={{display:'flex',alignItems:'baseline',gap:3,marginBottom:12}}>
                           <span style={{fontFamily:"'Sora',sans-serif",fontWeight:800,fontSize:26,color:p.color}}>{p.price} RON</span>
@@ -1117,12 +2437,16 @@ export default function ServiceDashboard() {
                           <button
                             onClick={async()=>{
                               const res = await fetch('/api/stripe/checkout',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({type:'subscription',plan:p.plan,service_id:service?.id})})
-                              const {url} = await res.json()
+                              const {url,error} = await res.json()
                               if(url) window.location.href=url
+                              else alert(error||'Stripe nu este configurat încă. Adaugă STRIPE_SECRET_KEY în Vercel.')
                             }}
                             style={{...btn('primary'),width:'100%',justifyContent:'center',marginTop:12,fontSize:12,background:p.color,boxShadow:`0 2px 8px ${p.color}40`}}>
                             Upgrade la {p.label} →
                           </button>
+                        )}
+                        {service?.plan===p.plan&&p.plan==='free'&&(
+                          <div style={{marginTop:12,fontSize:11,color:S.muted,textAlign:'center',lineHeight:1.5}}>Upgrade pentru mai multe funcții</div>
                         )}
                         {service?.plan===p.plan&&p.plan!=='free'&&(
                           <div style={{marginTop:12,fontSize:12,color:p.color,fontWeight:600,textAlign:'center'}}>✅ Planul tău curent</div>
@@ -1130,6 +2454,21 @@ export default function ServiceDashboard() {
                       </div>
                     ))}
                   </div>
+                </div>
+
+                {/* Banner Dezmembrari — mereu vizibil */}
+                <div style={{...card(),background:'#fef3c7',border:'1px solid rgba(217,119,6,0.2)',display:'flex',alignItems:'center',justifyContent:'space-between',gap:12,flexWrap:'wrap'}}>
+                  <div style={{display:'flex',alignItems:'center',gap:12}}>
+                    <span style={{fontSize:28}}>🔩</span>
+                    <div>
+                      <div style={{fontFamily:"'Sora',sans-serif",fontWeight:700,fontSize:13,color:'#92400e',marginBottom:2}}>Ești parc de dezmembrări?</div>
+                      <div style={{fontSize:12,color:'#b45309',lineHeight:1.5}}>Avem abonamente speciale cu funcții dedicate: generator piese, relistare automată, ofertare nelimitată.</div>
+                    </div>
+                  </div>
+                  <a href="/dezmembrari-abonamente" target="_blank"
+                    style={{display:'inline-flex',alignItems:'center',gap:6,padding:'9px 18px',background:'#d97706',color:'#fff',borderRadius:50,fontSize:12,fontWeight:700,textDecoration:'none',fontFamily:"'Sora',sans-serif",whiteSpace:'nowrap',flexShrink:0}}>
+                    Vezi abonamente →
+                  </a>
                 </div>
 
                 {/* Promovare */}
@@ -1165,6 +2504,37 @@ export default function ServiceDashboard() {
                 {/* Notificări */}
                 <div style={card()}>
                   <h3 style={{fontFamily:"'Sora',sans-serif",fontWeight:700,fontSize:15,color:S.navy,marginBottom:14}}>🔔 Notificări</h3>
+                  {/* Push toggle */}
+                  <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',padding:'12px 0',borderBottom:`1px solid ${S.border}`,marginBottom:12}}>
+                    <div>
+                      <div style={{fontSize:13,fontWeight:600,color:S.navy,marginBottom:2}}>Notificări push pe telefon/browser</div>
+                      <div style={{fontSize:12,color:S.muted}}>{pushEnabled?'✅ Activate — vei primi alerte instant':'Activează pentru alerte instant la cereri noi'}</div>
+                    </div>
+                    <button onClick={async()=>{
+                      setPushLoading(true)
+                      try {
+                        if(!('serviceWorker' in navigator&&'PushManager' in window)){alert('Browser-ul tău nu suportă notificări push.');setPushLoading(false);return}
+                        const reg=await navigator.serviceWorker.ready
+                        if(pushEnabled){
+                          const sub=await reg.pushManager.getSubscription()
+                          if(sub){await sub.unsubscribe();await fetch('/api/push/subscribe',{method:'DELETE',headers:{'Content-Type':'application/json'},body:JSON.stringify({endpoint:sub.endpoint})})}
+                          setPushEnabled(false)
+                        } else {
+                          const perm=await Notification.requestPermission()
+                          if(perm!=='granted'){alert('Permite notificările în setările browserului.');setPushLoading(false);return}
+                          const VAPID_PUBLIC=process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY||''
+                          if(!VAPID_PUBLIC){alert('NEXT_PUBLIC_VAPID_PUBLIC_KEY lipsă din env vars.');setPushLoading(false);return}
+                          const sub=await reg.pushManager.subscribe({userVisibleOnly:true,applicationServerKey:VAPID_PUBLIC})
+                          await fetch('/api/push/subscribe',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({subscription:sub.toJSON()})})
+                          setPushEnabled(true)
+                        }
+                      } catch(e){console.error('[push]',e);alert('Eroare la activarea notificărilor: '+e.message)}
+                      setPushLoading(false)
+                    }} disabled={pushLoading}
+                      style={{position:'relative',width:44,height:24,borderRadius:12,background:pushEnabled?S.blue:'#e5e7eb',border:'none',cursor:'pointer',transition:'background .2s',flexShrink:0,opacity:pushLoading?.6:1}}>
+                      <div style={{position:'absolute',top:2,left:pushEnabled?22:2,width:20,height:20,borderRadius:'50%',background:'#fff',transition:'left .2s',boxShadow:'0 1px 4px rgba(0,0,0,0.2)'}}/>
+                    </button>
+                  </div>
                   {[
                     {label:'Cerere ofertă nouă',desc:'Când un client trimite o cerere în orașul tău',key:'notif_requests',default:true},
                     {label:'Programare confirmată',desc:'Când un client acceptă oferta ta',key:'notif_appointments',default:true},
@@ -1249,8 +2619,9 @@ export default function ServiceDashboard() {
             </div>
           )}
 
-        </main>
-      </div>
+        </div>
+          </div>
+        </div>
     </div>
   )
 }
