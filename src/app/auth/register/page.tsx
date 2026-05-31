@@ -194,6 +194,13 @@ export default function RegisterPage() {
           Ai deja cont?{' '}
           <a href="/auth/login" style={{color:S.blue,fontWeight:700,textDecoration:'none',fontFamily:"'Sora',sans-serif"}}>Intră în cont</a>
         </div>
+
+        <div className="fade-up" style={{marginTop:12,background:'#fff8ed',border:'1px solid #f59e0b40',borderRadius:14,padding:'14px 18px',textAlign:'center',animationDelay:'.25s'}}>
+          <div style={{fontFamily:"'Sora',sans-serif",fontWeight:700,fontSize:13,color:'#92400e',marginBottom:4}}>🏢 Ești business? Magazin, parc dezmembrări?</div>
+          <a href="/auth/register-business" style={{display:'inline-flex',alignItems:'center',gap:6,padding:'8px 20px',background:'#f59e0b',color:'#fff',borderRadius:50,fontSize:13,fontWeight:700,textDecoration:'none',fontFamily:"'Sora',sans-serif",boxShadow:'0 2px 8px rgba(245,158,11,0.3)'}}>
+            ⚡ Înregistrare cont business →
+          </a>
+        </div>
       </div>
     </div>
   )
