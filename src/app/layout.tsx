@@ -79,15 +79,15 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="ro">
       <head>
+        <link rel="manifest" href="/manifest.json"/>
         <link rel="apple-touch-icon" href="/icons/icon-192.png"/>
         <link rel="icon" type="image/svg+xml" href="/icon.svg"/>
-        <meta name="mobile-web-app-capable" content="yes"/>
         <meta name="apple-mobile-web-app-capable" content="yes"/>
         <meta name="apple-mobile-web-app-status-bar-style" content="default"/>
         <meta name="apple-mobile-web-app-title" content="Reparo"/>
         <link rel="preconnect" href="https://fonts.googleapis.com"/>
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous"/>
-        <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=Sora:wght@600;700;800&display=swap" rel="stylesheet"/>
+        <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Sora:wght@600;700;800&display=swap" rel="stylesheet"/>
         {/* JSON-LD Structured Data */}
         <script
           type="application/ld+json"
@@ -107,7 +107,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           }}
         />
       </head>
-      <body suppressHydrationWarning>
+      <body>
         <GlobalLayout>{children}</GlobalLayout>
       </body>
     </html>
