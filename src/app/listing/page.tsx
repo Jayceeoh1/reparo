@@ -309,6 +309,7 @@ function ListingsContent() {
         .cat-item.active{font-weight:700}
         .lst-sidebar{display:flex!important;flex-direction:column!important}
         .cat-chips{display:none}
+        .oferta-banner{display:none}
         .lst-topbar-add{display:flex}
         @media(max-width:480px){
           .lst-topbar-add{display:none!important}
@@ -319,6 +320,7 @@ function ListingsContent() {
           .lst-sidebar{display:none!important}
           .lst-grid{grid-template-columns:repeat(2,1fr)!important;gap:8px!important}
           .cat-chips{display:flex!important;gap:8px;overflow-x:auto;padding:10px 16px 8px;scrollbar-width:none;-webkit-overflow-scrolling:touch;background:#fff;border-bottom:1px solid #e5e7eb}
+          .oferta-banner{display:flex!important}
           .cat-chips::-webkit-scrollbar{display:none}
           .cat-chip{flex-shrink:0;display:inline-flex;align-items:center;gap:6px;padding:7px 14px;border-radius:50px;font-size:12px;font-weight:600;cursor:pointer;border:1.5px solid #e5e7eb;background:#fff;color:#6b7280;font-family:'DM Sans',sans-serif;white-space:nowrap;transition:all .15s}
           .cat-chip.active{background:#eaf3ff;border-color:#1a56db;color:#1a56db}
@@ -416,7 +418,18 @@ function ListingsContent() {
             {c.key==='toate'?'Toate':c.label}
           </button>
         ))}
-        <a href="/piese-oferta" className="cat-chip" style={{borderColor:'#854F0B',color:'#854F0B',background:'#fef3c7',flexShrink:0}}>
+        <a href="/piese-oferta" style={{flexShrink:0,display:'inline-flex',alignItems:'center',gap:6,padding:'7px 16px',borderRadius:50,fontSize:13,fontWeight:700,background:'#f59e0b',color:'#fff',border:'none',textDecoration:'none',whiteSpace:'nowrap',boxShadow:'0 2px 8px rgba(245,158,11,0.35)'}}>
+          ⚡ Cere ofertă
+        </a>
+      </div>
+
+      {/* Banner Cere Ofertă — mobil, vizibil sub chips */}
+      <div className="oferta-banner" style={{padding:'10px 16px',background:'linear-gradient(90deg,#0a1f44,#1a56db)',display:'flex',alignItems:'center',justifyContent:'space-between',gap:12}}>
+        <div>
+          <div style={{fontFamily:"'Sora',sans-serif",fontWeight:700,fontSize:13,color:'#fff',marginBottom:2}}>Nu găsești ce cauți?</div>
+          <div style={{fontSize:11,color:'rgba(255,255,255,0.7)'}}>Cere ofertă și service-urile te contactează</div>
+        </div>
+        <a href="/piese-oferta" style={{display:'inline-flex',alignItems:'center',gap:6,padding:'9px 18px',borderRadius:50,fontSize:13,fontWeight:700,background:'#f59e0b',color:'#fff',textDecoration:'none',whiteSpace:'nowrap',flexShrink:0}}>
           ⚡ Cere ofertă
         </a>
       </div>
