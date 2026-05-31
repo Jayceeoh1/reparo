@@ -389,10 +389,9 @@ export default function GlobalLayout({ children }) {
               {/* Hamburger button — deschide drawer */}
               <button onClick={()=>setDrawerOpen(o=>!o)}
                 style={{width:36,height:36,borderRadius:8,background:'transparent',border:'none',cursor:'pointer',display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',gap:4,flexShrink:0}}>
-                {drawerOpen
-                  ? <span style={{fontSize:20,color:'var(--navy)',lineHeight:1}}>✕</span>
-                  : [0,1,2].map(i=><span key={i} style={{display:'block',width:20,height:2,background:'var(--navy)',borderRadius:2}}/>)
-                }
+                <span style={{display:'block',width:20,height:2,background:'var(--navy)',borderRadius:2,transition:'all .2s'}}/>
+                <span style={{display:'block',width:drawerOpen?0:20,height:2,background:'var(--navy)',borderRadius:2,transition:'all .2s'}}/>
+                <span style={{display:'block',width:20,height:2,background:'var(--navy)',borderRadius:2,transition:'all .2s'}}/>
               </button>
 
 
