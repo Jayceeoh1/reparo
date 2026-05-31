@@ -117,6 +117,20 @@ export default function RegisterPage() {
                     )}
                   </button>
                 ))}
+                {/* Business card - separator */}
+                <div style={{position:'relative',margin:'4px 0'}}>
+                  <div style={{position:'absolute',inset:'50% 0 0',borderTop:'1px dashed #e5e7eb'}}/>
+                  <div style={{position:'relative',textAlign:'center'}}><span style={{background:'#fff',padding:'0 10px',fontSize:11,color:'#9ca3af'}}>sau dacă ești business</span></div>
+                </div>
+                <a href="/auth/register-business"
+                  style={{display:'flex',alignItems:'center',gap:14,padding:'16px',borderRadius:14,border:'1.5px solid #f59e0b',background:'#fffbeb',textDecoration:'none',transition:'all .2s'}}>
+                  <div style={{width:52,height:52,background:'#fef3c7',borderRadius:12,display:'flex',alignItems:'center',justifyContent:'center',fontSize:24,flexShrink:0}}>⚡</div>
+                  <div style={{flex:1}}>
+                    <div style={{fontFamily:"'Sora',sans-serif",fontWeight:700,fontSize:15,color:'#92400e',marginBottom:3}}>Business — Magazin / Dezmembrări</div>
+                    <div style={{fontSize:12,color:'#a16207',lineHeight:1.5}}>Vinzi piese, ai parc dezmembrări sau cont mixt service + piese.</div>
+                  </div>
+                  <div style={{fontSize:18,color:'#f59e0b',flexShrink:0}}>→</div>
+                </a>
               </div>
 
               <button onClick={()=>setStep(2)} disabled={!role}
@@ -195,12 +209,7 @@ export default function RegisterPage() {
           <a href="/auth/login" style={{color:S.blue,fontWeight:700,textDecoration:'none',fontFamily:"'Sora',sans-serif"}}>Intră în cont</a>
         </div>
 
-        <div className="fade-up" style={{marginTop:12,background:'#fff8ed',border:'1px solid #f59e0b40',borderRadius:14,padding:'14px 18px',textAlign:'center',animationDelay:'.25s'}}>
-          <div style={{fontFamily:"'Sora',sans-serif",fontWeight:700,fontSize:13,color:'#92400e',marginBottom:4}}>🏢 Ești business? Magazin, parc dezmembrări?</div>
-          <a href="/auth/register-business" style={{display:'inline-flex',alignItems:'center',gap:6,padding:'8px 20px',background:'#f59e0b',color:'#fff',borderRadius:50,fontSize:13,fontWeight:700,textDecoration:'none',fontFamily:"'Sora',sans-serif",boxShadow:'0 2px 8px rgba(245,158,11,0.3)'}}>
-            ⚡ Înregistrare cont business →
-          </a>
-        </div>
+
       </div>
     </div>
   )
