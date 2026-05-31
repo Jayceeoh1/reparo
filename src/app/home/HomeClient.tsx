@@ -136,6 +136,43 @@ export default function HomeClient() {
 
   return (
     <div style={{ fontFamily: "'DM Sans', sans-serif", background: S.bg, minHeight: '100vh' }}>
+      <style>{`
+        @import url('https://fonts.googleapis.com/css2?family=Sora:wght@700;800&family=DM+Sans:wght@400;500;600&display=swap');
+        .cat-grid{display:grid;grid-template-columns:repeat(8,1fr);gap:10px;margin-bottom:20px}
+        .listings-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:28px}
+        .features-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:28px}
+        .footer-grid{display:grid;grid-template-columns:2fr 1fr 1fr 1fr;gap:24px;margin-bottom:32px}
+        .svc-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:14px;margin-bottom:28px}
+        .promo-row{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px}
+        .listing-card{background:#fff;border-radius:14px;overflow:hidden;cursor:pointer;border:1px solid #e5e7eb;transition:all .15s}
+        .listing-card:hover{box-shadow:0 4px 20px rgba(26,86,219,0.1);border-color:#1a56db;transform:translateY(-2px)}
+        .cat-item{display:flex;flex-direction:column;align-items:center;padding:10px 6px;border-radius:12px;cursor:pointer;transition:all .15s;border:none;background:none}
+        .cat-item:hover{background:#eaf3ff}
+        .hero-btns{display:flex;gap:12px;flex-wrap:wrap}
+        .section-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;flex-wrap:wrap;gap:8px}
+
+        @media(max-width:768px){
+          .cat-grid{grid-template-columns:repeat(4,1fr)!important;gap:8px!important}
+          .listings-grid{grid-template-columns:repeat(2,1fr)!important;gap:10px!important}
+          .features-grid{grid-template-columns:repeat(2,1fr)!important;gap:8px!important}
+          .footer-grid{grid-template-columns:1fr 1fr!important;gap:16px!important}
+          .svc-grid{grid-template-columns:1fr!important}
+          .promo-row{flex-direction:column!important;text-align:center!important}
+          .hero-btns{flex-direction:column!important}
+          .hero-btns a,.hero-btns button{width:100%!important;justify-content:center!important}
+          .cat-label{font-size:10px!important}
+          .cat-icon{width:36px!important;height:36px!important;font-size:18px!important}
+          .section-title{font-size:15px!important}
+        }
+
+        @media(max-width:480px){
+          .cat-grid{grid-template-columns:repeat(4,1fr)!important}
+          .listings-grid{grid-template-columns:repeat(2,1fr)!important}
+          .features-grid{grid-template-columns:repeat(2,1fr)!important}
+          .footer-grid{grid-template-columns:1fr!important}
+          .listing-card-img{height:100px!important}
+        }
+      `}</style>
 
       {/* ══ HERO ══ */}
       <div style={{ background: 'linear-gradient(135deg,#eaf3ff 0%,#f8fbff 60%,#fff8ed 100%)', padding: '40px 24px 36px', borderBottom: `1px solid ${S.border}` }}>
@@ -185,7 +222,7 @@ export default function HomeClient() {
           <h2 className="section-title" style={{ fontSize: 17, fontWeight: 700, color: S.navy, fontFamily: "'Sora',sans-serif", letterSpacing: -0.3 }}>Categorii servicii</h2>
           <a href="/search" style={{ fontSize: 13, color: S.blue, textDecoration: 'none', fontWeight: 600 }}>Vezi toate →</a>
         </div>
-        <div className="cat-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(8,1fr)', gap: 10, marginBottom: 20 }}>
+        <div className="cat-grid" style={{ marginBottom: 20 }}>
           {CATEGORIES.map(c => (
             <a key={c.key}
               href={c.key === 'dezmembrari' ? '/piese-oferta' : c.key === 'toate' ? '/search' : `/search?category=${c.key}`}
@@ -254,7 +291,7 @@ export default function HomeClient() {
         </div>
 
         {loadingListings ? (
-          <div className="listings-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: 14, marginBottom: 28 }}>
+          <div className="listings-grid" style={{ marginBottom: 28 }}>
             {[1, 2, 3, 4].map(i => <div key={i} style={{ background: '#fff', borderRadius: 14, height: 220, border: `0.5px solid ${S.border}`, animation: 'pulse 1.5s infinite' }} />)}
           </div>
         ) : listings.length === 0 ? (
@@ -265,7 +302,7 @@ export default function HomeClient() {
           </div>
         ) : (
           <>
-            <div className="listings-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: 14, marginBottom: 12 }}>
+            <div className="listings-grid" style={{ marginBottom: 12 }}>
               {listings.map(l => {
                 const coverImg = l.listing_media?.find(m => m.is_cover)?.url || l.listing_media?.[0]?.url
                 const daysAgo = Math.floor((new Date().getTime() - new Date(l.created_at).getTime()) / (1000 * 60 * 60 * 24))
@@ -307,7 +344,7 @@ export default function HomeClient() {
 
         {/* De ce Reparo */}
         <h2 className="section-title" style={{ fontSize: 17, fontWeight: 700, color: S.navy, fontFamily: "'Sora',sans-serif", letterSpacing: -0.3, marginBottom: 14 }}>De ce să alegi Reparo?</h2>
-        <div className="features-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: 10, marginBottom: 28 }}>
+        <div className="features-grid" style={{ marginBottom: 28 }}>
           {[
             { icon: '🎯', title: 'Oferte gratuite', desc: 'Trimite o cerere și primești oferte de la mai multe service-uri fără niciun cost.' },
             { icon: '📅', title: 'Programare online', desc: 'Alege data și intervalul orar direct din platformă. Fără telefon.' },
@@ -342,7 +379,7 @@ export default function HomeClient() {
       {/* ══ FOOTER ══ */}
       <footer style={{ background: S.navy, padding: '40px 24px 24px' }}>
         <div style={{ maxWidth: 1200, margin: '0 auto' }}>
-          <div className="footer-grid" style={{ display: 'grid', gridTemplateColumns: '2fr 1fr 1fr 1fr', gap: 24, marginBottom: 32 }}>
+          <div className="footer-grid" style={{ marginBottom: 32 }}>
             <div>
               <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12 }}>
                 <div style={{ width: 32, height: 32, background: '#1a56db', borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 800, fontSize: 15, color: '#fff', fontFamily: "'Sora',sans-serif" }}>R</div>

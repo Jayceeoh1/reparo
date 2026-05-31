@@ -184,6 +184,14 @@ export default function AccountPage() {
         .doc-types-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:20px;}
         .doc-modal-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:16px;}
         .acc-tabs{display:flex;background:#fff;border-radius:50px;border:1px solid #e5e7eb;padding:4px;margin-bottom:20px;overflow-x:auto;gap:2px;scrollbar-width:none;-webkit-overflow-scrolling:touch;}
+        @media(max-width:768px){
+          .acc-cars-grid{grid-template-columns:1fr!important}
+          .acc-apt-row{flex-direction:column!important;gap:8px!important}
+          .acc-apt-row button{width:100%!important;justify-content:center!important}
+          .acc-profile-card{flex-direction:column!important;text-align:center!important}
+          .acc-stats{gap:8px!important}
+          .acc-stat{padding:10px!important}
+        }
         @media(max-width:640px){
           .doc-types-grid{grid-template-columns:repeat(2,1fr)!important;}
           .doc-modal-grid{grid-template-columns:repeat(2,1fr)!important;}
@@ -255,7 +263,7 @@ export default function AccountPage() {
                 <button onClick={()=>setShowAddCar(true)} style={btn(true)}>Adaugă prima mașină</button>
               </div>
             ):(
-              <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fill,minmax(min(300px,100%),1fr))',gap:14}}>
+              <div className="acc-cars-grid" style={{display:'grid',gridTemplateColumns:'repeat(auto-fill,minmax(min(300px,100%),1fr))',gap:14}}>
                 {cars.map(car=>(
                   <div key={car.id} style={{...card(),border:`1.5px solid ${car.is_default?S.blue:S.border}`}}>
                     <div style={{display:'flex',alignItems:'center',gap:12,marginBottom:14}}>
