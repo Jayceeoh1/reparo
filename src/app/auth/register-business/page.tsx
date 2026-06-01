@@ -13,15 +13,6 @@ const label = {display:'block',fontSize:11,fontWeight:700,color:S.muted,textTran
 
 const BUSINESS_TYPES = [
   {
-    key:'service',
-    icon:'🔧',
-    title:'Service auto',
-    desc:'Oferi servicii de reparații, revizii, ITP, vopsitorie sau orice lucrare auto.',
-    color:'#1a56db',
-    bg:'#eaf3ff',
-    features:['Cereri de la clienți','Oferte & programări','Calendar lucrări','Recenzii verificate'],
-  },
-  {
     key:'magazin_piese',
     icon:'📦',
     title:'Magazin piese noi',
