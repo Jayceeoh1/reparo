@@ -10,7 +10,7 @@ const S = {
   yellow:'#f59e0b', yellowBg:'#fef3c7', purple:'#7c3aed', purpleBg:'#ede9fe',
 }
 
-const TABS = ['Dashboard', 'Verificări', 'Service-uri', 'Utilizatori', 'Recenzii raportate', 'Notificări', 'Statistici']
+const TABS = ['Dashboard', 'Verificări', 'Service-uri', 'Utilizatori', 'Cereri piese', 'Recenzii raportate', 'Notificări', 'Statistici']
 
 export default function AdminPage() {
   const [user, setUser] = useState(null)
@@ -28,6 +28,7 @@ export default function AdminPage() {
   const [revenueData, setRevenueData] = useState([])
   const [broadcastTitle, setBroadcastTitle] = useState('')
   const [broadcastBody, setBroadcastBody] = useState('')
+  const [partsRequests, setPartsRequests] = useState([])
   const [broadcastTarget, setBroadcastTarget] = useState('all')
   const [broadcastSending, setBroadcastSending] = useState(false)
   const [broadcastResult, setBroadcastResult] = useState(null)
@@ -488,6 +489,37 @@ export default function AdminPage() {
         )}
 
         {/* ══ RECENZII RAPORTATE ══ */}
+        {tab === 'Cereri piese' && (
+          <div>
+            <h2 style={{ fontFamily: "'Sora',sans-serif", fontWeight: 700, fontSize: 18, color: S.navy, marginBottom: 16 }}>
+              Cereri piese ({partsRequests.length})
+            </h2>
+            {partsRequests.length === 0 ? (
+              <div style={{ ...card(), textAlign: 'center', padding: '40px' }}>
+                <div style={{ fontSize: 40, marginBottom: 8 }}>📦</div>
+                <div style={{ color: S.muted }}>Nicio cerere de piese</div>
+              </div>
+            ) : (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                {partsRequests.map(r => (
+                  <div key={r.id} style={{ ...card(), display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 10 }}>
+                    <div>
+                      <div style={{ fontFamily: "'Sora',sans-serif", fontWeight: 700, fontSize: 14, color: S.navy, marginBottom: 2 }}>{r.part_name}</div>
+                      <div style={{ fontSize: 12, color: S.muted }}>🚗 {r.car_brand} {r.car_model} {r.car_year ? `(${r.car_year})` : ''} · 👤 {r.profiles?.full_name || 'Utilizator'} · 📍 {r.city || '—'}</div>
+                    </div>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                      <span style={{ background: r.status === 'activa' ? '#eaf3ff' : r.status === 'in_progres' ? S.yellowBg : S.greenBg, color: r.status === 'activa' ? S.blue : r.status === 'in_progres' ? S.yellow : S.green, fontSize: 11, fontWeight: 700, padding: '3px 10px', borderRadius: 50 }}>
+                        {r.status === 'activa' ? 'Activă' : r.status === 'in_progres' ? 'În progres' : r.status}
+                      </span>
+                      <span style={{ fontSize: 11, color: S.muted }}>{new Date(r.created_at).toLocaleDateString('ro-RO')}</span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
+
         {tab === 'Recenzii raportate' && (
           <div>
             <h2 style={{ fontFamily: "'Sora',sans-serif", fontWeight: 700, fontSize: 18, color: S.navy, marginBottom: 16 }}>

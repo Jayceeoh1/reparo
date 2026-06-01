@@ -2352,22 +2352,8 @@ export default function ServiceDashboard() {
           )}
 
           {/* ══ PIESE LISTATE ══ */}
-          {tab==='Piese listate'&&(
-            <div>
-              <div className="dash-content-header" style={{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:20,flexWrap:'wrap',gap:10}}>
-                <div>
-                  <h1 style={{fontFamily:"'Sora',sans-serif",fontWeight:800,fontSize:22,color:S.navy,marginBottom:4}}>Piese listate</h1>
-                  <p style={{fontSize:14,color:S.muted}}>Toate piesele disponibile din parcul tău.</p>
-                </div>
-                <button style={{...btn('primary'),gap:6}}>+ Adaugă piesă</button>
-              </div>
-              <div style={{...card(),textAlign:'center',padding:'60px 20px'}}>
-                <div style={{fontSize:56,marginBottom:12}}>📦</div>
-                <div style={{fontFamily:"'Sora',sans-serif",fontWeight:700,fontSize:18,color:S.navy,marginBottom:8}}>Nicio piesă listată</div>
-                <p style={{fontSize:14,color:S.muted,marginBottom:20,maxWidth:360,margin:'0 auto 20px'}}>Adaugă piese individual sau importă din mașinile dezmembrate.</p>
-                <button style={{...btn('primary')}}>+ Adaugă piesă</button>
-              </div>
-            </div>
+          {tab==='Piese listate'&&service?.id&&(
+            <PieseListateModule serviceId={service.id}/>
           )}
 
           {/* ══ MESAJE (shortcut) ══ */}
