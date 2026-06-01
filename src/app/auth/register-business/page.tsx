@@ -34,10 +34,10 @@ const BUSINESS_TYPES = [
     key:'mixt',
     icon:'⚡',
     title:'Cont mixt',
-    desc:'Faci atât service auto cât și vinzi piese. Modulele se activează separat.',
+    desc:'Ai atât magazin de piese noi cât și parc de dezmembrări. Modulele se gestionează separat.',
     color:'#7c3aed',
     bg:'#ede9fe',
-    features:['Toate modulele incluse','Service + piese','Gestionare separată','Un singur cont'],
+    features:['Magazin piese noi','Parc dezmembrări','Gestionare separată','Un singur cont'],
   },
 ]
 
