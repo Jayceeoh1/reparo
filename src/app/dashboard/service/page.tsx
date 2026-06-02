@@ -526,6 +526,7 @@ export default function ServiceDashboard() {
 
   // Tab-uri comune tuturor tipurilor de business
   const TABS_COMMON_START = [
+    {divider:'COMUNE'},
     {name:'Acasă',icon:'🏠',badge:null},
     {name:'Profil public',icon:'🏪',badge:(!pf.description||!pf.phone||!pf.address)?'!':null},
   ]
@@ -559,12 +560,15 @@ export default function ServiceDashboard() {
     {name:'Promovări',icon:'🚀',badge:null},
   ]
   const TABS_MIXT = [
-    {name:'Servicii oferite',icon:'🔧',badge:offerings.length||null},
-    {name:'Cereri service',icon:'📋',badge:requests.length||null},
-    {name:'Cereri piese',icon:'📦',badge:null},
-    {name:'Programări',icon:'📅',badge:appointments.filter(a=>['in_asteptare','confirmata','in_lucru'].includes(aptStatuses[a.id]||a.status)).length||null},
+    {divider:'PIESE NOI'},
+    {name:'Cereri piese',icon:'📋',badge:requests.length||null},
+    {name:'Piese listate',icon:'📦',badge:null},
     {name:'Oferte trimise',icon:'💬',badge:offers.filter(o=>o.status==='trimisa').length||null},
-    {name:'Anunțuri',icon:'📦',badge:null},
+    {divider:'DEZMEMBRĂRI'},
+    {name:'Mașini dezmembrate',icon:'🚗',badge:null},
+    {name:'Piese SH',icon:'🔩',badge:null},
+    {name:'Cereri piese SH',icon:'📋',badge:null},
+    {divider:'GENERAL'},
     {name:'Mesaje',icon:'💬',badge:null},
     {name:'Promovări',icon:'🚀',badge:null},
   ]
@@ -667,7 +671,9 @@ export default function ServiceDashboard() {
           </div>
         </a>
         <div style={{width:1,height:20,background:'rgba(255,255,255,0.15)'}}/>
-        <span style={{fontSize:12,color:'rgba(255,255,255,0.4)',fontFamily:"'Sora',sans-serif",fontWeight:600,letterSpacing:0.5}}>DASHBOARD SERVICE</span>
+        <span style={{fontSize:12,color:'rgba(255,255,255,0.4)',fontFamily:"'Sora',sans-serif",fontWeight:600,letterSpacing:0.5}}>
+          {bizType==='magazin_piese'?'MAGAZIN PIESE':bizType==='dezmembrari'?'DEZMEMBRĂRI':bizType==='mixt'?'CONT MIXT':'SERVICE AUTO'}
+        </span>
         <div style={{marginLeft:'auto',display:'flex',alignItems:'center',gap:12}}>
           {service?.id&&<a href={`/service/${service.id}`} target="_blank" style={{fontSize:12,color:'rgba(255,255,255,0.5)',textDecoration:'none'}}>👁️ Profil public</a>}
           <button onClick={async()=>{await supabase.auth.signOut();window.location.href='/home'}} style={{fontSize:12,color:'rgba(255,255,255,0.4)',background:'none',border:'none',cursor:'pointer',fontFamily:"'DM Sans',sans-serif"}}>Ieși</button>
@@ -695,21 +701,33 @@ export default function ServiceDashboard() {
 
           {/* Nav */}
           <nav style={{padding:'10px',flex:1}}>
-            {TABS.map(t=>(
-              <button key={t.name}
-                onClick={()=>{setTab(t.name);setSidebarOpen(false)}}
-                className={`tab-btn${tab===t.name?' active':''}`}
-                style={{
-                  width:'100%',display:'flex',alignItems:'center',gap:10,padding:'10px 12px',
-                  borderRadius:10,marginBottom:2,cursor:'pointer',border:'none',textAlign:'left',
-                  background:tab===t.name?'rgba(26,86,219,0.25)':'transparent',
-                  color:tab===t.name?'#fff':'rgba(255,255,255,0.5)',
-                  fontFamily:"'DM Sans',sans-serif",fontSize:13,fontWeight:tab===t.name?600:400,
-                  borderRight:tab===t.name?`2px solid ${S.blue}`:'2px solid transparent'}}>
-                <span style={{fontSize:15}}>{t.icon}</span>
-                <span style={{flex:1,textAlign:'left'}}>{t.name}</span>
-                {t.badge&&<span style={{background:tab===t.name?S.blue:'rgba(255,255,255,0.15)',color:'#fff',fontSize:10,fontWeight:700,padding:'1px 6px',borderRadius:50,minWidth:18,textAlign:'center'}}>{t.badge}</span>}
-              </button>
+            {TABS.map((t,i)=>(
+              t.divider ? (
+                <div key={`div-${i}`} style={{
+                  padding:'12px 12px 4px',fontSize:10,fontWeight:700,
+                  color:'rgba(255,255,255,0.28)',letterSpacing:1.2,textTransform:'uppercase',
+                  fontFamily:"'Sora',sans-serif",
+                  borderTop:i>0?'1px solid rgba(255,255,255,0.07)':'none',
+                  marginTop:i>0?8:0
+                }}>
+                  {t.divider}
+                </div>
+              ) : (
+                <button key={t.name}
+                  onClick={()=>{setTab(t.name);setSidebarOpen(false)}}
+                  className={`tab-btn${tab===t.name?' active':''}`}
+                  style={{
+                    width:'100%',display:'flex',alignItems:'center',gap:10,padding:'9px 12px',
+                    borderRadius:10,marginBottom:2,cursor:'pointer',border:'none',textAlign:'left',
+                    background:tab===t.name?'rgba(26,86,219,0.25)':'transparent',
+                    color:tab===t.name?'#fff':'rgba(255,255,255,0.5)',
+                    fontFamily:"'DM Sans',sans-serif",fontSize:13,fontWeight:tab===t.name?600:400,
+                    borderRight:tab===t.name?`2px solid ${S.blue}`:'2px solid transparent'}}>
+                  <span style={{fontSize:15}}>{t.icon}</span>
+                  <span style={{flex:1,textAlign:'left'}}>{t.name}</span>
+                  {t.badge&&<span style={{background:tab===t.name?S.blue:'rgba(255,255,255,0.15)',color:'#fff',fontSize:10,fontWeight:700,padding:'1px 6px',borderRadius:50,minWidth:18,textAlign:'center'}}>{t.badge}</span>}
+                </button>
+              )
             ))}
           </nav>
 
@@ -2354,6 +2372,42 @@ export default function ServiceDashboard() {
           {/* ══ PIESE LISTATE ══ */}
           {tab==='Piese listate'&&service?.id&&(
             <PieseListateModule serviceId={service.id}/>
+          )}
+
+          {/* ══ PIESE SH (mixt - alias dezmembrari) ══ */}
+          {tab==='Piese SH'&&service?.id&&(
+            <DezmembrariModule serviceId={service.id}/>
+          )}
+
+          {/* ══ CERERI PIESE SH (mixt) ══ */}
+          {tab==='Cereri piese SH'&&(
+            <div>
+              <h1 style={{fontFamily:"'Sora',sans-serif",fontWeight:800,fontSize:22,color:S.navy,marginBottom:6}}>📋 Cereri piese second-hand</h1>
+              <p style={{fontSize:14,color:S.muted,marginBottom:20}}>Clienții care caută piese SH din parcul tău de dezmembrări.</p>
+              {requests.length===0?(
+                <div style={{...card(),textAlign:'center',padding:'60px 20px'}}>
+                  <div style={{fontSize:56,marginBottom:12}}>📋</div>
+                  <div style={{fontFamily:"'Sora',sans-serif",fontWeight:700,fontSize:18,color:S.navy,marginBottom:8}}>Nicio cerere încă</div>
+                  <p style={{fontSize:14,color:S.muted}}>Cererile de piese SH de la clienți vor apărea aici automat.</p>
+                </div>
+              ):(
+                <div style={{display:'flex',flexDirection:'column',gap:12}}>
+                  {requests.map(r=>(
+                    <div key={r.id} style={{...card(),display:'flex',alignItems:'flex-start',justifyContent:'space-between',gap:12,flexWrap:'wrap'}}>
+                      <div style={{flex:1,minWidth:0}}>
+                        <div style={{fontFamily:"'Sora',sans-serif",fontWeight:700,fontSize:15,color:S.navy,marginBottom:4}}>{r.car_brand} {r.car_model} {r.car_year?`(${r.car_year})`:''}</div>
+                        <div style={{fontSize:13,color:S.muted,marginBottom:6}}>{r.services?.slice(0,3).join(' · ')}</div>
+                        <div style={{display:'flex',gap:8,flexWrap:'wrap'}}>
+                          <span style={{fontSize:11,background:'#eaf3ff',color:S.blue,padding:'2px 8px',borderRadius:50,fontWeight:600}}>📍 {r.city||'—'}</span>
+                          <span style={{fontSize:11,background:S.bg,color:S.muted,padding:'2px 8px',borderRadius:50}}>{new Date(r.created_at).toLocaleDateString('ro-RO')}</span>
+                        </div>
+                      </div>
+                      <button onClick={()=>setSelectedReq(r)} style={{...btn('primary'),padding:'8px 18px',fontSize:13,flexShrink:0}}>Trimite ofertă →</button>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
           )}
 
           {/* ══ MESAJE (shortcut) ══ */}
