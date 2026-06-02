@@ -1,6 +1,7 @@
 // @ts-nocheck
 'use client'
 import DezmembrariModule from '@/app/dashboard/dezmembrari/DezmembrariModule'
+import PieseListateModule from '@/app/dashboard/piese/PieseListateModule'
 import React, { useEffect, useState, useRef } from 'react'
 import { createClient } from '@/lib/supabase/client'
 
