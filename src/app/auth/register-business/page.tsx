@@ -67,7 +67,7 @@ export default function RegisterBusinessPage() {
       options: {
         data: {
           full_name: firm.name,
-          role: 'service',
+          role: businessType,
           business_type: businessType,
           city: firm.city,
           phone: firm.phone,
@@ -81,7 +81,7 @@ export default function RegisterBusinessPage() {
       await supabase.from('profiles').upsert({
         id: data.user.id,
         full_name: firm.name,
-        role: 'service',
+        role: businessType,
         city: firm.city,
         phone: firm.phone,
       })
