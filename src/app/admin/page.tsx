@@ -95,10 +95,13 @@ export default function AdminPage() {
       .limit(50)
     setNewServices(newSvcs || [])
 
-    // Load parts requests
-    const { data: prData } = await supabase.from('parts_requests')
-      .select('*, profiles(full_name)').order('created_at', { ascending: false }).limit(50)
-    setPartsRequests(prData || [])
+    // Load parts requests (tabelul poate sa nu existe inca)
+    try {
+      const { data: prData } = await supabase.from('parts_requests')
+        .select('id, car_brand, car_model, car_year, part_name, city, status, created_at, user_id')
+        .order('created_at', { ascending: false }).limit(50)
+      setPartsRequests(prData || [])
+    } catch(e) { setPartsRequests([]) }
 
     // Build revenue data from payments (last 30 days)
     const now = new Date()
