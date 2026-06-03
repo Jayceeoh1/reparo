@@ -10,7 +10,7 @@ const S = {
   yellow:'#f59e0b', yellowBg:'#fef3c7', purple:'#7c3aed', purpleBg:'#ede9fe',
 }
 
-const TABS = ['Dashboard', 'Verificări', 'Service-uri noi', 'Service-uri', 'Utilizatori', 'Cereri piese', 'Recenzii raportate', 'Notificări', 'Statistici']
+const TABS = ['Dashboard', 'Verificări', 'Service-uri', 'Utilizatori', 'Cereri piese', 'Recenzii raportate', 'Notificări', 'Statistici']
 
 export default function AdminPage() {
   const [user, setUser] = useState(null)
@@ -29,7 +29,6 @@ export default function AdminPage() {
   const [broadcastTitle, setBroadcastTitle] = useState('')
   const [broadcastBody, setBroadcastBody] = useState('')
   const [partsRequests, setPartsRequests] = useState([])
-  const [newServices, setNewServices] = useState([])
   const [broadcastTarget, setBroadcastTarget] = useState('all')
   const [broadcastSending, setBroadcastSending] = useState(false)
   const [broadcastResult, setBroadcastResult] = useState(null)
@@ -68,10 +67,9 @@ export default function AdminPage() {
       { count: verifiedServices },
     ] = await Promise.all([
       supabase.from('verification_requests').select('*, services(id,name,city,logo_url,owner_id)').order('submitted_at', { ascending: false }),
-      // load new services separately below
-      supabase.from('services').select('id,name,city,logo_url,business_type,plan,is_verified,is_active,owner_id,created_at,rating_avg,rating_count').order('created_at', { ascending: false }).limit(100),
+      supabase.from('services').select('*').order('created_at', { ascending: false }).limit(100),
       supabase.from('reviews').select('*, profiles:user_id(full_name), services(name)').eq('is_reported', true).order('reported_at', { ascending: false }),
-      supabase.from('profiles').select('id,full_name,role,created_at,city,phone').order('created_at', { ascending: false }).limit(100),
+      supabase.from('profiles').select('id,full_name,role,created_at,is_banned').order('created_at', { ascending: false }).limit(100),
       supabase.from('quote_requests').select('id,car_brand,car_model,city,created_at,status').order('created_at', { ascending: false }).limit(20),
       supabase.from('payments').select('amount,created_at,plan,service_id').order('created_at', { ascending: false }).limit(90),
       supabase.from('services').select('*', { count: 'exact', head: true }),
@@ -86,24 +84,6 @@ export default function AdminPage() {
     setReportedReviews(rr || [])
     setUsers(usersData || [])
     setActivityFeed(activity || [])
-
-    // Load new services (last 7 days, not yet verified)
-    try {
-      const { data: newSvcs } = await supabase.from('services')
-        .select('id, name, city, logo_url, business_type, plan, created_at, is_verified, owner_id')
-        .eq('is_verified', false)
-        .order('created_at', { ascending: false })
-        .limit(50)
-      setNewServices(newSvcs || [])
-    } catch(e) { setNewServices([]) }
-
-    // Load parts requests (tabelul poate sa nu existe inca)
-    try {
-      const { data: prData } = await supabase.from('parts_requests')
-        .select('id, car_brand, car_model, car_year, part_name, city, status, created_at, user_id')
-        .order('created_at', { ascending: false }).limit(50)
-      setPartsRequests(prData || [])
-    } catch(e) { setPartsRequests([]) }
 
     // Build revenue data from payments (last 30 days)
     const now = new Date()
@@ -184,7 +164,9 @@ export default function AdminPage() {
   }
 
   async function banUser(userId, isBanned) {
-    // is_banned nu exista in schema - feature dezactivat momentan
+    setActionLoading(userId)
+    await supabase.from('profiles').update({ is_banned: !isBanned }).eq('id', userId)
+    setUsers(prev => prev.map(u => u.id === userId ? { ...u, is_banned: !isBanned } : u))
     setActionLoading('')
   }
 
@@ -453,65 +435,6 @@ export default function AdminPage() {
         )}
 
         {/* ══ SERVICE-URI ══ */}
-        {tab === 'Service-uri noi' && (
-          <div>
-            <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', marginBottom:20, flexWrap:'wrap', gap:10 }}>
-              <div>
-                <h2 style={{ fontFamily:"'Sora',sans-serif", fontWeight:700, fontSize:18, color:S.navy, marginBottom:4 }}>
-                  🆕 Service-uri noi — necesită aprobare
-                </h2>
-                <p style={{ fontSize:13, color:S.muted }}>Service-uri înregistrate recent, neverificate.</p>
-              </div>
-              <div style={{ background:S.yellowBg, border:`1px solid ${S.yellow}30`, borderRadius:10, padding:'8px 14px', fontSize:12, color:S.yellow, fontWeight:700 }}>
-                {newServices.length} în așteptare
-              </div>
-            </div>
-
-            {newServices.length === 0 ? (
-              <div style={{ background:S.white, border:`1px solid ${S.border}`, borderRadius:14, padding:'60px 20px', textAlign:'center' }}>
-                <div style={{ fontSize:48, marginBottom:12 }}>✅</div>
-                <div style={{ fontFamily:"'Sora',sans-serif", fontWeight:700, fontSize:16, color:S.navy }}>Toate service-urile sunt procesate</div>
-              </div>
-            ) : (
-              <div style={{ display:'flex', flexDirection:'column', gap:12 }}>
-                {newServices.map(svc => (
-                  <div key={svc.id} style={{ background:S.white, border:`1px solid ${S.border}`, borderRadius:14, padding:18, display:'flex', alignItems:'center', gap:14, flexWrap:'wrap' }}>
-                    <div style={{ width:48, height:48, background:'#eaf3ff', borderRadius:12, display:'flex', alignItems:'center', justifyContent:'center', fontSize:22, flexShrink:0, overflow:'hidden' }}>
-                      {svc.logo_url ? <img src={svc.logo_url} style={{ width:'100%', height:'100%', objectFit:'cover' }} alt=""/> : '🔧'}
-                    </div>
-                    <div style={{ flex:1, minWidth:0 }}>
-                      <div style={{ fontFamily:"'Sora',sans-serif", fontWeight:700, fontSize:15, color:S.navy, marginBottom:3 }}>{svc.name}</div>
-                      <div style={{ fontSize:12, color:S.muted, marginBottom:4 }}>
-                        📍 {svc.city} 
-                      </div>
-                      <div style={{ display:'flex', gap:6, flexWrap:'wrap' }}>
-                        <span style={{ fontSize:11, background:'#eaf3ff', color:S.blue, padding:'2px 8px', borderRadius:50, fontWeight:600 }}>
-                          {svc.business_type === 'magazin_piese' ? '📦 Magazin piese' : svc.business_type === 'dezmembrari' ? '🚗 Dezmembrări' : svc.business_type === 'mixt' ? '⚡ Mixt' : '🔧 Service'}
-                        </span>
-                        <span style={{ fontSize:11, background:S.bg, color:S.muted, padding:'2px 8px', borderRadius:50 }}>
-                          {new Date(svc.created_at).toLocaleDateString('ro-RO', { day:'numeric', month:'short', year:'numeric' })}
-                        </span>
-                        {svc.plan === 'pro' && <span style={{ fontSize:11, background:S.yellowBg, color:S.yellow, padding:'2px 8px', borderRadius:50, fontWeight:700 }}>⭐ Pro</span>}
-                      </div>
-                    </div>
-                    <div style={{ display:'flex', flexDirection:'column', gap:8, flexShrink:0 }}>
-                      <button onClick={() => toggleVerified(svc)}
-                        disabled={actionLoading === svc.id}
-                        style={{ display:'flex', alignItems:'center', gap:6, padding:'8px 16px', background:S.green, color:'#fff', border:'none', borderRadius:50, fontSize:12, fontWeight:700, cursor:'pointer' }}>
-                        ✅ Aprobă service-ul
-                      </button>
-                      <a href={`/service/${svc.id}`} target="_blank"
-                        style={{ display:'flex', alignItems:'center', justifyContent:'center', gap:6, padding:'7px 14px', background:S.bg, color:S.navy, border:`1px solid ${S.border}`, borderRadius:50, fontSize:12, fontWeight:600, textDecoration:'none' }}>
-                        👁️ Vezi profil
-                      </a>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-        )}
-
         {tab === 'Service-uri' && (
           <div>
             <h2 style={{ fontFamily: "'Sora',sans-serif", fontWeight: 700, fontSize: 18, color: S.navy, marginBottom: 16 }}>
@@ -731,7 +654,7 @@ export default function AdminPage() {
                   {users.map(u => (
                     <tr key={u.id} className="admin-row" style={{ borderBottom: `1px solid ${S.border}` }}>
                       <td style={{ padding: '12px 16px' }}>
-                        <div style={{ fontWeight: 600, fontSize: 13, color: S.navy }}>
+                        <div style={{ fontWeight: 600, fontSize: 13, color: u.is_banned ? S.muted : S.navy, textDecoration: u.is_banned ? 'line-through' : 'none' }}>
                           {u.full_name || 'Fără nume'}
                         </div>
                         <div style={{ fontSize: 11, color: S.muted, fontFamily: 'monospace' }}>{u.id.slice(0,8)}...</div>
@@ -748,15 +671,15 @@ export default function AdminPage() {
                         {new Date(u.created_at).toLocaleDateString('ro-RO')}
                       </td>
                       <td style={{ padding: '12px 16px' }}>
-                        <span style={{ fontSize: 11, fontWeight: 700, padding: '2px 8px', borderRadius: 50, background: S.greenBg, color: S.green }}>
-                          Activ
+                        <span style={{ fontSize: 11, fontWeight: 700, padding: '2px 8px', borderRadius: 50, background: u.is_banned ? S.redBg : S.greenBg, color: u.is_banned ? S.red : S.green }}>
+                          {u.is_banned ? 'Banat' : 'Activ'}
                         </span>
                       </td>
                       <td style={{ padding: '12px 16px' }}>
                         <button onClick={() => banUser(u.id, u.is_banned)}
                           disabled={actionLoading === u.id}
-                          style={{ padding: '5px 12px', background: S.redBg, color: S.red, border: 'none', borderRadius: 6, fontSize: 11, fontWeight: 700, cursor: 'pointer' }}>
-                          {actionLoading === u.id ? '...' : 'Ban'}
+                          style={{ padding: '5px 12px', background: u.is_banned ? S.greenBg : S.redBg, color: u.is_banned ? S.green : S.red, border: 'none', borderRadius: 6, fontSize: 11, fontWeight: 700, cursor: 'pointer' }}>
+                          {actionLoading === u.id ? '...' : u.is_banned ? 'Unban' : 'Ban'}
                         </button>
                       </td>
                     </tr>
@@ -862,102 +785,40 @@ export default function AdminPage() {
 
                 {tab === 'Statistici' && (
           <div>
-            <h2 style={{ fontFamily:"'Sora',sans-serif", fontWeight:700, fontSize:18, color:S.navy, marginBottom:20 }}>📊 Statistici platformă</h2>
-
-            {/* KPI Grid */}
-            <div style={{ display:'grid', gridTemplateColumns:'repeat(4,1fr)', gap:12, marginBottom:20 }}>
-              {[
-                {icon:'🔧',l:'Service-uri',v:stats.totalServices||0,c:S.blue,bg:'#eaf3ff'},
-                {icon:'✅',l:'Verificate',v:stats.verifiedServices||0,c:S.green,bg:S.greenBg},
-                {icon:'👥',l:'Utilizatori',v:stats.totalUsers||0,c:S.purple,bg:S.purpleBg},
-                {icon:'📋',l:'Cereri ofertă',v:stats.totalRequests||0,c:S.yellow,bg:S.yellowBg},
-              ].map(({icon,l,v,c,bg})=>(
-                <div key={l} style={{ background:bg, borderRadius:14, padding:'16px', textAlign:'center', border:'none' }}>
-                  <div style={{ fontSize:24, marginBottom:6 }}>{icon}</div>
-                  <div style={{ fontFamily:"'Sora',sans-serif", fontWeight:800, fontSize:26, color:c }}>{v}</div>
-                  <div style={{ fontSize:11, color:c, opacity:.8, marginTop:2 }}>{l}</div>
-                </div>
-              ))}
-            </div>
-
-            <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:16, marginBottom:16 }}>
-              {/* Business types breakdown */}
-              <div style={{ background:S.white, border:`1px solid ${S.border}`, borderRadius:14, padding:18 }}>
-                <div style={{ fontFamily:"'Sora',sans-serif", fontWeight:700, fontSize:15, color:S.navy, marginBottom:14 }}>Tipuri de business</div>
-                {[
-                  {l:'Service auto',v:services.filter(s=>!s.business_type||s.business_type==='service').length,c:S.blue},
-                  {l:'Magazin piese',v:services.filter(s=>s.business_type==='magazin_piese').length,c:S.green},
-                  {l:'Dezmembrări',v:services.filter(s=>s.business_type==='dezmembrari').length,c:S.yellow},
-                  {l:'Cont mixt',v:services.filter(s=>s.business_type==='mixt').length,c:S.purple},
-                ].map(({l,v,c})=>(
-                  <div key={l} style={{ display:'flex', alignItems:'center', gap:10, marginBottom:10 }}>
-                    <div style={{ fontSize:12, color:S.muted, width:110, flexShrink:0 }}>{l}</div>
-                    <div style={{ flex:1, background:S.bg, borderRadius:50, height:10, overflow:'hidden' }}>
-                      <div style={{ width:`${services.length>0?v/services.length*100:0}%`, height:'100%', background:c, borderRadius:50, transition:'width .4s' }}/>
+            <h2 style={{ fontFamily: "'Sora',sans-serif", fontWeight: 700, fontSize: 18, color: S.navy, marginBottom: 16 }}>Statistici platformă</h2>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(280px,1fr))', gap: 16 }}>
+              {card(
+                <>
+                  <div style={{ fontSize: 13, fontWeight: 700, color: S.muted, textTransform: 'uppercase', letterSpacing: .5, marginBottom: 12 }}>Verificări</div>
+                  {[
+                    { label: 'În așteptare', value: pending.length, color: S.yellow },
+                    { label: 'În analiză', value: inReview.length, color: S.blue },
+                    { label: 'Aprobate', value: approved.length, color: S.green },
+                    { label: 'Respinse', value: rejected.length, color: S.red },
+                  ].map(item => (
+                    <div key={item.label} style={{ display: 'flex', justifyContent: 'space-between', padding: '8px 0', borderBottom: `1px solid ${S.border}` }}>
+                      <span style={{ fontSize: 13, color: S.text }}>{item.label}</span>
+                      <span style={{ fontSize: 13, fontWeight: 700, color: item.color }}>{item.value}</span>
                     </div>
-                    <div style={{ fontFamily:"'Sora',sans-serif", fontWeight:700, fontSize:14, color:c, width:24, textAlign:'right' }}>{v}</div>
-                  </div>
-                ))}
-              </div>
-
-              {/* Verification status */}
-              <div style={{ background:S.white, border:`1px solid ${S.border}`, borderRadius:14, padding:18 }}>
-                <div style={{ fontFamily:"'Sora',sans-serif", fontWeight:700, fontSize:15, color:S.navy, marginBottom:14 }}>Status verificări</div>
-                {[
-                  {l:'Aprobate',v:verRequests.filter(r=>r.status==='approved').length,c:S.green,bg:S.greenBg},
-                  {l:'În așteptare',v:verRequests.filter(r=>r.status==='pending').length,c:S.yellow,bg:S.yellowBg},
-                  {l:'Respinse',v:verRequests.filter(r=>r.status==='rejected').length,c:S.red,bg:S.redBg},
-                  {l:'Neverificate',v:newServices.length,c:S.muted,bg:S.bg},
-                ].map(({l,v,c,bg})=>(
-                  <div key={l} style={{ display:'flex', alignItems:'center', justifyContent:'space-between', padding:'10px 12px', background:bg, borderRadius:10, marginBottom:8 }}>
-                    <span style={{ fontSize:13, color:S.text }}>{l}</span>
-                    <span style={{ fontFamily:"'Sora',sans-serif", fontWeight:800, fontSize:18, color:c }}>{v}</span>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            {/* Revenue bar chart */}
-            {revenueData.length>0&&(
-              <div style={{ background:S.white, border:`1px solid ${S.border}`, borderRadius:14, padding:18 }}>
-                <div style={{ fontFamily:"'Sora',sans-serif", fontWeight:700, fontSize:15, color:S.navy, marginBottom:4 }}>💰 Revenue — ultimele 30 zile</div>
-                <div style={{ fontSize:12, color:S.muted, marginBottom:16 }}>
-                  MRR estimat: <strong style={{ color:S.navy }}>{stats.estimatedMRR||0} RON</strong> · Pro: {stats.proCount||0} · Basic: {stats.basicCount||0}
-                </div>
-                <div style={{ display:'flex', alignItems:'flex-end', gap:3, height:100 }}>
-                  {revenueData.map((d,i)=>{
-                    const max = Math.max(...revenueData.map(x=>x.total),1)
-                    return (
-                      <div key={i} style={{ flex:1, display:'flex', flexDirection:'column', alignItems:'center', gap:2 }}>
-                        <div title={`${d.day}: ${d.total} RON`}
-                          style={{ width:'100%', background:d.total>0?S.blue:'#e5e7eb', borderRadius:'3px 3px 0 0', height:`${Math.max(d.total/max*85,d.total>0?4:2)}px`, transition:'height .3s', cursor:'default' }}/>
-                      </div>
-                    )
-                  })}
-                </div>
-                <div style={{ display:'flex', justifyContent:'space-between', marginTop:4, fontSize:10, color:S.muted }}>
-                  <span>{revenueData[0]?.day}</span>
-                  <span>{revenueData[14]?.day}</span>
-                  <span>{revenueData[29]?.day}</span>
-                </div>
-              </div>
-            )}
-
-            {/* Plans */}
-            <div style={{ background:S.white, border:`1px solid ${S.border}`, borderRadius:14, padding:18, marginTop:16 }}>
-              <div style={{ fontFamily:"'Sora',sans-serif", fontWeight:700, fontSize:15, color:S.navy, marginBottom:14 }}>Planuri abonament</div>
-              <div style={{ display:'grid', gridTemplateColumns:'repeat(3,1fr)', gap:12 }}>
-                {[
-                  {l:'Free',v:services.filter(s=>!s.plan||s.plan==='free').length,c:S.muted,bg:S.bg},
-                  {l:'Basic',v:services.filter(s=>s.plan==='basic').length,c:S.blue,bg:'#eaf3ff'},
-                  {l:'Pro',v:services.filter(s=>s.plan==='pro').length,c:S.yellow,bg:S.yellowBg},
-                ].map(({l,v,c,bg})=>(
-                  <div key={l} style={{ background:bg, borderRadius:12, padding:'14px', textAlign:'center' }}>
-                    <div style={{ fontFamily:"'Sora',sans-serif", fontWeight:800, fontSize:24, color:c }}>{v}</div>
-                    <div style={{ fontSize:12, color:c, opacity:.8, marginTop:2 }}>{l}</div>
-                  </div>
-                ))}
-              </div>
+                  ))}
+                </>
+              )}
+              {card(
+                <>
+                  <div style={{ fontSize: 13, fontWeight: 700, color: S.muted, textTransform: 'uppercase', letterSpacing: .5, marginBottom: 12 }}>Platformă</div>
+                  {[
+                    { label: 'Total service-uri', value: stats.totalServices || 0 },
+                    { label: 'Service-uri verificate', value: stats.verifiedServices || 0 },
+                    { label: 'Total utilizatori', value: stats.totalUsers || 0 },
+                    { label: 'Total cereri ofertă', value: stats.totalRequests || 0 },
+                  ].map(item => (
+                    <div key={item.label} style={{ display: 'flex', justifyContent: 'space-between', padding: '8px 0', borderBottom: `1px solid ${S.border}` }}>
+                      <span style={{ fontSize: 13, color: S.text }}>{item.label}</span>
+                      <span style={{ fontSize: 13, fontWeight: 700, color: S.navy }}>{item.value}</span>
+                    </div>
+                  ))}
+                </>
+              )}
             </div>
           </div>
         )}
