@@ -488,37 +488,66 @@ export default function AdminPage() {
           </div>
         )}
 
-        {/* ══ RECENZII RAPORTATE ══ */}
-        {tab === 'Cereri piese' && (
-          <div>
-            <h2 style={{ fontFamily: "'Sora',sans-serif", fontWeight: 700, fontSize: 18, color: S.navy, marginBottom: 16 }}>
-              Cereri piese ({partsRequests.length})
-            </h2>
-            {partsRequests.length === 0 ? (
-              <div style={{ ...card(), textAlign: 'center', padding: '40px' }}>
-                <div style={{ fontSize: 40, marginBottom: 8 }}>📦</div>
-                <div style={{ color: S.muted }}>Nicio cerere de piese</div>
+{/* ══ CERERI PIESE ══ */}
+{tab === 'Cereri piese' && (
+  <div>
+    <h2 style={{ fontFamily: "'Sora',sans-serif", fontWeight: 700, fontSize: 18, color: S.navy, marginBottom: 16 }}>
+      Cereri piese ({partsRequests.length})
+    </h2>
+
+    {partsRequests.length === 0 ? (
+      <div style={{ background: S.white, borderRadius: 14, border: `1px solid ${S.border}`, padding: '40px', textAlign: 'center' }}>
+        <div style={{ fontSize: 40, marginBottom: 8 }}>📦</div>
+        <div style={{ color: S.muted }}>Nicio cerere de piese</div>
+      </div>
+    ) : (
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+        {partsRequests.map(r => (
+          <div
+            key={r.id}
+            style={{
+              background: S.white,
+              borderRadius: 14,
+              border: `1px solid ${S.border}`,
+              padding: 20,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              flexWrap: 'wrap',
+              gap: 10
+            }}
+          >
+            <div>
+              <div style={{ fontFamily: "'Sora',sans-serif", fontWeight: 700, fontSize: 14, color: S.navy, marginBottom: 2 }}>
+                {r.part_name}
               </div>
-            ) : (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-                {partsRequests.map(r => (
-                  <div key={r.id} style={{ ...card(), display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 10 }}>
-                    <div>
-                      <div style={{ fontFamily: "'Sora',sans-serif", fontWeight: 700, fontSize: 14, color: S.navy, marginBottom: 2 }}>{r.part_name}</div>
-                      <div style={{ fontSize: 12, color: S.muted }}>🚗 {r.car_brand} {r.car_model} {r.car_year ? `(${r.car_year})` : ''} · 👤 {r.profiles?.full_name || 'Utilizator'} · 📍 {r.city || '—'}</div>
-                    </div>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                      <span style={{ background: r.status === 'activa' ? '#eaf3ff' : r.status === 'in_progres' ? S.yellowBg : S.greenBg, color: r.status === 'activa' ? S.blue : r.status === 'in_progres' ? S.yellow : S.green, fontSize: 11, fontWeight: 700, padding: '3px 10px', borderRadius: 50 }}>
-                        {r.status === 'activa' ? 'Activă' : r.status === 'in_progres' ? 'În progres' : r.status}
-                      </span>
-                      <span style={{ fontSize: 11, color: S.muted }}>{new Date(r.created_at).toLocaleDateString('ro-RO')}</span>
-                    </div>
-                  </div>
-                ))}
+              <div style={{ fontSize: 12, color: S.muted }}>
+                🚗 {r.car_brand} {r.car_model} {r.car_year ? `(${r.car_year})` : ''} · 👤 {r.profiles?.full_name || 'Utilizator'} · 📍 {r.city || '—'}
               </div>
-            )}
+            </div>
+
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+              <span style={{
+                background: r.status === 'activa' ? '#eaf3ff' : r.status === 'in_progres' ? S.yellowBg : S.greenBg,
+                color: r.status === 'activa' ? S.blue : r.status === 'in_progres' ? S.yellow : S.green,
+                fontSize: 11,
+                fontWeight: 700,
+                padding: '3px 10px',
+                borderRadius: 50
+              }}>
+                {r.status === 'activa' ? 'Activă' : r.status === 'in_progres' ? 'În progres' : r.status}
+              </span>
+
+              <span style={{ fontSize: 11, color: S.muted }}>
+                {new Date(r.created_at).toLocaleDateString('ro-RO')}
+              </span>
+            </div>
           </div>
-        )}
+        ))}
+      </div>
+    )}
+  </div>
+)}
 
         {tab === 'Recenzii raportate' && (
           <div>
