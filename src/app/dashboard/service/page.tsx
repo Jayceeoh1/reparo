@@ -676,8 +676,14 @@ export default function ServiceDashboard() {
           {bizType==='magazin_piese'?'MAGAZIN PIESE':bizType==='dezmembrari'?'DEZMEMBRĂRI':bizType==='mixt'?'CONT MIXT':'SERVICE AUTO'}
         </span>
         <div style={{marginLeft:'auto',display:'flex',alignItems:'center',gap:12}}>
-          {service?.id&&<a href={`/service/${service.id}`} target="_blank" style={{fontSize:12,color:'rgba(255,255,255,0.5)',textDecoration:'none'}}>👁️ Profil public</a>}
-          <button onClick={async()=>{await supabase.auth.signOut();window.location.href='/home'}} style={{fontSize:12,color:'rgba(255,255,255,0.4)',background:'none',border:'none',cursor:'pointer',fontFamily:"'DM Sans',sans-serif"}}>Ieși</button>
+          {service?.id&&<a href={`/service/${service.id}`} target="_blank"
+            style={{display:'flex',alignItems:'center',gap:5,padding:'6px 14px',borderRadius:6,background:'#1a56db',color:'#fff',fontSize:12,textDecoration:'none',fontWeight:600,fontFamily:"'DM Sans',sans-serif"}}>
+            👁️ Profil public
+          </a>}
+          <button onClick={async()=>{await supabase.auth.signOut();window.location.href='/home'}}
+            style={{display:'flex',alignItems:'center',gap:5,padding:'6px 12px',borderRadius:6,background:'rgba(255,255,255,0.08)',color:'rgba(255,255,255,0.75)',fontSize:12,border:'0.5px solid rgba(255,255,255,0.15)',cursor:'pointer',fontFamily:"'DM Sans',sans-serif"}}>
+            Ieși
+          </button>
         </div>
       </div>
 
