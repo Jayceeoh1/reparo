@@ -39,8 +39,7 @@ export default function LoginPage() {
         {/* Logo */}
         <div className="fade-up" style={{textAlign:'center',marginBottom:32}}>
           <a href="/home" style={{textDecoration:'none',display:'inline-flex',alignItems:'center',gap:10,marginBottom:8}}>
-            <div style={{width:44,height:44,background:S.blue,borderRadius:12,display:'flex',alignItems:'center',justifyContent:'center',fontFamily:"'Sora',sans-serif",fontWeight:800,fontSize:20,color:'#fff',boxShadow:'0 4px 16px rgba(26,86,219,0.3)'}}>S</div>
-            <span style={{fontFamily:"'Sora',sans-serif",fontWeight:800,fontSize:24,color:S.navy,letterSpacing:-0.5}}>Serviceclub</span>
+            <img src="/logo-serviceclub.png" alt="Serviceclub" style={{height:52,width:'auto',objectFit:'contain'}}/>
           </a>
           <div style={{fontSize:13,color:S.muted,marginTop:4}}>Platforma de servicii auto din România</div>
         </div>

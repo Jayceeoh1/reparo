@@ -225,9 +225,8 @@ export default function GlobalLayout({ children }) {
           <div style={{display:'flex',alignItems:'center',gap:12,padding:'0 32px',height:68,maxWidth:1280,margin:'0 auto'}}>
             
             {/* Logo */}
-            <a href="/home" style={{textDecoration:'none',flexShrink:0,display:'flex',alignItems:'center',gap:8}}>
-              <div style={{width:36,height:36,background:'var(--blue)',borderRadius:10,display:'flex',alignItems:'center',justifyContent:'center',fontFamily:"'Sora',sans-serif",fontWeight:800,fontSize:17,color:'#fff',boxShadow:'0 2px 8px rgba(26,86,219,0.3)'}}>S</div>
-              <span style={{fontFamily:"'Sora',sans-serif",fontWeight:800,fontSize:21,color:'var(--navy)',letterSpacing:-0.5}} className="hide-mob">Serviceclub</span>
+            <a href="/home" style={{textDecoration:'none',flexShrink:0,display:'flex',alignItems:'center'}}>
+              <img src="/logo-serviceclub.png" alt="Serviceclub" style={{height:40,width:'auto',objectFit:'contain'}}/>
             </a>
 
             {/* Nav divider + tag — desktop */}

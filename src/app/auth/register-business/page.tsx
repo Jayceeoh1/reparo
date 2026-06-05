@@ -135,8 +135,7 @@ export default function RegisterBusinessPage() {
         {/* Logo */}
         <div className="fade-up" style={{textAlign:'center',marginBottom:24}}>
           <a href="/home" style={{textDecoration:'none',display:'inline-flex',alignItems:'center',gap:10,marginBottom:4}}>
-            <div style={{width:40,height:40,background:S.blue,borderRadius:10,display:'flex',alignItems:'center',justifyContent:'center',fontFamily:"'Sora',sans-serif",fontWeight:800,fontSize:18,color:'#fff',boxShadow:'0 4px 14px rgba(26,86,219,0.3)'}}>S</div>
-            <span style={{fontFamily:"'Sora',sans-serif",fontWeight:800,fontSize:22,color:S.navy}}>Serviceclub</span>
+            <img src="/logo-serviceclub.png" alt="Serviceclub" style={{height:48,width:'auto',objectFit:'contain'}}/>
           </a>
           <div style={{fontSize:13,color:S.muted}}>Înregistrare cont business</div>
         </div>
