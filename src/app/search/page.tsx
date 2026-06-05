@@ -236,7 +236,7 @@ function SearchContent() {
               <div style={{fontSize:11,fontWeight:700,color:S.muted,textTransform:'uppercase',letterSpacing:.5,marginBottom:8}}>Filtre</div>
               <div style={{display:'flex',flexDirection:'column',gap:8}}>
                 {[
-                  {val:filterVerified,set:setFilterVerified,label:'✓ Verificat Reparo'},
+                  {val:filterVerified,set:setFilterVerified,label:'✓ Verificat Serviceclub'},
                   {val:filterITP,set:setFilterITP,label:'🔍 ITP pe loc'},
                   {val:filterRAR,set:setFilterRAR,label:'🏢 Autorizat RAR'},
                 ].map(f=>(

@@ -27,7 +27,7 @@ const STEPS = [
 
 const PLANS = [
   {name:'Free',price:'0',period:'',features:['Profil public complet','Până la 10 cereri/lună','Calendar programări','Recenzii clienți','Suport email'],cta:'Începe gratuit',primary:false},
-  {name:'Basic',price:'99',period:'/lună',features:['Tot din Free','Cereri nelimitate','Notificări instant SMS','Badge verificat Reparo','Statistici detaliate'],cta:'Alege Basic',primary:false},
+  {name:'Basic',price:'99',period:'/lună',features:['Tot din Free','Cereri nelimitate','Notificări instant SMS','Badge verificat Serviceclub','Statistici detaliate'],cta:'Alege Basic',primary:false},
   {name:'Pro',price:'199',period:'/lună',features:['Tot din Basic','Poziție prioritară în căutări','Anunțuri promovate','Mesagerie internă','Manager de cont dedicat'],cta:'Alege Pro',primary:true},
 ]
 
@@ -44,7 +44,7 @@ const FAQS_DATA = [
   {q:'Ce tip de service-uri pot să se înregistreze?',a:'Orice tip — mecanică, vopsitorie, electrice, ITP, anvelope, detailing. Dacă lucrezi pe mașini, ești bine venit.'},
   {q:'Cum primesc cererile de ofertă?',a:'Prin notificări în aplicație și prin email. Dacă ai planul Basic sau Pro, și prin SMS.'},
   {q:'Pot să anulez oricând abonamentul?',a:'Da, oricând. Fără penalități, fără perioadă minimă de contract.'},
-  {q:'Reparo verifică service-urile?',a:'Da. Service-urile pot solicita badge-ul "Verificat Reparo" după un audit simplu. Crește încrederea clienților.'},
+  {q:'Serviceclub verifică service-urile?',a:'Da. Service-urile pot solicita badge-ul "Verificat Serviceclub" după un audit simplu. Crește încrederea clienților.'},
 ]
 
 export default function LandingPage() {
@@ -107,7 +107,7 @@ export default function LandingPage() {
       <nav className={`lp-nav${scrolled?' scrolled':''}`}>
         <a href="/home" style={{textDecoration:'none',display:'flex',alignItems:'center',gap:8}}>
           <div style={{width:36,height:36,background:S.blue,borderRadius:10,display:'flex',alignItems:'center',justifyContent:'center',fontFamily:"'Sora',sans-serif",fontWeight:800,fontSize:17,color:'#fff'}}>R</div>
-          <span style={{fontFamily:"'Sora',sans-serif",fontWeight:800,fontSize:20,color:'#fff',letterSpacing:-0.5}}>Reparo</span>
+          <span style={{fontFamily:"'Sora',sans-serif",fontWeight:800,fontSize:20,color:'#fff',letterSpacing:-0.5}}>Serviceclub</span>
         </a>
 
         <div className="lp-nav-links">
@@ -157,7 +157,7 @@ export default function LandingPage() {
               Creați mai repede.
             </h1>
             <p style={{fontSize:'clamp(14px,2vw,17px)',color:'rgba(255,255,255,0.6)',lineHeight:1.7,marginBottom:32,maxWidth:480}}>
-              Reparo conectează service-urile auto cu șoferii care au nevoie de reparații. Tu primești cereri de ofertă, trimiți prețul tău și câștigi clienți fideli.
+              Serviceclub conectează service-urile auto cu șoferii care au nevoie de reparații. Tu primești cereri de ofertă, trimiți prețul tău și câștigi clienți fideli.
             </p>
             <div style={{display:'flex',gap:12,flexWrap:'wrap',marginBottom:32}}>
               <a href="/auth/register" style={{display:'inline-flex',alignItems:'center',gap:8,padding:'14px 28px',background:S.yellow,color:'#fff',textDecoration:'none',borderRadius:50,fontSize:'clamp(14px,2vw,16px)',fontWeight:700,fontFamily:"'Sora',sans-serif",boxShadow:'0 8px 24px rgba(245,158,11,0.4)'}}>
@@ -193,7 +193,7 @@ export default function LandingPage() {
                 <span style={{fontSize:16,flexShrink:0}}>⭐</span>
                 <div>
                   <div style={{fontFamily:"'Sora',sans-serif",fontWeight:700,fontSize:13,color:S.green}}>Service-uri câștigă în medie 23 clienți noi/lună</div>
-                  <div style={{fontSize:11,color:S.green,opacity:.7}}>din cereri venite prin Reparo</div>
+                  <div style={{fontSize:11,color:S.green,opacity:.7}}>din cereri venite prin Serviceclub</div>
                 </div>
               </div>
             </div>
@@ -226,7 +226,7 @@ export default function LandingPage() {
         <div style={{maxWidth:1100,margin:'0 auto'}}>
           <div style={{textAlign:'center',marginBottom:48}}>
             <div style={{display:'inline-block',background:'#eaf3ff',color:S.blue,fontSize:11,fontWeight:700,letterSpacing:1.5,textTransform:'uppercase',padding:'5px 14px',borderRadius:50,marginBottom:14,fontFamily:"'Sora',sans-serif"}}>Simplu de folosit</div>
-            <h2 style={{fontFamily:"'Sora',sans-serif",fontWeight:800,fontSize:'clamp(22px,3vw,40px)',color:S.navy,letterSpacing:-0.5}}>Cum funcționează Reparo</h2>
+            <h2 style={{fontFamily:"'Sora',sans-serif",fontWeight:800,fontSize:'clamp(22px,3vw,40px)',color:S.navy,letterSpacing:-0.5}}>Cum funcționează Serviceclub</h2>
           </div>
           <div className="lp-steps-grid">
             {STEPS.map((step,i)=>(
@@ -327,7 +327,7 @@ export default function LandingPage() {
             Gata să câștigi mai mulți clienți?
           </h2>
           <p style={{fontSize:'clamp(14px,2vw,16px)',color:'rgba(255,255,255,0.55)',marginBottom:32,lineHeight:1.7}}>
-            Alătură-te celor {stats[0].value !== '—' ? stats[0].value : 'mii de'} service-uri care folosesc deja Reparo. Înregistrarea e gratuită și durează 5 minute.
+            Alătură-te celor {stats[0].value !== '—' ? stats[0].value : 'mii de'} service-uri care folosesc deja Serviceclub. Înregistrarea e gratuită și durează 5 minute.
           </p>
           <a href="/auth/register"
             style={{display:'inline-flex',alignItems:'center',gap:10,padding:'16px 32px',background:S.yellow,color:'#fff',textDecoration:'none',borderRadius:50,fontSize:'clamp(14px,2vw,17px)',fontWeight:700,fontFamily:"'Sora',sans-serif",boxShadow:'0 8px 32px rgba(245,158,11,0.4)'}}>
@@ -345,14 +345,14 @@ export default function LandingPage() {
       <footer className="lp-footer">
         <div style={{display:'flex',alignItems:'center',gap:8}}>
           <div style={{width:32,height:32,background:S.blue,borderRadius:8,display:'flex',alignItems:'center',justifyContent:'center',fontWeight:800,fontSize:15,color:'#fff',fontFamily:"'Sora',sans-serif"}}>R</div>
-          <span style={{fontFamily:"'Sora',sans-serif",fontWeight:800,fontSize:18,color:'#fff'}}>Reparo</span>
+          <span style={{fontFamily:"'Sora',sans-serif",fontWeight:800,fontSize:18,color:'#fff'}}>Serviceclub</span>
         </div>
         <div className="lp-footer-links">
           {[['Termeni și condiții','/termeni'],['Confidențialitate','/confidentialitate'],['Contact','/contact']].map(([l,h])=>(
             <a key={l} href={h} style={{fontSize:13,color:'rgba(255,255,255,0.4)',textDecoration:'none'}}>{l}</a>
           ))}
         </div>
-        <div style={{fontSize:12,color:'rgba(255,255,255,0.3)'}}>© 2026 Reparo. Toate drepturile rezervate.</div>
+        <div style={{fontSize:12,color:'rgba(255,255,255,0.3)'}}>© 2026 Serviceclub. Toate drepturile rezervate.</div>
       </footer>
     </div>
   )

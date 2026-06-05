@@ -396,7 +396,7 @@ export default function ListingDetailPage({ params }: { params: { id: string } }
                     {seller.avatar_url?<img src={seller.avatar_url} alt="" style={{width:'100%',height:'100%',objectFit:'cover'}}/>:seller.full_name?.charAt(0)?.toUpperCase()||'U'}
                   </div>
                   <div>
-                    <div style={{fontWeight:700,fontSize:14,color:S.navy,marginBottom:2}}>{seller.full_name||'Utilizator Reparo'}</div>
+                    <div style={{fontWeight:700,fontSize:14,color:S.navy,marginBottom:2}}>{seller.full_name||'Utilizator Serviceclub'}</div>
                     <div style={{fontSize:12,color:S.muted}}>📍 {seller.city||listing.city}</div>
                   </div>
                 </div>
@@ -409,7 +409,7 @@ export default function ListingDetailPage({ params }: { params: { id: string } }
             {/* Safety tips */}
             <div style={{background:S.amberBg,borderRadius:16,border:'1px solid rgba(217,119,6,0.2)',padding:16}}>
               <div style={{fontFamily:"'Sora',sans-serif",fontWeight:700,fontSize:13,color:S.amber,marginBottom:8}}>⚠️ Sfaturi siguranță</div>
-              {['Nu plăti în avans fără a vedea produsul','Verifică produsul înainte de tranzacție','Preferă întâlniri în locuri publice','Reparo nu garantează tranzacțiile'].map(tip=>(
+              {['Nu plăti în avans fără a vedea produsul','Verifică produsul înainte de tranzacție','Preferă întâlniri în locuri publice','Serviceclub nu garantează tranzacțiile'].map(tip=>(
                 <div key={tip} style={{fontSize:12,color:S.amber,marginBottom:4,display:'flex',gap:5}}>
                   <span>•</span><span>{tip}</span>
                 </div>

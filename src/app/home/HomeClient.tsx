@@ -344,8 +344,8 @@ export default function HomeClient() {
           </>
         )}
 
-        {/* De ce Reparo */}
-        <h2 className="section-title" style={{ fontSize: 17, fontWeight: 700, color: S.navy, fontFamily: "'Sora',sans-serif", letterSpacing: -0.3, marginBottom: 14 }}>De ce să alegi Reparo?</h2>
+        {/* De ce Serviceclub */}
+        <h2 className="section-title" style={{ fontSize: 17, fontWeight: 700, color: S.navy, fontFamily: "'Sora',sans-serif", letterSpacing: -0.3, marginBottom: 14 }}>De ce să alegi Serviceclub?</h2>
         <div className="features-grid" style={{ marginBottom: 28 }}>
           {[
             { icon: '🎯', title: 'Oferte gratuite', desc: 'Trimite o cerere și primești oferte de la mai multe service-uri fără niciun cost.' },
@@ -365,7 +365,7 @@ export default function HomeClient() {
         <div className="cta-section" style={{ background: S.navy, borderRadius: 20, padding: '32px 36px', textAlign: 'center' }}>
           <h2 style={{ fontFamily: "'Sora',sans-serif", fontWeight: 800, fontSize: 20, color: '#fff', marginBottom: 8, letterSpacing: -0.3 }}>Ești proprietar de service auto?</h2>
           <p style={{ fontSize: 14, color: 'rgba(255,255,255,0.55)', marginBottom: 20, maxWidth: 440, margin: '0 auto 20px' }}>
-            Înregistrează-te pe Reparo și primești cereri de ofertă direct de la clienți din zona ta.
+            Înregistrează-te pe Serviceclub și primești cereri de ofertă direct de la clienți din zona ta.
           </p>
           <div className="cta-btns" style={{ display: 'flex', gap: 10, justifyContent: 'center' }}>
             <a href="/auth/register" className="cta-btn" style={{ display: 'inline-flex', alignItems: 'center', gap: 8, padding: '12px 24px', background: S.yellow, color: '#fff', borderRadius: 50, fontSize: 14, fontWeight: 700, textDecoration: 'none', fontFamily: "'Sora',sans-serif", boxShadow: '0 4px 16px rgba(245,158,11,0.3)' }}>
@@ -384,8 +384,8 @@ export default function HomeClient() {
           <div className="footer-grid" style={{ marginBottom: 32 }}>
             <div>
               <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12 }}>
-                <div style={{ width: 32, height: 32, background: '#1a56db', borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 800, fontSize: 15, color: '#fff', fontFamily: "'Sora',sans-serif" }}>R</div>
-                <span style={{ fontFamily: "'Sora',sans-serif", fontWeight: 800, fontSize: 18, color: '#fff' }}>Reparo</span>
+                <div style={{ width: 32, height: 32, background: '#1a56db', borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 800, fontSize: 15, color: '#fff', fontFamily: "'Sora',sans-serif" }}>S</div>
+                <span style={{ fontFamily: "'Sora',sans-serif", fontWeight: 800, fontSize: 18, color: '#fff' }}>Serviceclub</span>
               </div>
               <p style={{ fontSize: 13, color: 'rgba(255,255,255,0.45)', lineHeight: 1.7, maxWidth: 240, marginBottom: 16 }}>Platforma care conectează șoferii cu cele mai bune service-uri auto din România.</p>
               <div style={{ display: 'flex', gap: 10 }}>
@@ -397,7 +397,7 @@ export default function HomeClient() {
             {[
               { title: 'PLATFORMĂ', links: [['Cum funcționează', '/despre'], ['Caută service', '/search'], ['Cerere ofertă', '/home'], ['ITP', '/itp-rca'], ['Piese & Dezmembrări', '/listing'],['Cere ofertă piese', '/piese-oferta']] },
               { title: 'SERVICE-URI', links: [['Înregistrare', '/auth/register'], ['Dashboard', '/dashboard/service'], ['Planuri', '/auth/register'], ['Promovare', '/auth/register'], ['Suport', '/contact']] },
-              { title: 'COMPANIE', links: [['Despre Reparo', '/despre'], ['Blog auto', '/blog'], ['Cariere', '/cariere'], ['Contact', '/contact'], ['Presă', '/contact']] },
+              { title: 'COMPANIE', links: [['Despre Serviceclub', '/despre'], ['Blog auto', '/blog'], ['Cariere', '/cariere'], ['Contact', '/contact'], ['Presă', '/contact']] },
             ].map(col => (
               <div key={col.title}>
                 <div style={{ fontSize: 10, fontWeight: 700, color: 'rgba(255,255,255,0.3)', letterSpacing: 2, textTransform: 'uppercase', marginBottom: 14, fontFamily: "'Sora',sans-serif" }}>{col.title}</div>
@@ -408,7 +408,7 @@ export default function HomeClient() {
             ))}
           </div>
           <div style={{ borderTop: '1px solid rgba(255,255,255,0.08)', paddingTop: 20, display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 10 }}>
-            <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.25)' }}>© 2026 Reparo. Toate drepturile rezervate.</div>
+            <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.25)' }}>© 2026 Serviceclub. Toate drepturile rezervate.</div>
             <div style={{ display: 'flex', gap: 20 }}>
               {[['Termeni', '/termeni'], ['Confidențialitate', '/confidentialitate'], ['Cookie-uri', '/cookies']].map(([l, h]) => (
                 <a key={l} href={h} style={{ fontSize: 12, color: 'rgba(255,255,255,0.35)', textDecoration: 'none' }}>{l}</a>

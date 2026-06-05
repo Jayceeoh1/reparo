@@ -111,7 +111,7 @@ export default function ServiceProfilePage({ params }: { params: { id: string } 
 
   function share(platform) {
     const url = typeof window!=='undefined'?window.location.href:''
-    const text = `${service?.name} — service auto în ${service?.city}. Vezi pe Reparo:`
+    const text = `${service?.name} — service auto în ${service?.city}. Vezi pe Serviceclub:`
     if (platform==='whatsapp') window.open(`https://wa.me/?text=${encodeURIComponent(text+' '+url)}`)
     if (platform==='facebook') window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}`)
     if (platform==='copy') { navigator.clipboard.writeText(url); setCopied(true); setTimeout(()=>setCopied(false),2000) }

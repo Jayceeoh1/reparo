@@ -19,8 +19,8 @@ export async function POST(request: Request) {
     const siteUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'
 
     const PLANS = {
-      basic: { price: 9900, name: 'Reparo Basic' },
-      pro:   { price: 19900, name: 'Reparo Pro' },
+      basic: { price: 9900, name: 'Serviceclub Basic' },
+      pro:   { price: 19900, name: 'Serviceclub Pro' },
     }
     const PROMOS = {
       service_top_7:  { price: 4900,  name: 'Promovare service 7 zile' },

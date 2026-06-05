@@ -1,7 +1,7 @@
 // @ts-nocheck
 const RESEND_KEY = process.env.RESEND_API_KEY
-const FROM = 'Reparo <noreply@reparo.ro>'
-const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || 'https://reparo-omega.vercel.app'
+const FROM = 'Serviceclub <noreply@serviceclub.ro>'
+const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || 'https://serviceclub.ro'
 
 function layout(content: string) {
   return `<!DOCTYPE html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head>
@@ -9,11 +9,11 @@ function layout(content: string) {
 <div style="max-width:560px;margin:32px auto;background:#fff;border-radius:20px;overflow:hidden;box-shadow:0 4px 24px rgba(10,31,68,0.1);">
   <div style="background:#0a1f44;padding:24px 32px;text-align:center;">
     <span style="display:inline-block;width:36px;height:36px;background:#1a56db;border-radius:9px;line-height:36px;font-size:18px;font-weight:900;color:#fff;">R</span>
-    <span style="font-size:18px;font-weight:800;color:#fff;margin-left:8px;vertical-align:middle;">Reparo</span>
+    <span style="font-size:18px;font-weight:800;color:#fff;margin-left:8px;vertical-align:middle;">Serviceclub</span>
   </div>
   <div style="padding:28px 32px;">${content}</div>
   <div style="background:#f8faff;padding:14px 32px;border-top:1px solid #e5e7eb;text-align:center;">
-    <p style="font-size:11px;color:#9ca3af;margin:0;">© 2026 Reparo · <a href="${BASE_URL}/confidentialitate" style="color:#9ca3af;">Confidențialitate</a></p>
+    <p style="font-size:11px;color:#9ca3af;margin:0;">© 2026 Serviceclub · <a href="${BASE_URL}/confidentialitate" style="color:#9ca3af;">Confidențialitate</a></p>
   </div>
 </div></body></html>`
 }

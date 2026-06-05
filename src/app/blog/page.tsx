@@ -8,6 +8,9 @@ const POSTS = [
   {slug:'economiseste-service-auto',title:'10 moduri să economisești la service auto',excerpt:'De la schimbul de ulei la piese de schimb — sfaturi practice pentru a reduce costurile fără a compromite calitatea.',category:'Economie',date:'28 mar 2026',readTime:'7 min',icon:'💰'},
   {slug:'electrice-hybrid-service',title:'Service pentru mașini electrice și hybrid',excerpt:'Mașinile electrice și hybrid au cerințe speciale de service. Iată ce trebuie să știi și cum găsești un service specializat.',category:'Electric',date:'25 mar 2026',readTime:'5 min',icon:'⚡'},
   {slug:'geometrie-echilibrare',title:'Geometria roților — când și de ce e necesară',subtitle:'',excerpt:'Semnele că ai nevoie de geometrie, cât costă și de ce nu trebuie ignorată. Tot ce trebuie să știi.',category:'Întreținere',date:'22 mar 2026',readTime:'4 min',icon:'⚙️'},
+  {slug:'schimb-ulei-ghid',title:'Schimb de ulei — cât de des și ce ulei alegi',excerpt:'Intervalele recomandate, diferența dintre uleiurile minerale, semisintetice și sintetice și de ce contează viscozitatea. Ghid complet.',category:'Întreținere',date:'19 mar 2026',readTime:'5 min',icon:'🛢️'},
+  {slug:'service-auto-bucuresti',title:'Cele mai bune service-uri auto din București 2026',excerpt:'Ghid pentru a găsi un service de încredere în București — ce să cauți, cum să compari ofertele și de ce Serviceclub îți economisește timp și bani.',category:'Ghiduri',date:'16 mar 2026',readTime:'6 min',icon:'🏙️'},
+  {slug:'intretinere-preventiva',title:'Întreținerea preventivă — ce verifici la mașina ta',excerpt:'Lista completă de verificări periodice: ulei, filtre, frâne, anvelope, lichide. Ce poți face singur și ce necesită un service autorizat.',category:'Întreținere',date:'13 mar 2026',readTime:'7 min',icon:'🔍'},
 ]
 
 const CATEGORIES = ['Toate','Ghiduri','ITP & RCA','Asigurări','Economie','Electric','Întreținere']

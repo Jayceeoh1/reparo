@@ -109,7 +109,7 @@ export default function RegisterBusinessPage() {
       <div style={{textAlign:'center',background:S.white,borderRadius:20,padding:'48px 32px',maxWidth:400,width:'100%',boxShadow:'0 8px 40px rgba(10,31,68,0.1)'}}>
         <div style={{fontSize:72,marginBottom:16}}>🎉</div>
         <h2 style={{fontFamily:"'Sora',sans-serif",fontWeight:800,fontSize:24,color:S.navy,marginBottom:8}}>Contul a fost creat!</h2>
-        <p style={{fontSize:14,color:S.muted,marginBottom:6}}>Bine ai venit pe Reparo, <strong>{firm.name}</strong>!</p>
+        <p style={{fontSize:14,color:S.muted,marginBottom:6}}>Bine ai venit pe Serviceclub, <strong>{firm.name}</strong>!</p>
         <p style={{fontSize:13,color:S.muted}}>Te redirecționăm către dashboard...</p>
         <div style={{marginTop:20,width:40,height:40,border:`3px solid ${S.blue}`,borderTopColor:'transparent',borderRadius:'50%',animation:'spin 1s linear infinite',margin:'20px auto 0'}}/>
         <style>{`@keyframes spin{to{transform:rotate(360deg)}}`}</style>
@@ -135,8 +135,8 @@ export default function RegisterBusinessPage() {
         {/* Logo */}
         <div className="fade-up" style={{textAlign:'center',marginBottom:24}}>
           <a href="/home" style={{textDecoration:'none',display:'inline-flex',alignItems:'center',gap:10,marginBottom:4}}>
-            <div style={{width:40,height:40,background:S.blue,borderRadius:10,display:'flex',alignItems:'center',justifyContent:'center',fontFamily:"'Sora',sans-serif",fontWeight:800,fontSize:18,color:'#fff',boxShadow:'0 4px 14px rgba(26,86,219,0.3)'}}>R</div>
-            <span style={{fontFamily:"'Sora',sans-serif",fontWeight:800,fontSize:22,color:S.navy}}>Reparo</span>
+            <div style={{width:40,height:40,background:S.blue,borderRadius:10,display:'flex',alignItems:'center',justifyContent:'center',fontFamily:"'Sora',sans-serif",fontWeight:800,fontSize:18,color:'#fff',boxShadow:'0 4px 14px rgba(26,86,219,0.3)'}}>S</div>
+            <span style={{fontFamily:"'Sora',sans-serif",fontWeight:800,fontSize:22,color:S.navy}}>Serviceclub</span>
           </a>
           <div style={{fontSize:13,color:S.muted}}>Înregistrare cont business</div>
         </div>

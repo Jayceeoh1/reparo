@@ -30,7 +30,7 @@ async function sendEmailNotification(to: string, subject: string, html: string) 
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        from: 'Serviceclub <noreply@serviceclub.ro>',
+        from: 'Reparo <noreply@reparo.ro>',
         to,
         subject,
         html,
@@ -51,7 +51,7 @@ function buildEmailHtml(body: any, requestId: string) {
         <!-- Header -->
         <div style="background:#0a1f44;padding:28px 32px;text-align:center;">
           <div style="display:inline-block;width:40px;height:40px;background:#1a56db;border-radius:10px;line-height:40px;font-size:20px;font-weight:900;color:#fff;margin-bottom:10px;">R</div>
-          <div style="font-size:20px;font-weight:800;color:#fff;letter-spacing:-0.5px;">Serviceclub</div>
+          <div style="font-size:20px;font-weight:800;color:#fff;letter-spacing:-0.5px;">Reparo</div>
         </div>
         <!-- Body -->
         <div style="padding:32px;">
@@ -84,20 +84,20 @@ function buildEmailHtml(body: any, requestId: string) {
           </div>
           <!-- CTA -->
           <div style="text-align:center;">
-            <a href="https://serviceclub.ro/dashboard/service"
+            <a href="https://reparo-omega.vercel.app/dashboard/service"
               style="display:inline-block;padding:14px 32px;background:#f59e0b;color:#fff;border-radius:50px;font-size:15px;font-weight:700;text-decoration:none;box-shadow:0 4px 16px rgba(245,158,11,0.3);">
               Trimite oferta acum →
             </a>
           </div>
           <p style="font-size:12px;color:#9ca3af;text-align:center;margin-top:20px;line-height:1.6;">
             Răspunde rapid — clienții aleg de obicei primul service care trimite oferta.<br>
-            Accesează <a href="https://serviceclub.ro/dashboard/service" style="color:#1a56db;">dashboard-ul tău</a> pentru a vedea toate cererile.
+            Accesează <a href="https://reparo-omega.vercel.app/dashboard/service" style="color:#1a56db;">dashboard-ul tău</a> pentru a vedea toate cererile.
           </p>
         </div>
         <!-- Footer -->
         <div style="background:#f8faff;padding:16px 32px;border-top:1px solid #e5e7eb;text-align:center;">
           <p style="font-size:11px;color:#9ca3af;margin:0;">
-            © 2026 Serviceclub · <a href="https://serviceclub.ro/confidentialitate" style="color:#9ca3af;">Confidențialitate</a>
+            © 2026 Reparo · <a href="https://reparo-omega.vercel.app/confidentialitate" style="color:#9ca3af;">Confidențialitate</a>
           </p>
         </div>
       </div>

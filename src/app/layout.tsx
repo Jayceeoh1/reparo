@@ -3,13 +3,13 @@ import './globals.css'
 import dynamic from 'next/dynamic'
 const GlobalLayout = dynamic(() => import('@/components/layout/GlobalLayout'), { ssr: false })
 
-const APP_URL = 'https://reparo-omega.vercel.app'
+const APP_URL = 'https://serviceclub.ro'
 
 export const metadata: Metadata = {
   metadataBase: new URL(APP_URL),
   title: {
-    default: 'Reparo — Servicii Auto România | Cereri ofertă gratuite',
-    template: '%s | Reparo Auto',
+    default: 'Serviceclub — Servicii Auto România | Cereri ofertă gratuite',
+    template: '%s | Serviceclub',
   },
   description: 'Găsește cel mai bun service auto din zona ta. Cere oferte gratuite, compară prețuri și rezervă programarea online. ITP, RCA, piese auto, dezmembrări — totul într-un singur loc.',
   keywords: [
@@ -18,9 +18,9 @@ export const metadata: Metadata = {
     'vopsitorie auto', 'geometrie roti', 'schimb ulei', 'diagnoza auto', 'service Bucuresti',
     'service Cluj', 'service Timisoara', 'service Iasi', 'service Brasov',
   ],
-  authors: [{ name: 'Reparo', url: APP_URL }],
-  creator: 'Reparo',
-  publisher: 'Reparo',
+  authors: [{ name: 'Serviceclub', url: APP_URL }],
+  creator: 'Serviceclub',
+  publisher: 'Serviceclub',
   category: 'Automotive',
   manifest: '/manifest.json',
   alternates: {
@@ -40,13 +40,13 @@ export const metadata: Metadata = {
   appleWebApp: {
     capable: true,
     statusBarStyle: 'default',
-    title: 'Reparo Auto',
+    title: 'Serviceclub',
   },
   openGraph: {
-    title: 'Reparo — Servicii Auto România',
+    title: 'Serviceclub — Servicii Auto România',
     description: 'Găsește cel mai bun service auto din zona ta. Cereri de ofertă gratuite, ITP, RCA, piese auto.',
     url: APP_URL,
-    siteName: 'Reparo',
+    siteName: 'Serviceclub',
     locale: 'ro_RO',
     type: 'website',
     images: [
@@ -54,13 +54,13 @@ export const metadata: Metadata = {
         url: `${APP_URL}/og-image.png`,
         width: 1200,
         height: 630,
-        alt: 'Reparo — Platformă servicii auto România',
+        alt: 'Serviceclub — Platformă servicii auto România',
       },
     ],
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'Reparo — Servicii Auto România',
+    title: 'Serviceclub — Servicii Auto România',
     description: 'Găsește cel mai bun service auto. Cereri gratuite, ITP, RCA, piese.',
     images: [`${APP_URL}/og-image.png`],
   },
@@ -85,7 +85,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <meta name="mobile-web-app-capable" content="yes"/>
         <meta name="apple-mobile-web-app-capable" content="yes"/>
         <meta name="apple-mobile-web-app-status-bar-style" content="default"/>
-        <meta name="apple-mobile-web-app-title" content="Reparo"/>
+        <meta name="apple-mobile-web-app-title" content="Serviceclub"/>
         <link rel="preconnect" href="https://fonts.googleapis.com"/>
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous"/>
         <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=Sora:wght@600;700;800&display=swap" rel="stylesheet"/>
@@ -96,7 +96,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             __html: JSON.stringify({
               '@context': 'https://schema.org',
               '@type': 'WebSite',
-              name: 'Reparo',
+              name: 'Serviceclub',
               url: APP_URL,
               description: 'Platformă de conectare service-uri auto cu clienții din România',
               potentialAction: {

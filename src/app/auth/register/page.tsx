@@ -70,8 +70,8 @@ export default function RegisterPage() {
         {/* Logo */}
         <div className="fade-up" style={{textAlign:'center',marginBottom:28}}>
           <a href="/home" style={{textDecoration:'none',display:'inline-flex',alignItems:'center',gap:10,marginBottom:6}}>
-            <div style={{width:44,height:44,background:S.blue,borderRadius:12,display:'flex',alignItems:'center',justifyContent:'center',fontFamily:"'Sora',sans-serif",fontWeight:800,fontSize:20,color:'#fff',boxShadow:'0 4px 16px rgba(26,86,219,0.3)'}}>R</div>
-            <span style={{fontFamily:"'Sora',sans-serif",fontWeight:800,fontSize:24,color:S.navy,letterSpacing:-0.5}}>Reparo</span>
+            <div style={{width:44,height:44,background:S.blue,borderRadius:12,display:'flex',alignItems:'center',justifyContent:'center',fontFamily:"'Sora',sans-serif",fontWeight:800,fontSize:20,color:'#fff',boxShadow:'0 4px 16px rgba(26,86,219,0.3)'}}>S</div>
+            <span style={{fontFamily:"'Sora',sans-serif",fontWeight:800,fontSize:24,color:S.navy,letterSpacing:-0.5}}>Serviceclub</span>
           </a>
           <div style={{fontSize:13,color:S.muted}}>Creează contul tău gratuit</div>
         </div>
@@ -100,7 +100,7 @@ export default function RegisterPage() {
             </div>
           ) : step === 1 ? (
             <>
-              <h1 style={{fontFamily:"'Sora',sans-serif",fontWeight:800,fontSize:20,color:S.navy,marginBottom:4,textAlign:'center'}}>Cum vrei să folosești Reparo?</h1>
+              <h1 style={{fontFamily:"'Sora',sans-serif",fontWeight:800,fontSize:20,color:S.navy,marginBottom:4,textAlign:'center'}}>Cum vrei să folosești Serviceclub?</h1>
               <p style={{fontSize:13,color:S.muted,textAlign:'center',marginBottom:20}}>Alege tipul de cont potrivit pentru tine</p>
 
               <div style={{display:'flex',flexDirection:'column',gap:10,marginBottom:20}}>

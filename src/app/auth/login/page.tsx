@@ -39,8 +39,8 @@ export default function LoginPage() {
         {/* Logo */}
         <div className="fade-up" style={{textAlign:'center',marginBottom:32}}>
           <a href="/home" style={{textDecoration:'none',display:'inline-flex',alignItems:'center',gap:10,marginBottom:8}}>
-            <div style={{width:44,height:44,background:S.blue,borderRadius:12,display:'flex',alignItems:'center',justifyContent:'center',fontFamily:"'Sora',sans-serif",fontWeight:800,fontSize:20,color:'#fff',boxShadow:'0 4px 16px rgba(26,86,219,0.3)'}}>R</div>
-            <span style={{fontFamily:"'Sora',sans-serif",fontWeight:800,fontSize:24,color:S.navy,letterSpacing:-0.5}}>Reparo</span>
+            <div style={{width:44,height:44,background:S.blue,borderRadius:12,display:'flex',alignItems:'center',justifyContent:'center',fontFamily:"'Sora',sans-serif",fontWeight:800,fontSize:20,color:'#fff',boxShadow:'0 4px 16px rgba(26,86,219,0.3)'}}>S</div>
+            <span style={{fontFamily:"'Sora',sans-serif",fontWeight:800,fontSize:24,color:S.navy,letterSpacing:-0.5}}>Serviceclub</span>
           </a>
           <div style={{fontSize:13,color:S.muted,marginTop:4}}>Platforma de servicii auto din România</div>
         </div>
@@ -48,7 +48,7 @@ export default function LoginPage() {
         {/* Card */}
         <div className="fade-up" style={{background:S.white,borderRadius:20,border:`1px solid ${S.border}`,boxShadow:'0 8px 40px rgba(10,31,68,0.1)',padding:32,animationDelay:'.1s'}}>
           <h1 style={{fontFamily:"'Sora',sans-serif",fontWeight:800,fontSize:22,color:S.navy,marginBottom:6,textAlign:'center'}}>Bine ai revenit!</h1>
-          <p style={{fontSize:13,color:S.muted,textAlign:'center',marginBottom:24}}>Intră în contul tău Reparo</p>
+          <p style={{fontSize:13,color:S.muted,textAlign:'center',marginBottom:24}}>Intră în contul tău Serviceclub</p>
 
           {error&&(
             <div style={{background:'#fee2e2',border:'1px solid #fecaca',borderRadius:10,padding:'10px 14px',fontSize:13,color:S.red,marginBottom:16,display:'flex',alignItems:'center',gap:8}}>

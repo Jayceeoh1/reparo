@@ -662,9 +662,9 @@ export default function ServiceDashboard() {
           {[0,1,2].map(i=><span key={i} style={{display:'block',width:18,height:2,background:'rgba(255,255,255,0.7)',borderRadius:2}}/>)}
         </button>
         <a href="/home" style={{display:'flex',alignItems:'center',gap:7,textDecoration:'none',flexShrink:0}}>
-          <div style={{width:28,height:28,background:'#1a56db',borderRadius:8,display:'flex',alignItems:'center',justifyContent:'center',fontWeight:800,fontSize:14,color:'#fff',fontFamily:"'Sora',sans-serif"}}>R</div>
+          <div style={{width:28,height:28,background:'#1a56db',borderRadius:8,display:'flex',alignItems:'center',justifyContent:'center',fontWeight:800,fontSize:14,color:'#fff',fontFamily:"'Sora',sans-serif"}}>S</div>
           <div>
-            <span style={{fontFamily:"'Sora',sans-serif",fontWeight:700,fontSize:16,color:'#fff'}}>Reparo</span>
+            <span style={{fontFamily:"'Sora',sans-serif",fontWeight:700,fontSize:16,color:'#fff'}}>Serviceclub</span>
             <div className="biz-type-banner" style={{fontSize:9,color:'rgba(255,255,255,0.55)',marginTop:-2,display:'none',alignItems:'center',gap:3}}>
               <span>{bizType==='magazin_piese'?'📦':bizType==='dezmembrari'?'🚗':bizType==='mixt'?'⚡':'🔧'}</span>
               <span>{bizType==='magazin_piese'?'Magazin piese':bizType==='dezmembrari'?'Dezmembrări':bizType==='mixt'?'Cont mixt':'Service auto'}</span>
@@ -861,7 +861,7 @@ export default function ServiceDashboard() {
                 <div style={{background:'#dcfce7',border:'1.5px solid #16a34a',borderRadius:14,padding:'14px 20px',display:'flex',alignItems:'center',gap:12}}>
                   <span style={{fontSize:28}}>✅</span>
                   <div>
-                    <div style={{fontFamily:"'Sora',sans-serif",fontWeight:700,fontSize:15,color:'#065f46'}}>Service verificat Reparo</div>
+                    <div style={{fontFamily:"'Sora',sans-serif",fontWeight:700,fontSize:15,color:'#065f46'}}>Service verificat Serviceclub</div>
                     <div style={{fontSize:13,color:'#047857'}}>Badge-ul ✓ Verificat apare pe profilul tău public și în rezultatele de căutare.</div>
                   </div>
                 </div>
@@ -1000,7 +1000,7 @@ export default function ServiceDashboard() {
                       <span style={{fontSize:28}}>⏳</span>
                       <div>
                         <div style={{fontWeight:700,fontSize:14,color:'#92400e',marginBottom:4}}>Cerere în așteptare</div>
-                        <div style={{fontSize:13,color:'#a16207',lineHeight:1.6}}>Documentele tale au fost trimise. Echipa Reparo le va analiza în 24-48h și vei primi o notificare.</div>
+                        <div style={{fontSize:13,color:'#a16207',lineHeight:1.6}}>Documentele tale au fost trimise. Echipa Serviceclub le va analiza în 24-48h și vei primi o notificare.</div>
                       </div>
                     </div>
                   )}
@@ -1009,7 +1009,7 @@ export default function ServiceDashboard() {
                       <span style={{fontSize:28}}>🔍</span>
                       <div>
                         <div style={{fontWeight:700,fontSize:14,color:'#1d4ed8',marginBottom:4}}>În curs de analiză</div>
-                        <div style={{fontSize:13,color:'#1e40af',lineHeight:1.6}}>Echipa Reparo analizează documentele tale. Vei fi notificat când procesul e finalizat.</div>
+                        <div style={{fontSize:13,color:'#1e40af',lineHeight:1.6}}>Echipa Serviceclub analizează documentele tale. Vei fi notificat când procesul e finalizat.</div>
                       </div>
                     </div>
                   )}
@@ -1033,7 +1033,7 @@ export default function ServiceDashboard() {
                       <span style={{fontSize:36}}>🎉</span>
                       <div>
                         <div style={{fontWeight:700,fontSize:15,color:'#065f46',marginBottom:4}}>Cerere trimisă cu succes!</div>
-                        <div style={{fontSize:13,color:'#047857',lineHeight:1.6}}>Echipa Reparo va analiza documentele în 24-48h. Vei primi un email cu rezultatul verificării.</div>
+                        <div style={{fontSize:13,color:'#047857',lineHeight:1.6}}>Echipa Serviceclub va analiza documentele în 24-48h. Vei primi un email cu rezultatul verificării.</div>
                       </div>
                     </div>
                   )}
