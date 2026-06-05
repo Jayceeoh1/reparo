@@ -134,7 +134,7 @@ const POSTS = {
       { type:'h2', text:'Ce se întâmplă dacă nu schimbi uleiul la timp?' },
       { type:'bullets', items:['Uleiul se oxidează și pierde proprietățile de lubrifiere','Depuneri de nămol în motor (sludge) — costisitoare de curățat','Uzura accelerată a lagărelor, pistoanelor și arborelui cu came','În cazuri extreme: griparea motorului — avarie totală'] },
       { type:'h2', text:'Schimb de ulei la Serviceclub' },
-      { type:'p', text:"Pe Serviceclub poți cere oferte pentru schimb de ulei de la service-uri din zona ta și compara prețurile în timp real. Mulți operatori includ și filtrul de ulei în preț — verifică devizul detaliat înainte să confirmi.\" },
+      { type:'p', text:"Pe Serviceclub poți cere oferte pentru schimb de ulei de la service-uri din zona ta și compara prețurile în timp real. Mulți operatori includ și filtrul de ulei în preț — verifică devizul detaliat înainte să confirmi." },
     ]
   },
   'service-auto-bucuresti': {
