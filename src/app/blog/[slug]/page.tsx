@@ -134,7 +134,7 @@ const POSTS = {
       { type:'h2', text:'Ce se întâmplă dacă nu schimbi uleiul la timp?' },
       { type:'bullets', items:['Uleiul se oxidează și pierde proprietățile de lubrifiere','Depuneri de nămol în motor (sludge) — costisitoare de curățat','Uzura accelerată a lagărelor, pistoanelor și arborelui cu came','În cazuri extreme: griparea motorului — avarie totală'] },
       { type:'h2', text:'Schimb de ulei la Serviceclub' },
-      { type:'p', text:'Pe Serviceclub poți cere oferte pentru schimb de ulei de la service-uri din zona ta și compara prețurile în timp real. Mulți operatori includ și filtrul de ulei în preț — verifică devizul detaliat înainte să confirmi.'] },
+      { type:'p', text:"Pe Serviceclub poți cere oferte pentru schimb de ulei de la service-uri din zona ta și compara prețurile în timp real. Mulți operatori includ și filtrul de ulei în preț — verifică devizul detaliat înainte să confirmi.\" },
     ]
   },
   'service-auto-bucuresti': {
@@ -152,7 +152,7 @@ const POSTS = {
       { type:'h2', text:'Ce să eviți la un service auto din București' },
       { type:'bullets', items:['Service-uri fără adresă fizică clară sau număr de telefon verificat','Prețuri suspicioasă de mici (pot ascunde piese contrafăcute)','Refuzul de a da deviz scris înainte de lucrare','Presiunea de a aproba lucrări suplimentare pe loc, fără timp de gândire','Plata doar cash, fără chitanță sau factură'] },
       { type:'h2', text:'Cum folosești Serviceclub pentru a găsi service în București' },
-      { type:'p', text:'Serviceclub listează service-uri verificate din București, cu recenzii reale de la clienți confirmați. Poți trimite o cerere de ofertă și primi prețuri de la mai multe service-uri din cartierul tău în câteva ore — fără a fi nevoit să suni pe rând la fiecare.'] },
+      { type:'p', text:\"Serviceclub listează service-uri verificate din București, cu recenzii reale de la clienți confirmați. Poți trimite o cerere de ofertă și primi prețuri de la mai multe service-uri din cartierul tău în câteva ore — fără a fi nevoit să suni pe rând la fiecare.\" },
     ]
   },
   'intretinere-preventiva': {
@@ -172,7 +172,7 @@ const POSTS = {
       { type:'h2', text:'Pregătirea mașinii pentru iarnă' },
       { type:'bullets', items:['Montaj anvelope iarnă (sub 7°C)','Verificare antigel — să reziste la cel puțin -25°C','Test baterie — bateriile slabe cedează la frig','Verificare sistem de încălzire și dezaburire','Stergătoare de iarnă și lichid omologat pentru temperaturi negative'] },
       { type:'h2', text:'Folosește Serviceclub pentru programare' },
-      { type:'p', text:'Programează toate aceste verificări la service-uri din zona ta prin Serviceclub. Primești oferte comparative și poți alege cel mai bun raport calitate/preț — fără telefoane și așteptare.'] },
+      { type:'p', text:\"Programează toate aceste verificări la service-uri din zona ta prin Serviceclub. Primești oferte comparative și poți alege cel mai bun raport calitate/preț — fără telefoane și așteptare.\" },
     ]
   },
 }
@@ -196,7 +196,7 @@ function renderBlock(block: any, idx: number) {
   const S = { navy:'#0a1f44', text:'#111827', muted:'#6b7280', blue:'#1a56db', border:'#e5e7eb' }
   switch (block.type) {
     case 'h2': return (
-      <h2 key={idx} style={{fontFamily:"'Sora',sans-serif",fontWeight:800,fontSize:22,color:S.navy,marginTop:32,marginBottom:12,letterSpacing:-0.3,lineHeight:1.3}}>
+      <h2 key={idx} style={{fontFamily:\"'Sora',sans-serif",fontWeight:800,fontSize:22,color:S.navy,marginTop:32,marginBottom:12,letterSpacing:-0.3,lineHeight:1.3}}>
         {block.text}
       </h2>
     )
