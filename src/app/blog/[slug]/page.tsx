@@ -10,7 +10,7 @@ const POSTS = {
     content: [
       { type:'lead', text:"Alegerea unui service auto de încredere poate fi dificilă, mai ales dacă nu te pricepi la mașini. Iată ce trebuie să verifici înainte să iei o decizie." },
       { type:'h2', text:'1. Verifică autorizațiile și certificările' },
-      { type:'p', text:"Un service serios trebuie să aibă autorizație RAR (Registrul Auto Român) dacă efectuează ITP sau reparații la sistemele de siguranță. Cere să vezi documentele sau verifică pe reparo.ro dacă service-ul are badge-ul "Autorizat RAR"." },
+      { type:'p', text:"Un service serios trebuie să aibă autorizație RAR (Registrul Auto Român) dacă efectuează ITP sau reparații la sistemele de siguranță. Cere să vezi documentele sau verifică pe reparo.ro dacă service-ul are badge-ul \"Autorizat RAR\"." },
       { type:'h2', text:'2. Citește recenziile verificate' },
       { type:'p', text:"Recenziile de pe platforme neutre, unde clienții au confirmarea că au folosit serviciul, sunt mult mai valoroase decât cele de pe site-ul service-ului. Pe Serviceclub, recenziile sunt lăsate doar de clienți care au interacționat real cu service-ul." },
       { type:'h2', text:'3. Cere deviz înainte de lucru' },
