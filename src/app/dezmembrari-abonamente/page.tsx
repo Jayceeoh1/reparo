@@ -25,7 +25,7 @@ const DASH = () => (
 const PLANS = {
   basic: [
     {
-      key:'b1', name:'Club Starter', price:30, popular:false, color:S.muted, accent:'#6b7280',
+      key:'b1', name:'Club Starter', price:49, popular:false, color:S.muted, accent:'#6b7280',
       features:[
         {label:'Nr. maxim de anunțuri', value:'300'},
         {label:'Relistare anunțuri săptămânal', value:'50'},
@@ -39,7 +39,7 @@ const PLANS = {
       ]
     },
     {
-      key:'b2', name:'Club Pro', price:50, popular:true, color:S.blue, accent:S.blue,
+      key:'b2', name:'Club Pro', price:99, popular:true, color:S.blue, accent:S.blue,
       features:[
         {label:'Nr. maxim de anunțuri', value:'3.000'},
         {label:'Relistare anunțuri săptămânal', value:'1.000'},
@@ -53,7 +53,7 @@ const PLANS = {
       ]
     },
     {
-      key:'b3', name:'Club Elite', price:100, popular:false, color:'#b45309', accent:'#b45309',
+      key:'b3', name:'Club Elite', price:199, popular:false, color:'#b45309', accent:'#b45309',
       badge:'GOLD ⭐',
       features:[
         {label:'Nr. maxim de anunțuri', value:'100.000'},
@@ -70,7 +70,7 @@ const PLANS = {
   ],
   business: [
     {
-      key:'bg', name:'Club Business', price:30, popular:false, color:'#b45309', accent:'#b45309',
+      key:'bg', name:'Club Business', price:49, popular:false, color:'#b45309', accent:'#b45309',
       badge:'G',
       features:[
         {label:'Afișare prioritară în căutări', value:true},
@@ -88,7 +88,7 @@ const PLANS = {
       ]
     },
     {
-      key:'bp', name:'Club Business Pro', price:50, popular:true, color:'#7c3aed', accent:'#7c3aed',
+      key:'bp', name:'Club Business Pro', price:99, popular:true, color:'#7c3aed', accent:'#7c3aed',
       badge:'P',
       features:[
         {label:'Afișare prioritară în căutări', value:true},
@@ -106,7 +106,7 @@ const PLANS = {
       ]
     },
     {
-      key:'bpl', name:'Club Business Elite', price:100, popular:false, color:'#0891b2', accent:'#0891b2',
+      key:'bpl', name:'Club Business Elite', price:199, popular:false, color:'#0891b2', accent:'#0891b2',
       badge:'Z',
       features:[
         {label:'Afișare prioritară în căutări', value:'1 anunț relevant / căutare'},
@@ -203,7 +203,7 @@ export default function DezmembrariAbonamente() {
                   )}
                 </div>
                 <div style={{display:'flex',alignItems:'baseline',gap:4}}>
-                  <span style={{fontFamily:"'Sora',sans-serif",fontWeight:800,fontSize:36,color:S.navy}}>{plan.price}€</span>
+                  <span style={{fontFamily:"'Sora',sans-serif",fontWeight:800,fontSize:36,color:S.navy}}>{plan.price} RON</span>
                   <span style={{fontSize:13,color:S.muted}}>+ TVA / lună</span>
                 </div>
               </div>
@@ -218,7 +218,22 @@ export default function DezmembrariAbonamente() {
               {/* CTA */}
               <div style={{padding:'20px 24px 24px'}}>
                 <button
-                  onClick={()=>alert('Integrare Stripe în curând!')}
+                  onClick={async()=>{
+                    try {
+                      const res = await fetch('/api/stripe/checkout', {
+                        method:'POST',
+                        headers:{'Content-Type':'application/json'},
+                        body: JSON.stringify({
+                          type:'subscription',
+                          plan: plan.key==='b1'?'starter':plan.key==='b2'?'pro':plan.key==='b3'?'elite':plan.key==='bg'?'starter':plan.key==='bp'?'pro':'elite',
+                          service_id: ''
+                        })
+                      })
+                      const data = await res.json()
+                      if (data.url) window.location.href = data.url
+                      else alert(data.error || 'Eroare la checkout')
+                    } catch(e) { alert('Eroare conexiune') }
+                  }}
                   style={{width:'100%',padding:'13px',background:plan.popular?plan.accent:'transparent',color:plan.popular?'#fff':plan.accent,border:`2px solid ${plan.accent}`,borderRadius:50,fontSize:14,fontWeight:700,cursor:'pointer',fontFamily:"'Sora',sans-serif",transition:'all .2s'}}>
                   ACTIVEAZĂ
                 </button>
@@ -249,7 +264,7 @@ export default function DezmembrariAbonamente() {
         </div>
 
         <p style={{textAlign:'center',fontSize:12,color:S.muted,marginTop:20}}>
-          Prețurile sunt exprimate în EUR + TVA · Facturare lunară · Poți anula oricând
+          Prețurile sunt exprimate în RON + TVA · Facturare lunară · Poți anula oricând
         </p>
       </div>
     </div>
