@@ -19,8 +19,11 @@ export async function POST(request: Request) {
     const siteUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'
 
     const PLANS = {
-      basic: { price: 9900, name: 'Serviceclub Basic' },
-      pro:   { price: 19900, name: 'Serviceclub Pro' },
+      starter: { priceId: 'price_1TfNjoIvesVwLgCkFtblds9u', price: 4900, name: 'Club Starter' },
+      pro:     { priceId: 'price_1TfNlCIvesVwLgCkP7CQEUiB', price: 9900, name: 'Club Pro' },
+      elite:   { priceId: 'price_1TfO9RIvesVwLgCkrc6QaXfo', price: 19900, name: 'Club Elite' },
+      // backwards compat
+      basic:   { priceId: 'price_1TfNjoIvesVwLgCkFtblds9u', price: 4900, name: 'Club Starter' },
     }
     const PROMOS = {
       service_top_7:  { price: 4900,  name: 'Promovare service 7 zile' },
@@ -35,7 +38,7 @@ export async function POST(request: Request) {
       const session = await stripe.checkout.sessions.create({
         mode: 'subscription',
         payment_method_types: ['card'],
-        line_items: [{ price_data: { currency: 'ron', product_data: { name: planConfig.name }, unit_amount: planConfig.price, recurring: { interval: 'month' } }, quantity: 1 }],
+        line_items: [{ price: planConfig.priceId, quantity: 1 }],
         metadata: { user_id: user.id, service_id: service_id || '', plan, type: 'subscription' },
         success_url: `${siteUrl}/dashboard/service?payment=success&plan=${plan}`,
         cancel_url: `${siteUrl}/dashboard/service?payment=cancelled`,
