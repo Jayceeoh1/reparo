@@ -19,6 +19,19 @@ const btn = (v='primary') => ({display:'inline-flex',alignItems:'center',justify
 const inp = {width:'100%',padding:'10px 14px',border:`1.5px solid ${S.border}`,borderRadius:10,fontSize:14,outline:'none',fontFamily:"'DM Sans',sans-serif",background:'#fff',boxSizing:'border-box',transition:'border-color .2s'}
 const lbl = {display:'block',fontSize:11,fontWeight:700,color:S.muted,textTransform:'uppercase',letterSpacing:.8,marginBottom:5,fontFamily:"'Sora',sans-serif"}
 
+const PARTS_BY_CATEGORY = {
+  'Motor & transmisie': ['Motor complet','Cutie viteze manuală','Cutie viteze automată','Ambreiaj complet','Arbore cotit','Chiuloasă','Bloc motor','Turbosuflantă','Radiator apă','Pompă apă','Alternator','Starter','Compresor AC','Radiator AC','Intercooler','Volant','Baie ulei'],
+  'Caroserie': ['Capotă','Portbagaj','Ușă față stânga','Ușă față dreapta','Ușă spate stânga','Ușă spate dreapta','Aripă față stânga','Aripă față dreapta','Bară față','Bară spate','Prag stânga','Prag dreapta','Plafon','Podea caroserie'],
+  'Suspensie & direcție': ['Amortizor față stânga','Amortizor față dreapta','Amortizor spate stânga','Amortizor spate dreapta','Arc față stânga','Arc față dreapta','Arc spate','Fuzetă față stânga','Fuzetă față dreapta','Planetară stânga','Planetară dreapta','Pivot','Levier față','Bară stabilizatoare','Coloană direcție','Casetă direcție'],
+  'Frâne': ['Disc frână față stânga','Disc frână față dreapta','Disc frână spate','Etrier față stânga','Etrier față dreapta','Etrier spate','Pompă frână','Servofână','Modul ABS'],
+  'Electrică & electronice': ['Calculator motor ECU','Calculator cutie automată','Calculator ABS','Calculator airbag','Tablou bord','Far față stânga','Far față dreapta','Stop spate stânga','Stop spate dreapta','Modul geamuri electrice','Alternator','Baterie','Motoras stergator față','Motoras stergator spate'],
+  'Interior': ['Scaun față stânga','Scaun față dreapta','Banchetă spate','Volan','Airbag volan','Airbag pasager','Airbag lateral stânga','Airbag lateral dreapta','Tapițerie ușă față stânga','Tapițerie ușă față dreapta','Covor interior','Torpedou','Hayon interior','Radio/Navigație originală'],
+  'Combustibil & evacuare': ['Rezervor combustibil','Pompă combustibil','Injector set','Pompă injecție','Filtru combustibil','Tobă evacuare față','Tobă evacuare spate','Catalizator','Sondă lambda','Filtru particule DPF'],
+  'Geamuri & caroserie': ['Geam față','Geam spate','Geam ușă față stânga','Geam ușă față dreapta','Geam ușă spate stânga','Geam ușă spate dreapta','Oglindă stânga','Oglindă dreapta'],
+}
+
+const ALL_PARTS = Object.values(PARTS_BY_CATEGORY).flat()
+
 const CAR_PARTS_CATEGORIES = [
   {cat:'Motor & transmisie', parts:['Motor complet','Cutie viteze','Ambreiaj','Arbore cotit','Chiuloasă','Bloc motor','Turbosuflantă','Radiator','Pompă apă','Alternator','Starter','Compresor AC']},
   {cat:'Caroserie', parts:['Capotă','Portbagaj','Ușă față stânga','Ușă față dreapta','Ușă spate stânga','Ușă spate dreapta','Aripă față stânga','Aripă față dreapta','Bară față','Bară spate','Prag stânga','Prag dreapta']},
@@ -43,6 +56,11 @@ export default function DezmembrariModule({ serviceId }) {
 
   // Forms
   const [carForm, setCarForm] = useState({brand:'',model:'',year:'',fuel_type:'',engine_cc:'',color:'',vin:'',km:'',condition:'partial',description:'',images:[]})
+  const [selectedParts, setSelectedParts] = useState<string[]>([])
+
+  function togglePart(part) { setSelectedParts(prev => prev.includes(part) ? prev.filter(p=>p!==part) : [...prev, part]) }
+  function selectAllParts() { setSelectedParts([...ALL_PARTS]) }
+  function clearAllParts() { setSelectedParts([]) }
   const [partForm, setPartForm] = useState({name:'',category:'',price:'',condition:'buna',quantity:'1',part_number:'',images:[]})
   const [selectedCategory, setSelectedCategory] = useState('')
 
@@ -71,6 +89,9 @@ export default function DezmembrariModule({ serviceId }) {
   async function saveCar() {
     if (!carForm.brand || !carForm.model) return
     setSaving(true)
+    // Auto-create parts from selectedParts
+    const partsToCreate = selectedParts
+    
     const { data, error } = await supabase.from('dezmembrari_cars').insert({
       service_id: serviceId,
       brand: carForm.brand, model: carForm.model,
@@ -83,8 +104,17 @@ export default function DezmembrariModule({ serviceId }) {
     }).select().single()
     setSaving(false)
     if (!error && data) {
+      // Auto-create selected parts
+      if (partsToCreate.length > 0) {
+        const partsInsert = partsToCreate.map(partName => {
+          const category = Object.entries(PARTS_BY_CATEGORY).find(([,parts]) => parts.includes(partName))?.[0] || 'Altele'
+          return { car_id: data.id, service_id: serviceId, name: partName, category, condition: 'buna', quantity: 1, is_available: true }
+        })
+        await supabase.from('dezmembrari_parts').insert(partsInsert)
+      }
       await loadCars()
       setCarForm({brand:'',model:'',year:'',fuel_type:'',engine_cc:'',color:'',vin:'',km:'',condition:'partial',description:'',images:[]})
+      setSelectedParts([])
       setSelectedCar(data)
       setView('car-detail')
     }
@@ -280,8 +310,8 @@ export default function DezmembrariModule({ serviceId }) {
           <div style={{gridColumn:'1/-1'}}>
             <label style={lbl}>Tip dezmembrare</label>
             <div style={{display:'flex',gap:10}}>
-              {[{k:'partial',l:'Parțial',d:'Unele piese disponibile',icon:'⚙️'},{k:'total',l:'Total',d:'Toate piesele disponibile',icon:'🔧'}].map(({k,l,d,icon})=>(
-                <button key={k} onClick={()=>setCarForm(p=>({...p,condition:k}))}
+              {[{k:'partial',l:'Parțial',d:'Selectează piesele disponibile',icon:'⚙️'},{k:'total',l:'Total',d:'Toate piesele disponibile',icon:'🔧'}].map(({k,l,d,icon})=>(
+                <button key={k} onClick={()=>{setCarForm(p=>({...p,condition:k}));if(k==='total') selectAllParts(); else clearAllParts()}}
                   style={{flex:1,padding:'12px',borderRadius:12,border:`2px solid ${carForm.condition===k?S.blue:S.border}`,background:carForm.condition===k?'#eaf3ff':'#fff',cursor:'pointer',textAlign:'left',transition:'all .15s'}}>
                   <div style={{fontSize:20,marginBottom:4}}>{icon}</div>
                   <div style={{fontFamily:"'Sora',sans-serif",fontWeight:700,fontSize:14,color:S.navy}}>{l}</div>
@@ -290,6 +320,33 @@ export default function DezmembrariModule({ serviceId }) {
               ))}
             </div>
           </div>
+          {/* Piese disponibile selector */}
+          <div style={{gridColumn:'1/-1'}}>
+            <label style={lbl}>Piese disponibile ({selectedParts.length} selectate)</label>
+            <div style={{display:'flex',gap:8,marginBottom:10}}>
+              <button onClick={selectAllParts} style={{padding:'5px 12px',border:`1px solid ${S.blue}`,borderRadius:50,background:'#eaf3ff',color:S.blue,fontSize:11,fontWeight:700,cursor:'pointer'}}>✓ Selectează toate</button>
+              <button onClick={clearAllParts} style={{padding:'5px 12px',border:`1px solid ${S.border}`,borderRadius:50,background:S.bg,color:S.muted,fontSize:11,cursor:'pointer'}}>✕ Deselectează toate</button>
+            </div>
+            <div style={{background:S.bg,borderRadius:12,padding:14,maxHeight:320,overflowY:'auto',border:`1px solid ${S.border}`}}>
+              {Object.entries(PARTS_BY_CATEGORY).map(([cat, parts])=>(
+                <div key={cat} style={{marginBottom:14}}>
+                  <div style={{fontFamily:"'Sora',sans-serif",fontWeight:700,fontSize:12,color:S.navy,marginBottom:6,paddingBottom:4,borderBottom:`1px solid ${S.border}`}}>{cat}</div>
+                  <div style={{display:'flex',flexWrap:'wrap',gap:6}}>
+                    {parts.map(part=>{
+                      const checked = selectedParts.includes(part)
+                      return (
+                        <label key={part} style={{display:'flex',alignItems:'center',gap:5,padding:'4px 10px',borderRadius:50,border:`1.5px solid ${checked?S.blue:S.border}`,background:checked?'#eaf3ff':'#fff',cursor:'pointer',fontSize:12,color:checked?S.blue:S.navy,fontWeight:checked?600:400,transition:'all .15s'}}>
+                          <input type="checkbox" checked={checked} onChange={()=>togglePart(part)} style={{display:'none'}}/>
+                          {checked?'✓ ':''}{part}
+                        </label>
+                      )
+                    })}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
           <div style={{gridColumn:'1/-1'}}>
             <label style={lbl}>Descriere / observații</label>
             <textarea style={{...inp,resize:'vertical'}} rows={3} value={carForm.description} onChange={e=>setCarForm(p=>({...p,description:e.target.value}))} placeholder="Ex: Mașina a fost accidentată frontal. Motor și cutie în stare bună..."/>

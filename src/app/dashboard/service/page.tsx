@@ -2397,36 +2397,7 @@ export default function ServiceDashboard() {
             <DezmembrariModule serviceId={service.id}/>
           )}
 
-          {/* ══ CERERI PIESE SH (mixt) ══ */}
-          {tab==='Cereri piese SH'&&(
-            <div>
-              <h1 style={{fontFamily:"'Sora',sans-serif",fontWeight:800,fontSize:22,color:S.navy,marginBottom:6}}>📋 Cereri piese second-hand</h1>
-              <p style={{fontSize:14,color:S.muted,marginBottom:20}}>Clienții care caută piese SH din parcul tău de dezmembrări.</p>
-              {requests.length===0?(
-                <div style={{...card(),textAlign:'center',padding:'60px 20px'}}>
-                  <div style={{fontSize:56,marginBottom:12}}>📋</div>
-                  <div style={{fontFamily:"'Sora',sans-serif",fontWeight:700,fontSize:18,color:S.navy,marginBottom:8}}>Nicio cerere încă</div>
-                  <p style={{fontSize:14,color:S.muted}}>Cererile de piese SH de la clienți vor apărea aici automat.</p>
-                </div>
-              ):(
-                <div style={{display:'flex',flexDirection:'column',gap:12}}>
-                  {requests.map(r=>(
-                    <div key={r.id} style={{...card(),display:'flex',alignItems:'flex-start',justifyContent:'space-between',gap:12,flexWrap:'wrap'}}>
-                      <div style={{flex:1,minWidth:0}}>
-                        <div style={{fontFamily:"'Sora',sans-serif",fontWeight:700,fontSize:15,color:S.navy,marginBottom:4}}>{r.car_brand} {r.car_model} {r.car_year?`(${r.car_year})`:''}</div>
-                        <div style={{fontSize:13,color:S.muted,marginBottom:6}}>{r.services?.slice(0,3).join(' · ')}</div>
-                        <div style={{display:'flex',gap:8,flexWrap:'wrap'}}>
-                          <span style={{fontSize:11,background:'#eaf3ff',color:S.blue,padding:'2px 8px',borderRadius:50,fontWeight:600}}>📍 {r.city||'—'}</span>
-                          <span style={{fontSize:11,background:S.bg,color:S.muted,padding:'2px 8px',borderRadius:50}}>{new Date(r.created_at).toLocaleDateString('ro-RO')}</span>
-                        </div>
-                      </div>
-                      <button onClick={()=>setSelectedReq(r)} style={{...btn('primary'),padding:'8px 18px',fontSize:13,flexShrink:0}}>Trimite ofertă →</button>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
-          )}
+          {/* Cereri piese SH handled above in combined block */}
 
           {/* ══ MESAJE (shortcut) ══ */}
           {tab==='Mesaje'&&(()=>{
