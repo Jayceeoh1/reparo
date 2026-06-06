@@ -334,6 +334,8 @@ export default function ServiceDashboard() {
   const [myListings, setMyListings] = useState([])
   const [listingsLoading, setListingsLoading] = useState(false)
   const [editingListing, setEditingListing] = useState(null)
+  const [promoModal, setPromoModal] = useState<any>(null)
+  const [promoLoading, setPromoLoading] = useState(false)
   const [verifyLoading, setVerifyLoading] = useState(false)
   const [verifyDone, setVerifyDone] = useState(false)
   const [verifyStep, setVerifyStep] = useState(1) // 1=info, 2=upload, 3=done
@@ -2064,6 +2066,12 @@ export default function ServiceDashboard() {
                             style={{padding:'6px 12px',background:l.status==='activ'?'#fef2f2':'#dcfce7',color:l.status==='activ'?'#ef4444':'#16a34a',border:'none',borderRadius:8,fontSize:12,fontWeight:600,cursor:'pointer'}}>
                             {l.status==='activ'?'Dezactivează':'Activează'}
                           </button>
+                          {!l.is_promoted&&(
+                            <button onClick={()=>setPromoModal(l)}
+                              style={{padding:'6px 12px',background:'#fef3c7',color:'#d97706',border:'none',borderRadius:8,fontSize:12,fontWeight:600,cursor:'pointer'}}>
+                              ⭐ Promovează
+                            </button>
+                          )}
                           <button onClick={()=>deleteListing(l.id)}
                             style={{padding:'6px 10px',background:'#fef2f2',color:'#ef4444',border:'none',borderRadius:8,fontSize:12,cursor:'pointer'}}>
                             🗑️
