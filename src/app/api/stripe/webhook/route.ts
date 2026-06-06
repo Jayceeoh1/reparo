@@ -2,46 +2,69 @@
 import { NextResponse } from 'next/server'
 
 export async function POST(request: Request) {
-  if (!process.env.STRIPE_SECRET_KEY || !process.env.STRIPE_WEBHOOK_SECRET) {
-    return NextResponse.json({ error: 'Stripe nu este configurat' }, { status: 503 })
+  if (!process.env.STRIPE_SECRET_KEY) {
+    return NextResponse.json({ error: 'Stripe nu este configurat. Adaugă STRIPE_SECRET_KEY în variabilele de mediu.' }, { status: 503 })
   }
 
   try {
     const Stripe = (await import('stripe')).default
     const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, { apiVersion: '2024-06-20' })
     const { createClient } = await import('@/lib/supabase/server')
-
-    const body = await request.text()
-    const sig = request.headers.get('stripe-signature')!
-    const event = stripe.webhooks.constructEvent(body, sig, process.env.STRIPE_WEBHOOK_SECRET!)
     const supabase = createClient()
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
-    if (event.type === 'checkout.session.completed') {
-      const session = event.data.object as any
-      const meta = session.metadata || {}
+    const body = await request.json()
+    const { type, plan, service_id, listing_id, promo_type } = body
+    const siteUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'
 
-      if (meta.type === 'subscription') {
-        const exp = new Date(); exp.setMonth(exp.getMonth() + 1)
-        await supabase.from('services').update({ plan: meta.plan, stripe_customer_id: session.customer, stripe_subscription_id: session.subscription, plan_expires_at: exp.toISOString() }).eq('id', meta.service_id)
-        await supabase.from('payments').insert({ service_id: meta.service_id, user_id: meta.user_id, stripe_session_id: session.id, amount: session.amount_total, type: 'subscription', plan: meta.plan, status: 'paid' })
-      }
-
-      if (meta.type === 'promotion') {
-        const days = meta.promo_type?.includes('30') ? 30 : 7
-        const exp = new Date(); exp.setDate(exp.getDate() + days)
-        if (meta.service_id) await supabase.from('services').update({ is_promoted: true, promoted_until: exp.toISOString() }).eq('id', meta.service_id)
-        if (meta.listing_id) { await supabase.from('listings').update({ is_promoted: true }).eq('id', meta.listing_id); await supabase.from('listing_promotions').insert({ listing_id: meta.listing_id, user_id: meta.user_id, type: 'top', expires_at: exp.toISOString() }) }
-        await supabase.from('payments').insert({ service_id: meta.service_id||null, user_id: meta.user_id, stripe_session_id: session.id, amount: session.amount_total, type: 'promotion', status: 'paid', metadata: { promo_type: meta.promo_type } })
-      }
+    const PLANS = {
+      starter: { priceId: 'price_1TfNjoIvesVwLgCkFtblds9u', price: 4900, name: 'Club Starter' },
+      pro:     { priceId: 'price_1TfNlCIvesVwLgCkP7CQEUiB', price: 9900, name: 'Club Pro' },
+      elite:   { priceId: 'price_1TfO9RIvesVwLgCkrc6QaXfo', price: 19900, name: 'Club Elite' },
+      // backwards compat
+      basic:   { priceId: 'price_1TfNjoIvesVwLgCkFtblds9u', price: 4900, name: 'Club Starter' },
+    }
+    const PROMOS = {
+      service_top_7:  { price: 4900,  name: 'Promovare service 7 zile' },
+      service_top_30: { price: 14900, name: 'Promovare service 30 zile' },
+      listing_top_7:  { price: 1900,  name: 'Promovare anunț 7 zile' },
+      listing_top_30: { price: 4900,  name: 'Promovare anunț 30 zile' },
     }
 
-    if (event.type === 'customer.subscription.deleted') {
-      const sub = event.data.object as any
-      await supabase.from('services').update({ plan: 'free', stripe_subscription_id: null, plan_expires_at: null }).eq('stripe_subscription_id', sub.id)
+    if (type === 'subscription') {
+      const planConfig = PLANS[plan]
+      if (!planConfig) return NextResponse.json({ error: 'Plan invalid' }, { status: 400 })
+      const session = await stripe.checkout.sessions.create({
+        mode: 'subscription',
+        payment_method_types: ['card'],
+        line_items: [{ price: planConfig.priceId, quantity: 1 }],
+        metadata: { user_id: user.id, service_id: service_id || '', plan, type: 'subscription' },
+        success_url: `${siteUrl}/dashboard/service?payment=success&plan=${plan}`,
+        cancel_url: `${siteUrl}/dashboard/service?payment=cancelled`,
+        customer_email: user.email,
+      })
+      return NextResponse.json({ url: session.url })
     }
 
-    return NextResponse.json({ received: true })
+    if (type === 'promotion') {
+      const promoConfig = PROMOS[promo_type]
+      if (!promoConfig) return NextResponse.json({ error: 'Promo tip invalid' }, { status: 400 })
+      const session = await stripe.checkout.sessions.create({
+        mode: 'payment',
+        payment_method_types: ['card'],
+        line_items: [{ price_data: { currency: 'ron', product_data: { name: promoConfig.name }, unit_amount: promoConfig.price }, quantity: 1 }],
+        metadata: { user_id: user.id, service_id: service_id || '', listing_id: listing_id || '', promo_type, type: 'promotion' },
+        success_url: `${siteUrl}/dashboard/service?payment=success`,
+        cancel_url: `${siteUrl}/dashboard/service?payment=cancelled`,
+        customer_email: user.email,
+      })
+      return NextResponse.json({ url: session.url })
+    }
+
+    return NextResponse.json({ error: 'Tip invalid' }, { status: 400 })
   } catch (err: any) {
-    return NextResponse.json({ error: err.message }, { status: 400 })
+    console.error('Stripe error:', err.message)
+    return NextResponse.json({ error: err.message }, { status: 500 })
   }
 }

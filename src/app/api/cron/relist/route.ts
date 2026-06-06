@@ -2,10 +2,7 @@
 import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 
-// GET /api/cron/relist — apelat de Vercel Cron
-// Vercel Cron trimite header Authorization: Bearer <CRON_SECRET>
 export async function GET(request: Request) {
-  // Verificare secret cron
   const authHeader = request.headers.get('authorization')
   const expected = `Bearer ${process.env.CRON_SECRET}`
   
@@ -15,62 +12,78 @@ export async function GET(request: Request) {
 
   const supabase = createClient()
   const now = new Date()
-  const results = { basic: 0, pro: 0, errors: [] as string[] }
+  const results = { relisted: 0, errors: [] as string[] }
+
+  // Relist intervals per plan (in minutes)
+  const RELIST_INTERVALS: Record<string, number> = {
+    starter: 24 * 60,
+    basic: 24 * 60,
+    pro: 10,
+    elite: 5,
+    business: 20,
+    business_pro: 10,
+    business_elite: 5,
+  }
 
   try {
-    // 1. Obține toate service-urile active cu plan Basic sau Pro
+    const eligiblePlans = Object.keys(RELIST_INTERVALS)
+    
     const { data: services, error: svcErr } = await supabase
       .from('services')
       .select('id, owner_id, plan, last_relist_at')
-      .in('plan', ['basic', 'pro'])
+      .in('plan', eligiblePlans)
       .eq('is_active', true)
 
     if (svcErr) throw new Error(svcErr.message)
     if (!services?.length) return NextResponse.json({ ok: true, message: 'No eligible services', ...results })
 
     for (const svc of services) {
+      const intervalMinutes = RELIST_INTERVALS[svc.plan]
+      const intervalMs = intervalMinutes * 60 * 1000
       const lastRelist = svc.last_relist_at ? new Date(svc.last_relist_at) : new Date(0)
-      const hoursSinceLast = (now.getTime() - lastRelist.getTime()) / (1000 * 60 * 60)
+      
+      if (now.getTime() - lastRelist.getTime() < intervalMs) continue
 
-      // Basic: relist la 24h, Pro: relist la 6h
-      const intervalH = svc.plan === 'pro' ? 6 : 24
-      if (hoursSinceLast < intervalH) continue // prea devreme
+      // Get weekly relist limit
+      const WEEKLY_LIMITS: Record<string, number> = {
+        starter: 5000, basic: 5000,
+        pro: 10000, elite: 50000,
+        business: 5000, business_pro: 10000, business_elite: 50000,
+      }
+      const weeklyLimit = WEEKLY_LIMITS[svc.plan] || 1000
 
-      // Actualizează updated_at pe toate anunțurile active ale acestui service
+      // Get active listings for this service
       const { data: listings, error: listErr } = await supabase
         .from('listings')
         .select('id')
         .eq('user_id', svc.owner_id)
         .eq('status', 'activ')
+        .limit(weeklyLimit)
 
       if (listErr || !listings?.length) continue
 
-      const listingIds = listings.map(l => l.id)
+      // Update created_at to bump to top
       const { error: updateErr } = await supabase
         .from('listings')
-        .update({ updated_at: now.toISOString() })
-        .in('id', listingIds)
+        .update({ created_at: now.toISOString() })
+        .in('id', listings.map(l => l.id))
 
       if (updateErr) {
         results.errors.push(`Service ${svc.id}: ${updateErr.message}`)
         continue
       }
 
-      // Actualizează last_relist_at pe service
+      // Update last_relist_at
       await supabase
         .from('services')
         .update({ last_relist_at: now.toISOString() })
         .eq('id', svc.id)
 
-      if (svc.plan === 'pro') results.pro += listingIds.length
-      else results.basic += listingIds.length
+      results.relisted += listings.length
     }
 
-    console.log('[cron/relist]', results)
-    return NextResponse.json({ ok: true, timestamp: now.toISOString(), ...results })
-
-  } catch (e: any) {
-    console.error('[cron/relist] Error:', e)
-    return NextResponse.json({ ok: false, error: e.message }, { status: 500 })
+    return NextResponse.json({ ok: true, ...results })
+  } catch (err: any) {
+    return NextResponse.json({ error: err.message }, { status: 500 })
   }
 }

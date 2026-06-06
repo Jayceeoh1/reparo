@@ -526,6 +526,8 @@ export default function ServiceDashboard() {
   }
 
   const bizType = service?.business_type || 'service'
+  const planLimits = getPlanLimits(service?.plan || 'free')
+  const isPaidPlan = service?.plan && service.plan !== 'free'
 
   // Tab-uri comune tuturor tipurilor de business
   const TABS_COMMON_START = [
@@ -704,7 +706,7 @@ export default function ServiceDashboard() {
             <div style={{fontSize:14,fontWeight:700,color:'#fff',fontFamily:"'Sora',sans-serif",marginBottom:2}}>{service?.name||'Service'}</div>
             <div style={{fontSize:12,color:'rgba(255,255,255,0.45)',marginBottom:10}}>{service?.city||''}</div>
             <span style={{display:'inline-flex',alignItems:'center',padding:'3px 10px',borderRadius:50,background:'rgba(245,158,11,0.15)',border:'1px solid rgba(245,158,11,0.3)',fontSize:11,fontWeight:700,color:'#f59e0b',fontFamily:"'Sora',sans-serif"}}>
-              {service?.plan==='pro'?'⭐ Pro':'🔓 Free'}
+              {service?.plan==='elite'?'💎 Club Elite':service?.plan==='pro'?'⭐ Club Pro':service?.plan==='starter'||service?.plan==='basic'?'🔵 Club Starter':service?.plan==='business_elite'?'💎 Business Elite':service?.plan==='business_pro'?'⭐ Business Pro':service?.plan==='business'?'🔵 Club Business':'🔓 Free'}
             </span>
           </div>
 
@@ -1788,7 +1790,7 @@ export default function ServiceDashboard() {
                   <h1 style={{fontFamily:"'Sora',sans-serif",fontWeight:800,fontSize:22,color:S.navy,marginBottom:4}}>Anunțurile mele</h1>
                   <p style={{color:S.muted,fontSize:13}}>Piese, accesorii sau alte produse auto pe care le vinzi.</p>
                 </div>
-                <a href="/listing/create" style={{display:'inline-flex',alignItems:'center',gap:8,padding:'10px 20px',background:S.yellow,color:'#fff',borderRadius:50,textDecoration:'none',fontSize:13,fontWeight:700,fontFamily:"'Sora',sans-serif",boxShadow:'0 4px 16px rgba(245,158,11,0.3)'}}>
+                <a href={canAddListing(service?.plan||'free', listings?.length||0)?'/listing/create':'#'} onClick={e=>{if(!canAddListing(service?.plan||'free',listings?.length||0)){e.preventDefault();alert(`Ai atins limita de ${planLimits.maxListings} anunțuri pentru planul tău. Upgrade pentru mai multe.`)}}} style={{display:'inline-flex',alignItems:'center',gap:8,padding:'10px 20px',background:S.yellow,color:'#fff',borderRadius:50,textDecoration:'none',fontSize:13,fontWeight:700,fontFamily:"'Sora',sans-serif",boxShadow:'0 4px 16px rgba(245,158,11,0.3)'}}>
                   + Adaugă anunț
                 </a>
               </div>
@@ -1815,6 +1817,7 @@ export default function ServiceDashboard() {
                     ))}
                   </div>
                   <button onClick={async()=>{
+                    if(!isPaidPlan){alert('Generatorul de anunțuri necesită un plan plătit. Upgrade din tab-ul Setări.');return}
                     if(!pf.gen_brand||!pf.gen_model){alert('Completează marca și modelul!');return}
                     if(!service||!user) return
                     const piese=[
