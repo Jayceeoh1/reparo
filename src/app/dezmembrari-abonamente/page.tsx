@@ -70,7 +70,7 @@ const PLANS = {
   ],
   business: [
     {
-      key:'bg', name:'Gold', price:30, popular:false, color:'#b45309', accent:'#b45309',
+      key:'bg', name:'Club Business', price:30, popular:false, color:'#b45309', accent:'#b45309',
       badge:'G',
       features:[
         {label:'Afișare prioritară în căutări', value:true},
@@ -88,7 +88,7 @@ const PLANS = {
       ]
     },
     {
-      key:'bp', name:'Premium', price:50, popular:true, color:'#7c3aed', accent:'#7c3aed',
+      key:'bp', name:'Club Business Pro', price:50, popular:true, color:'#7c3aed', accent:'#7c3aed',
       badge:'P',
       features:[
         {label:'Afișare prioritară în căutări', value:true},
@@ -106,7 +106,7 @@ const PLANS = {
       ]
     },
     {
-      key:'bpl', name:'Platinum', price:100, popular:false, color:'#0891b2', accent:'#0891b2',
+      key:'bpl', name:'Club Business Elite', price:100, popular:false, color:'#0891b2', accent:'#0891b2',
       badge:'Z',
       features:[
         {label:'Afișare prioritară în căutări', value:'1 anunț relevant / căutare'},
