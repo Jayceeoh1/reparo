@@ -139,58 +139,6 @@ function FeatureRow({label, value}) {
         </span>
       </div>
     </div>
-
-      {/* ── MODAL ABONAMENT ── */}
-      {modal&&(
-        <div style={{position:'fixed',inset:0,background:'rgba(10,31,68,0.55)',display:'flex',alignItems:'center',justifyContent:'center',zIndex:1000,padding:16}} onClick={()=>setModal(null)}>
-          <div style={{background:'#fff',borderRadius:20,padding:28,maxWidth:420,width:'100%',boxShadow:'0 20px 60px rgba(10,31,68,0.2)'}} onClick={e=>e.stopPropagation()}>
-            {done?(
-              <div style={{textAlign:'center',padding:'20px 0'}}>
-                <div style={{fontSize:64,marginBottom:12}}>🎉</div>
-                <div style={{fontFamily:"'Sora',sans-serif",fontWeight:800,fontSize:22,color:'#0a1f44',marginBottom:8}}>Plată procesată!</div>
-                <p style={{fontSize:14,color:'#6b7280',marginBottom:20}}>Abonamentul tău a fost activat cu succes.</p>
-                <button onClick={()=>{setModal(null);setDone(false)}} style={{padding:'10px 24px',background:'#1a56db',color:'#fff',border:'none',borderRadius:50,fontSize:14,fontWeight:700,cursor:'pointer'}}>Închide</button>
-              </div>
-            ):(
-              <>
-                <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:20}}>
-                  <div>
-                    <div style={{fontFamily:"'Sora',sans-serif",fontWeight:800,fontSize:20,color:'#0a1f44'}}>Activează {modal.name}</div>
-                    <div style={{fontSize:13,color:'#6b7280'}}>Abonament lunar · Anulezi oricând</div>
-                  </div>
-                  <button onClick={()=>setModal(null)} style={{background:'#f0f6ff',border:'none',borderRadius:8,width:32,height:32,cursor:'pointer',fontSize:18,color:'#6b7280'}}>✕</button>
-                </div>
-
-                {/* Plan summary */}
-                <div style={{background:'#f0f6ff',borderRadius:14,padding:16,marginBottom:20}}>
-                  <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:8}}>
-                    <span style={{fontFamily:"'Sora',sans-serif",fontWeight:700,fontSize:16,color:'#0a1f44'}}>{modal.name}</span>
-                    <span style={{fontFamily:"'Sora',sans-serif",fontWeight:800,fontSize:22,color:'#1a56db'}}>{modal.price} RON<span style={{fontSize:13,fontWeight:400,color:'#6b7280'}}>/lună</span></span>
-                  </div>
-                  <div style={{fontSize:12,color:'#6b7280'}}>+ TVA · Facturare automată lunar · Anulezi oricând</div>
-                </div>
-
-                {/* Features */}
-                <div style={{marginBottom:20,display:'flex',flexDirection:'column',gap:6}}>
-                  {modal.features?.slice(0,4).map((f:any,i:number)=>(
-                    <div key={i} style={{display:'flex',alignItems:'center',gap:8,fontSize:13,color:'#111827'}}>
-                      <span style={{color:'#16a34a',fontWeight:700,fontSize:16}}>✓</span>
-                      <span>{f.label}: <strong>{f.value===true?'Da':f.value===false?'Nu':f.value}</strong></span>
-                    </div>
-                  ))}
-                </div>
-
-                {/* CTA */}
-                <button onClick={()=>handleCheckout(modal)} disabled={loading}
-                  style={{width:'100%',padding:'14px',background:loading?'#93c5fd':'#1a56db',color:'#fff',border:'none',borderRadius:50,fontSize:15,fontWeight:700,cursor:loading?'not-allowed':'pointer',fontFamily:"'Sora',sans-serif",boxShadow:'0 4px 16px rgba(26,86,219,0.25)',marginBottom:10}}>
-                  {loading?'Se procesează...':'💳 Plătește cu cardul'}
-                </button>
-                <p style={{textAlign:'center',fontSize:11,color:'#9ca3af'}}>Plată securizată prin Stripe · SSL encrypted</p>
-              </>
-            )}
-          </div>
-        </div>
-      )}
     </div>
   )
 }
@@ -378,5 +326,58 @@ export default function DezmembrariAbonamente() {
         </div>
       )}
     </div>
+
+
+      {/* ── MODAL ABONAMENT ── */}
+      {modal&&(
+        <div style={{position:'fixed',inset:0,background:'rgba(10,31,68,0.55)',display:'flex',alignItems:'center',justifyContent:'center',zIndex:1000,padding:16}} onClick={()=>setModal(null)}>
+          <div style={{background:'#fff',borderRadius:20,padding:28,maxWidth:420,width:'100%',boxShadow:'0 20px 60px rgba(10,31,68,0.2)'}} onClick={e=>e.stopPropagation()}>
+            {done?(
+              <div style={{textAlign:'center',padding:'20px 0'}}>
+                <div style={{fontSize:64,marginBottom:12}}>🎉</div>
+                <div style={{fontFamily:"'Sora',sans-serif",fontWeight:800,fontSize:22,color:'#0a1f44',marginBottom:8}}>Plată procesată!</div>
+                <p style={{fontSize:14,color:'#6b7280',marginBottom:20}}>Abonamentul tău a fost activat cu succes.</p>
+                <button onClick={()=>{setModal(null);setDone(false)}} style={{padding:'10px 24px',background:'#1a56db',color:'#fff',border:'none',borderRadius:50,fontSize:14,fontWeight:700,cursor:'pointer'}}>Închide</button>
+              </div>
+            ):(
+              <>
+                <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:20}}>
+                  <div>
+                    <div style={{fontFamily:"'Sora',sans-serif",fontWeight:800,fontSize:20,color:'#0a1f44'}}>Activează {modal.name}</div>
+                    <div style={{fontSize:13,color:'#6b7280'}}>Abonament lunar · Anulezi oricând</div>
+                  </div>
+                  <button onClick={()=>setModal(null)} style={{background:'#f0f6ff',border:'none',borderRadius:8,width:32,height:32,cursor:'pointer',fontSize:18,color:'#6b7280'}}>✕</button>
+                </div>
+
+                {/* Plan summary */}
+                <div style={{background:'#f0f6ff',borderRadius:14,padding:16,marginBottom:20}}>
+                  <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:8}}>
+                    <span style={{fontFamily:"'Sora',sans-serif",fontWeight:700,fontSize:16,color:'#0a1f44'}}>{modal.name}</span>
+                    <span style={{fontFamily:"'Sora',sans-serif",fontWeight:800,fontSize:22,color:'#1a56db'}}>{modal.price} RON<span style={{fontSize:13,fontWeight:400,color:'#6b7280'}}>/lună</span></span>
+                  </div>
+                  <div style={{fontSize:12,color:'#6b7280'}}>+ TVA · Facturare automată lunar · Anulezi oricând</div>
+                </div>
+
+                {/* Features */}
+                <div style={{marginBottom:20,display:'flex',flexDirection:'column',gap:6}}>
+                  {modal.features?.slice(0,4).map((f:any,i:number)=>(
+                    <div key={i} style={{display:'flex',alignItems:'center',gap:8,fontSize:13,color:'#111827'}}>
+                      <span style={{color:'#16a34a',fontWeight:700,fontSize:16}}>✓</span>
+                      <span>{f.label}: <strong>{f.value===true?'Da':f.value===false?'Nu':f.value}</strong></span>
+                    </div>
+                  ))}
+                </div>
+
+                {/* CTA */}
+                <button onClick={()=>handleCheckout(modal)} disabled={loading}
+                  style={{width:'100%',padding:'14px',background:loading?'#93c5fd':'#1a56db',color:'#fff',border:'none',borderRadius:50,fontSize:15,fontWeight:700,cursor:loading?'not-allowed':'pointer',fontFamily:"'Sora',sans-serif",boxShadow:'0 4px 16px rgba(26,86,219,0.25)',marginBottom:10}}>
+                  {loading?'Se procesează...':'💳 Plătește cu cardul'}
+                </button>
+                <p style={{textAlign:'center',fontSize:11,color:'#9ca3af'}}>Plată securizată prin Stripe · SSL encrypted</p>
+              </>
+            )}
+          </div>
+        </div>
+      )}
   )
 }
