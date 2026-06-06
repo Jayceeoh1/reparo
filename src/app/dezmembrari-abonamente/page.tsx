@@ -25,7 +25,7 @@ const DASH = () => (
 const PLANS = {
   basic: [
     {
-      key:'b1', name:'Basic P1', price:30, popular:false, color:S.muted, accent:'#6b7280',
+      key:'b1', name:'Club Starter', price:30, popular:false, color:S.muted, accent:'#6b7280',
       features:[
         {label:'Nr. maxim de anunțuri', value:'300'},
         {label:'Relistare anunțuri săptămânal', value:'50'},
@@ -39,7 +39,7 @@ const PLANS = {
       ]
     },
     {
-      key:'b2', name:'Basic P2', price:50, popular:true, color:S.blue, accent:S.blue,
+      key:'b2', name:'Club Pro', price:50, popular:true, color:S.blue, accent:S.blue,
       features:[
         {label:'Nr. maxim de anunțuri', value:'3.000'},
         {label:'Relistare anunțuri săptămânal', value:'1.000'},
@@ -53,7 +53,7 @@ const PLANS = {
       ]
     },
     {
-      key:'b3', name:'Basic Gold', price:100, popular:false, color:'#b45309', accent:'#b45309',
+      key:'b3', name:'Club Elite', price:100, popular:false, color:'#b45309', accent:'#b45309',
       badge:'GOLD ⭐',
       features:[
         {label:'Nr. maxim de anunțuri', value:'100.000'},

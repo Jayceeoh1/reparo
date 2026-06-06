@@ -1928,8 +1928,8 @@ export default function ServiceDashboard() {
                   <div style={{marginBottom:12}}>
                     {[
                       {plan:'free',label:'Plan Free',interval:'Indisponibil',active:false,has:false},
-                      {plan:'basic',label:'Plan Basic',interval:'La 24 ore',active:service?.plan==='basic',has:service?.plan==='basic'||service?.plan==='pro'},
-                      {plan:'pro',label:'Plan Pro',interval:'La 6 ore',active:service?.plan==='pro',has:service?.plan==='pro'},
+                      {plan:'basic',label:'Club Starter',interval:'La 24 ore',active:service?.plan==='basic',has:service?.plan==='basic'||service?.plan==='pro'},
+                      {plan:'pro',label:'Club Pro',interval:'La 6 ore',active:service?.plan==='pro',has:service?.plan==='pro'},
                     ].map(p=>(
                       <div key={p.plan} style={{display:'flex',alignItems:'center',justifyContent:'space-between',padding:'8px 12px',borderRadius:8,background:p.active?'#dcfce7':S.bg,marginBottom:6,border:`1px solid ${p.active?S.green:S.border}`}}>
                         <div>
@@ -1982,12 +1982,12 @@ export default function ServiceDashboard() {
                       </div>}
                       {relistResult?.upgrade&&<div style={{background:S.amberBg,borderRadius:8,padding:'10px 12px',fontSize:12,textAlign:'center'}}>
                         <div style={{fontWeight:700,color:S.amber,marginBottom:4}}>⭐ Necesită plan plătit</div>
-                        <div style={{color:S.muted,marginBottom:8}}>Relistarea automată e disponibilă pe planurile Basic și Pro.</div>
+                        <div style={{color:S.muted,marginBottom:8}}>Relistarea automată e disponibilă pe planurile Club Starter și Club Pro.</div>
                         <button onClick={async()=>{
                           const res=await fetch('/api/stripe/checkout',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({type:'subscription',plan:'basic',service_id:service?.id})})
                           const{url}=await res.json()
                           if(url) window.location.href=url
-                        }} style={{...btn('primary'),fontSize:12,padding:'7px 16px'}}>Upgrade la Basic →</button>
+                        }} style={{...btn('primary'),fontSize:12,padding:'7px 16px'}}>Upgrade la Club Starter →</button>
                       </div>}
                     </div>
                   )}
@@ -2464,8 +2464,8 @@ export default function ServiceDashboard() {
                   <div className="settings-plans" style={{display:'grid',gridTemplateColumns:'repeat(3,1fr)',gap:12}}>
                     {[
                       {plan:'free',label:'Free',price:'0',period:'',color:S.muted,features:['Profil public basic','Cereri limitate','Notificări in-app','Fără badge verificat','Statistici de bază']},
-                      {plan:'basic',label:'Basic',price:'99',period:'/lună',color:S.blue,features:['Cereri nelimitate','Notificări instant + email','Badge ✓ Verificat','Statistici avansate','Prioritate medie în căutări','Suport prin email']},
-                      {plan:'pro',label:'Pro',price:'199',period:'/lună',color:S.amber,features:['Tot din Basic','Prioritate maximă în căutări','Badge Pro ⭐','Promovare inclusă 7 zile/lună','Statistici complete','Suport dedicat prioritar','API integrare externe']},
+                      {plan:'basic',label:'Club Starter',price:'99',period:'/lună',color:S.blue,features:['Cereri nelimitate','Notificări instant + email','Badge ✓ Verificat','Statistici avansate','Prioritate medie în căutări','Suport prin email']},
+                      {plan:'pro',label:'Club Pro',price:'199',period:'/lună',color:S.amber,features:['Tot din Basic','Prioritate maximă în căutări','Badge Pro ⭐','Promovare inclusă 7 zile/lună','Statistici complete','Suport dedicat prioritar','API integrare externe']},
                     ].map(p=>(
                       <div key={p.plan} style={{borderRadius:14,padding:16,border:`2px solid ${service?.plan===p.plan?p.color:S.border}`,background:service?.plan===p.plan?p.plan==='pro'?S.amberBg:p.plan==='basic'?'#eaf3ff':S.bg:S.white,position:'relative',transition:'all .2s'}}>
                         {service?.plan===p.plan&&<div style={{position:'absolute',top:-1,right:12,background:p.color,color:'#fff',fontSize:10,fontWeight:700,padding:'3px 10px',borderRadius:'0 0 8px 8px',fontFamily:"'Sora',sans-serif"}}>ACTIV</div>}
