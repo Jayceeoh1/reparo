@@ -8,6 +8,7 @@ import { useNotifications } from '@/hooks/useNotifications'
 const NAV_TABS = [
   { label: 'Acasă', href: '/home' },
   { label: 'Service-uri', href: '/search' },
+  { label: 'Piese auto', href: '/piese' },
   { label: 'Anunțuri piese', href: '/listing' },
   { label: 'ITP & RCA', href: '/itp-rca' },
   { label: 'Vopsitorie', href: '/search?category=vopsitorie' },
