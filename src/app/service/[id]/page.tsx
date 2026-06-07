@@ -161,7 +161,7 @@ export default function ServiceProfilePage({ params }: { params: { id: string } 
         @media(max-width:768px){
           .svc-layout{flex-direction:column!important}
           .svc-sidebar{position:static!important;width:100%!important;top:0!important}
-          .svc-cover{height:200px!important}
+          .svc-cover{height:120px!important}
           .svc-header-row{flex-direction:column!important;gap:10px!important}
           .svc-cta-btns{flex-direction:column!important}
           .svc-cta-btns a,.svc-cta-btns button{width:100%!important}
@@ -173,7 +173,7 @@ export default function ServiceProfilePage({ params }: { params: { id: string } 
           .info-grid{grid-template-columns:1fr!important}
           .rating-summary{flex-direction:column!important;gap:12px!important}
           .svc-main-pad{padding:0 12px 40px!important}
-          .svc-hero-pull{margin-top:-32px!important}
+          
         }
 
         @media(max-width:480px){
@@ -183,56 +183,81 @@ export default function ServiceProfilePage({ params }: { params: { id: string } 
       `}</style>
 
       {/* ── COVER ── */}
-      <div className="svc-cover" style={{height:280,background:service.cover_image_url?'transparent':`linear-gradient(135deg,${S.navy},#1a3a6b)`,position:'relative',overflow:'hidden'}}>
-        {service.cover_image_url&&<img src={service.cover_image_url} alt="" style={{width:'100%',height:'100%',objectFit:'cover',opacity:.75}}/>}
-        <div style={{position:'absolute',inset:0,background:'linear-gradient(to bottom,rgba(10,31,68,0.1),rgba(10,31,68,0.55))'}}/>
-        {/* Back */}
-        <a href="/search" style={{position:'absolute',top:16,left:16,color:'#fff',textDecoration:'none',fontSize:13,fontWeight:600,background:'rgba(255,255,255,0.15)',padding:'7px 14px',borderRadius:50,backdropFilter:'blur(6px)',display:'flex',alignItems:'center',gap:4}}>← Înapoi</a>
-        {/* Fav */}
-        <button onClick={toggleFav} className="fav-btn" style={{position:'absolute',top:16,right:16,width:38,height:38,background:'rgba(255,255,255,0.15)',backdropFilter:'blur(6px)',border:'none',borderRadius:'50%',cursor:'pointer',fontSize:18,display:'flex',alignItems:'center',justifyContent:'center'}}>
-          {isFav?'❤️':'🤍'}
-        </button>
-        {/* Logo */}
-        <div style={{position:'absolute',bottom:-24,left:24,width:64,height:64,background:S.white,borderRadius:18,border:`3px solid ${S.white}`,boxShadow:'0 4px 20px rgba(10,31,68,0.15)',overflow:'hidden',display:'flex',alignItems:'center',justifyContent:'center',fontSize:34}}>
-          {service.logo_url?<img src={service.logo_url} style={{width:'100%',height:'100%',objectFit:'cover'}} alt=""/>:'🔧'}
+      <div className="svc-cover" style={{height:service.cover_image_url?280:120,background:service.cover_image_url?'transparent':`linear-gradient(135deg,${S.navy} 0%,#1a3a6b 60%,${S.blue} 100%)`,position:'relative',overflow:'hidden'}}>
+        {service.cover_image_url&&<img src={service.cover_image_url} alt="" style={{width:'100%',height:'100%',objectFit:'cover',opacity:.8}}/>}
+        {!service.cover_image_url&&(
+          <svg style={{position:'absolute',inset:0,width:'100%',height:'100%',opacity:.06}} xmlns="http://www.w3.org/2000/svg">
+            <defs><pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse"><path d="M 40 0 L 0 0 0 40" fill="none" stroke="white" strokeWidth="1"/></pattern></defs>
+            <rect width="100%" height="100%" fill="url(#grid)"/>
+          </svg>
+        )}
+        <div style={{position:'absolute',inset:0,background:'linear-gradient(to bottom,rgba(10,31,68,0.05),rgba(10,31,68,0.45))'}}/>
+        <div style={{position:'absolute',top:12,left:12,right:12,display:'flex',justifyContent:'space-between',alignItems:'center'}}>
+          <a href="/search" style={{color:'#fff',textDecoration:'none',fontSize:12,fontWeight:600,background:'rgba(255,255,255,0.15)',padding:'6px 14px',borderRadius:50,backdropFilter:'blur(8px)',border:'0.5px solid rgba(255,255,255,0.25)',display:'flex',alignItems:'center',gap:5}}>← Înapoi</a>
+          <div style={{display:'flex',gap:8,alignItems:'center'}}>
+            {isOwner&&(
+              <label style={{color:'#fff',fontSize:12,fontWeight:600,background:'rgba(255,255,255,0.15)',padding:'6px 14px',borderRadius:50,backdropFilter:'blur(8px)',border:'0.5px solid rgba(255,255,255,0.25)',display:'flex',alignItems:'center',gap:5,cursor:'pointer'}}>
+                ↑ {service.cover_image_url?'Schimbă cover':'Adaugă cover'}
+                <input type="file" accept="image/*" style={{display:'none'}} onChange={async(e)=>{
+                  const file=e.target.files?.[0]; if(!file) return
+                  const ext=file.name.split('.').pop()
+                  const path=`${service.id}/cover-${Date.now()}.${ext}`
+                  const {error}=await supabase.storage.from('service-media').upload(path,file,{upsert:true})
+                  if(!error){const {data:{publicUrl}}=supabase.storage.from('service-media').getPublicUrl(path);await supabase.from('services').update({cover_image_url:publicUrl}).eq('id',service.id);window.location.reload()}
+                }}/>
+              </label>
+            )}
+            <button onClick={toggleFav} style={{width:34,height:34,background:'rgba(255,255,255,0.15)',backdropFilter:'blur(8px)',border:'0.5px solid rgba(255,255,255,0.25)',borderRadius:'50%',cursor:'pointer',fontSize:16,display:'flex',alignItems:'center',justifyContent:'center'}}>
+              {isFav?'❤️':'🤍'}
+            </button>
+          </div>
         </div>
       </div>
 
       <div className="svc-main-pad" style={{maxWidth:1060,margin:'0 auto',padding:'0 16px 60px'}}>
 
-        {/* ── HERO INFO ── */}
-        <div className="svc-hero-pull" style={{marginTop:-36,marginBottom:16}}>
-          <div style={{...card(),paddingTop:32}}>
-            <div className="svc-header-row" style={{display:'flex',alignItems:'flex-start',justifyContent:'space-between',gap:14,flexWrap:'wrap',marginBottom:14}}>
-              <div>
-                <div style={{display:'flex',alignItems:'center',gap:8,flexWrap:'wrap',marginBottom:6}}>
-                  <h1 style={{fontFamily:"'Sora',sans-serif",fontWeight:800,fontSize:22,color:S.navy,margin:0}}>{service.name}</h1>
-                  {service.is_verified&&<span style={pill(S.greenBg,S.green)}>✓ Verificat</span>}
-                  {service.plan==='pro'&&<span style={pill(S.amberBg,S.amber)}>⭐ Pro</span>}
-                  {service.has_itp&&<span style={pill('#eaf3ff',S.blue)}>ITP</span>}
-                  {service.is_authorized_rar&&<span style={pill(S.amberBg,S.amber)}>RAR</span>}
-                  {service.business_type==='dezmembrari'&&<span style={pill(S.purpleBg,S.purple)}>🚗 Dezmembrări</span>}
-                  {service.business_type==='magazin_piese'&&<span style={pill(S.greenBg,S.green)}>📦 Piese noi</span>}
-                </div>
-                <div style={{display:'flex',alignItems:'center',gap:10,flexWrap:'wrap',marginBottom:6}}>
-                  <div style={{display:'flex',alignItems:'center',gap:3}}>
-                    {[1,2,3,4,5].map(s=><span key={s} style={{color:s<=Math.round(service.rating_avg||0)?S.yellow:'#e5e7eb',fontSize:17}}>★</span>)}
-                    <span style={{fontFamily:"'Sora',sans-serif",fontWeight:700,fontSize:14,color:S.navy,marginLeft:4}}>{(service.rating_avg||0).toFixed(1)}</span>
-                    <span style={{fontSize:13,color:S.muted}}>({service.rating_count||0} recenzii)</span>
-                  </div>
-                  <span style={{color:S.border}}>·</span>
-                  <span style={{fontSize:13,color:S.muted}}>📍 {service.city}{service.county?`, ${service.county}`:''}</span>
-                  {service.warranty_months>0&&<span style={{fontSize:13,color:S.green}}>🛡️ Garanție {service.warranty_months} luni</span>}
-                </div>
+        {/* ── HERO CARD ── */}
+        <div className="svc-hero-pull" style={{marginTop:-16,marginBottom:16}}>
+          <div style={{...card(),padding:20}}>
+            {/* Logo + Share row */}
+            <div style={{display:'flex',alignItems:'flex-start',justifyContent:'space-between',marginBottom:14}}>
+              <div style={{width:60,height:60,background:S.bg,borderRadius:14,border:`3px solid ${S.white}`,boxShadow:'0 2px 12px rgba(10,31,68,0.12)',overflow:'hidden',display:'flex',alignItems:'center',justifyContent:'center',fontSize:28,flexShrink:0,marginTop:-42,position:'relative',zIndex:1}}>
+                {service.logo_url?<img src={service.logo_url} style={{width:'100%',height:'100%',objectFit:'cover'}} alt=""/>:'🔧'}
               </div>
-              {/* Share buttons */}
               <div className="svc-share-row" style={{display:'flex',gap:6,flexShrink:0}}>
                 {[{icon:'💬',l:'WhatsApp',p:'whatsapp'},{icon:'📘',l:'Facebook',p:'facebook'},{icon:copied?'✅':'🔗',l:copied?'Copiat!':'Link',p:'copy'}].map(s=>(
                   <button key={s.p} onClick={()=>share(s.p)} className="svc-share-btn">
-                    <span style={{fontSize:18}}>{s.icon}</span>{s.l}
+                    <span style={{fontSize:16}}>{s.icon}</span>{s.l}
                   </button>
                 ))}
               </div>
+            </div>
+
+            {/* Name */}
+            <h1 style={{fontFamily:"'Sora',sans-serif",fontWeight:800,fontSize:22,color:S.navy,margin:'0 0 8px'}}>{service.name}</h1>
+
+            {/* Badges */}
+            <div style={{display:'flex',alignItems:'center',gap:6,flexWrap:'wrap',marginBottom:10}}>
+              {service.is_verified&&<span style={pill(S.greenBg,S.green)}>✓ Verificat</span>}
+              {service.plan==='pro'&&<span style={pill(S.amberBg,S.amber)}>⭐ Pro</span>}
+              {service.plan==='elite'&&<span style={pill('#1e1b4b','#a5b4fc')}>💎 Elite</span>}
+              {service.has_itp&&<span style={pill('#eaf3ff',S.blue)}>ITP</span>}
+              {service.is_authorized_rar&&<span style={pill(S.amberBg,S.amber)}>RAR</span>}
+              {service.business_type==='dezmembrari'&&<span style={pill(S.purpleBg,S.purple)}>🚗 Dezmembrări</span>}
+              {service.business_type==='magazin_piese'&&<span style={pill(S.greenBg,S.green)}>📦 Piese noi</span>}
+              {service.is_multibrand&&<span style={pill(S.bg,S.muted)}>Multimarcă</span>}
+            </div>
+
+            {/* Rating + city */}
+            <div style={{display:'flex',alignItems:'center',gap:10,flexWrap:'wrap',marginBottom:16}}>
+              <div style={{display:'flex',alignItems:'center',gap:3}}>
+                {[1,2,3,4,5].map(s=><span key={s} style={{color:s<=Math.round(service.rating_avg||0)?S.yellow:'#e5e7eb',fontSize:16}}>★</span>)}
+                <span style={{fontFamily:"'Sora',sans-serif",fontWeight:700,fontSize:13,color:S.navy,marginLeft:4}}>{(service.rating_avg||0).toFixed(1)}</span>
+                <span style={{fontSize:12,color:S.muted}}>({service.rating_count||0} recenzii)</span>
+              </div>
+              <span style={{color:S.border}}>·</span>
+              <span style={{fontSize:13,color:S.muted}}>📍 {service.city}{service.county?`, ${service.county}`:''}</span>
+              {service.warranty_months>0&&<span style={{fontSize:12,color:S.green}}>🛡️ Garanție {service.warranty_months} luni</span>}
             </div>
 
             {/* CTA buttons */}
@@ -268,10 +293,10 @@ export default function ServiceProfilePage({ params }: { params: { id: string } 
                     <p style={{fontSize:14,color:S.text,lineHeight:1.7,margin:0}}>{service.description}</p>
                   </div>
                 )}
-                {/* Info grid */}
+                {/* Info grid - redesigned */}
                 <div style={card()}>
                   <h2 style={{fontFamily:"'Sora',sans-serif",fontWeight:700,fontSize:15,color:S.navy,marginBottom:14}}>ℹ️ Informații</h2>
-                  <div className="info-grid" style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:12}}>
+                  <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',border:`1px solid ${S.border}`,borderRadius:12,overflow:'hidden'}}>
                     {[
                       {icon:'📍',l:'Adresă',v:service.address||`${service.city}${service.county?`, ${service.county}`:''}` },
                       {icon:'📞',l:'Telefon',v:service.phone||'—'},
@@ -279,13 +304,10 @@ export default function ServiceProfilePage({ params }: { params: { id: string } 
                       {icon:'🌐',l:'Website',v:service.website||'—'},
                       {icon:'🔧',l:'Tip service',v:service.is_multibrand?'Multimarcă':'Specializat'},
                       {icon:'🛡️',l:'Garanție',v:service.warranty_months>0?`${service.warranty_months} luni`:'—'},
-                    ].map(({icon,l,v})=>(
-                      <div key={l} style={{display:'flex',gap:10,alignItems:'flex-start'}}>
-                        <span style={{fontSize:18,flexShrink:0}}>{icon}</span>
-                        <div>
-                          <div style={{fontSize:10,color:S.muted,marginBottom:2,textTransform:'uppercase',letterSpacing:.5}}>{l}</div>
-                          <div style={{fontSize:13,fontWeight:600,color:S.navy,wordBreak:'break-word'}}>{v}</div>
-                        </div>
+                    ].map(({icon,l,v},i)=>(
+                      <div key={l} style={{padding:'12px 16px',borderBottom:i<4?`1px solid ${S.border}`:'none',borderRight:i%2===0?`1px solid ${S.border}`:'none',background:S.white}}>
+                        <div style={{fontSize:10,fontWeight:700,color:S.muted,textTransform:'uppercase',letterSpacing:.8,marginBottom:4}}>{icon} {l}</div>
+                        <div style={{fontSize:13,fontWeight:600,color:v==='—'?S.muted:S.navy,wordBreak:'break-word'}}>{v}</div>
                       </div>
                     ))}
                   </div>
