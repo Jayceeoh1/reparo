@@ -161,7 +161,7 @@ export default function ServiceProfilePage({ params }: { params: { id: string } 
         @media(max-width:768px){
           .svc-layout{flex-direction:column!important}
           .svc-sidebar{position:static!important;width:100%!important;top:0!important}
-          .svc-cover{height:160px!important}
+          .svc-cover{height:200px!important}
           .svc-header-row{flex-direction:column!important;gap:10px!important}
           .svc-cta-btns{flex-direction:column!important}
           .svc-cta-btns a,.svc-cta-btns button{width:100%!important}
@@ -173,7 +173,7 @@ export default function ServiceProfilePage({ params }: { params: { id: string } 
           .info-grid{grid-template-columns:1fr!important}
           .rating-summary{flex-direction:column!important;gap:12px!important}
           .svc-main-pad{padding:0 12px 40px!important}
-          .svc-hero-pull{margin-top:-40px!important}
+          .svc-hero-pull{margin-top:-32px!important}
         }
 
         @media(max-width:480px){
@@ -183,9 +183,8 @@ export default function ServiceProfilePage({ params }: { params: { id: string } 
       `}</style>
 
       {/* ── COVER ── */}
-      <div className="svc-cover" style={{height:service.cover_image_url?280:160,background:service.cover_image_url?'transparent':`linear-gradient(135deg,${S.navy},#1a3a6b)`,position:'relative',overflow:'hidden'}}>
+      <div className="svc-cover" style={{height:280,background:service.cover_image_url?'transparent':`linear-gradient(135deg,${S.navy},#1a3a6b)`,position:'relative',overflow:'hidden'}}>
         {service.cover_image_url&&<img src={service.cover_image_url} alt="" style={{width:'100%',height:'100%',objectFit:'cover',opacity:.75}}/>}
-        {!service.cover_image_url&&<svg style={{position:'absolute',inset:0,width:'100%',height:'100%',opacity:.07}} xmlns="http://www.w3.org/2000/svg"><defs><pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse"><path d="M 40 0 L 0 0 0 40" fill="none" stroke="white" strokeWidth="1"/></pattern></defs><rect width="100%" height="100%" fill="url(#grid)"/></svg>}
         <div style={{position:'absolute',inset:0,background:'linear-gradient(to bottom,rgba(10,31,68,0.1),rgba(10,31,68,0.55))'}}/>
         {/* Back */}
         <a href="/search" style={{position:'absolute',top:16,left:16,color:'#fff',textDecoration:'none',fontSize:13,fontWeight:600,background:'rgba(255,255,255,0.15)',padding:'7px 14px',borderRadius:50,backdropFilter:'blur(6px)',display:'flex',alignItems:'center',gap:4}}>← Înapoi</a>
@@ -194,7 +193,7 @@ export default function ServiceProfilePage({ params }: { params: { id: string } 
           {isFav?'❤️':'🤍'}
         </button>
         {/* Logo */}
-        <div style={{position:'absolute',bottom:-32,left:24,width:76,height:76,background:S.white,borderRadius:18,border:`3px solid ${S.white}`,boxShadow:'0 4px 20px rgba(10,31,68,0.15)',overflow:'hidden',display:'flex',alignItems:'center',justifyContent:'center',fontSize:34}}>
+        <div style={{position:'absolute',bottom:-24,left:24,width:64,height:64,background:S.white,borderRadius:18,border:`3px solid ${S.white}`,boxShadow:'0 4px 20px rgba(10,31,68,0.15)',overflow:'hidden',display:'flex',alignItems:'center',justifyContent:'center',fontSize:34}}>
           {service.logo_url?<img src={service.logo_url} style={{width:'100%',height:'100%',objectFit:'cover'}} alt=""/>:'🔧'}
         </div>
       </div>
@@ -202,8 +201,8 @@ export default function ServiceProfilePage({ params }: { params: { id: string } 
       <div className="svc-main-pad" style={{maxWidth:1060,margin:'0 auto',padding:'0 16px 60px'}}>
 
         {/* ── HERO INFO ── */}
-        <div className="svc-hero-pull" style={{marginTop:-50,marginBottom:16}}>
-          <div style={{...card(),paddingTop:44}}>
+        <div className="svc-hero-pull" style={{marginTop:-36,marginBottom:16}}>
+          <div style={{...card(),paddingTop:32}}>
             <div className="svc-header-row" style={{display:'flex',alignItems:'flex-start',justifyContent:'space-between',gap:14,flexWrap:'wrap',marginBottom:14}}>
               <div>
                 <div style={{display:'flex',alignItems:'center',gap:8,flexWrap:'wrap',marginBottom:6}}>
