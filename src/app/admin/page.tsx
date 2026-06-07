@@ -56,7 +56,7 @@ export default function AdminPage() {
   async function loadAll() {
     // Load each query separately with try-catch to avoid one failure crashing all
     const { data: vr } = await supabase.from('verification_requests')
-      .select('id,service_id,status,submitted_at,reviewed_at,rejection_reason,services(id,name,city,logo_url)')
+      .select('id,service_id,status,submitted_at,reviewed_at,rejection_reason,doc_cui,doc_rar,doc_foto,notes,services(id,name,city,logo_url,phone,email,business_type)')
       .order('submitted_at', { ascending: false })
     setVerRequests(vr || [])
 
@@ -407,27 +407,78 @@ export default function AdminPage() {
                   </div>
 
                   {/* Documente */}
-                  <div style={{ flex: 1, minWidth: 200 }}>
-                    <div style={{ fontSize: 11, fontWeight: 700, color: S.muted, textTransform: 'uppercase', letterSpacing: .5, marginBottom: 8 }}>Documente uploadate</div>
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                  <div style={{ flex: 1, minWidth: 220 }}>
+                    <div style={{ fontSize: 11, fontWeight: 700, color: S.muted, textTransform: 'uppercase', letterSpacing: .5, marginBottom: 10 }}>Documente uploadate</div>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                      {/* CUI */}
                       {req.doc_cui ? (
-                        <a href={req.doc_cui} target="_blank" rel="noreferrer"
-                          style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, color: S.blue, textDecoration: 'none', fontWeight: 600 }}>
-                          📄 CUI / Certificat fiscal →
-                        </a>
-                      ) : <div style={{ fontSize: 12, color: S.muted }}>📄 CUI — lipsă</div>}
+                        <div style={{ border: `1px solid ${S.border}`, borderRadius: 10, overflow: 'hidden' }}>
+                          <div style={{ background: '#f8faff', padding: '6px 10px', fontSize: 11, fontWeight: 700, color: S.navy, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                            <span>📄 CUI / Certificat fiscal</span>
+                            <a href={req.doc_cui} target="_blank" rel="noreferrer" style={{ fontSize: 11, color: S.blue, textDecoration: 'none', fontWeight: 600 }}>↗ Deschide</a>
+                          </div>
+                          {req.doc_cui.match(/\.(jpg|jpeg|png|webp|gif)$/i) ? (
+                            <a href={req.doc_cui} target="_blank" rel="noreferrer">
+                              <img src={req.doc_cui} alt="CUI" style={{ width: '100%', maxHeight: 140, objectFit: 'cover', display: 'block', cursor: 'zoom-in' }} />
+                            </a>
+                          ) : (
+                            <a href={req.doc_cui} target="_blank" rel="noreferrer" style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '10px 12px', background: S.white, textDecoration: 'none' }}>
+                              <span style={{ fontSize: 24 }}>📄</span>
+                              <span style={{ fontSize: 12, color: S.blue, fontWeight: 600 }}>
+                                {req.doc_cui.split('/').pop()?.slice(0, 30) || 'document.pdf'}
+                              </span>
+                            </a>
+                          )}
+                        </div>
+                      ) : (
+                        <div style={{ padding: '8px 12px', background: S.redBg, borderRadius: 8, fontSize: 12, color: S.red, fontWeight: 600 }}>❌ CUI — lipsă</div>
+                      )}
+
+                      {/* RAR */}
                       {req.doc_rar ? (
-                        <a href={req.doc_rar} target="_blank" rel="noreferrer"
-                          style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, color: S.blue, textDecoration: 'none', fontWeight: 600 }}>
-                          🏢 Certificat RAR →
-                        </a>
-                      ) : <div style={{ fontSize: 12, color: S.muted }}>🏢 RAR — nu a furnizat</div>}
+                        <div style={{ border: `1px solid ${S.border}`, borderRadius: 10, overflow: 'hidden' }}>
+                          <div style={{ background: '#f8faff', padding: '6px 10px', fontSize: 11, fontWeight: 700, color: S.navy, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                            <span>🏢 Certificat RAR</span>
+                            <a href={req.doc_rar} target="_blank" rel="noreferrer" style={{ fontSize: 11, color: S.blue, textDecoration: 'none', fontWeight: 600 }}>↗ Deschide</a>
+                          </div>
+                          {req.doc_rar.match(/\.(jpg|jpeg|png|webp|gif)$/i) ? (
+                            <a href={req.doc_rar} target="_blank" rel="noreferrer">
+                              <img src={req.doc_rar} alt="RAR" style={{ width: '100%', maxHeight: 140, objectFit: 'cover', display: 'block', cursor: 'zoom-in' }} />
+                            </a>
+                          ) : (
+                            <a href={req.doc_rar} target="_blank" rel="noreferrer" style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '10px 12px', background: S.white, textDecoration: 'none' }}>
+                              <span style={{ fontSize: 24 }}>📄</span>
+                              <span style={{ fontSize: 12, color: S.blue, fontWeight: 600 }}>
+                                {req.doc_rar.split('/').pop()?.slice(0, 30) || 'document.pdf'}
+                              </span>
+                            </a>
+                          )}
+                        </div>
+                      ) : (
+                        <div style={{ padding: '8px 12px', background: '#f3f4f6', borderRadius: 8, fontSize: 12, color: S.muted }}>○ RAR — nu a furnizat</div>
+                      )}
+
+                      {/* Foto sediu */}
                       {req.doc_foto ? (
-                        <a href={req.doc_foto} target="_blank" rel="noreferrer"
-                          style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, color: S.blue, textDecoration: 'none', fontWeight: 600 }}>
-                          🖼️ Foto sediu →
-                        </a>
-                      ) : <div style={{ fontSize: 12, color: S.muted }}>🖼️ Foto — lipsă</div>}
+                        <div style={{ border: `1px solid ${S.border}`, borderRadius: 10, overflow: 'hidden' }}>
+                          <div style={{ background: '#f8faff', padding: '6px 10px', fontSize: 11, fontWeight: 700, color: S.navy, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                            <span>🖼️ Foto sediu</span>
+                            <a href={req.doc_foto} target="_blank" rel="noreferrer" style={{ fontSize: 11, color: S.blue, textDecoration: 'none', fontWeight: 600 }}>↗ Deschide</a>
+                          </div>
+                          <a href={req.doc_foto} target="_blank" rel="noreferrer">
+                            <img src={req.doc_foto} alt="Foto sediu" style={{ width: '100%', maxHeight: 160, objectFit: 'cover', display: 'block', cursor: 'zoom-in' }} />
+                          </a>
+                        </div>
+                      ) : (
+                        <div style={{ padding: '8px 12px', background: S.redBg, borderRadius: 8, fontSize: 12, color: S.red, fontWeight: 600 }}>❌ Foto sediu — lipsă</div>
+                      )}
+
+                      {/* Info suplimentare service */}
+                      <div style={{ background: S.bg, borderRadius: 8, padding: '8px 12px', fontSize: 12, color: S.muted }}>
+                        {req.services?.phone && <div>📞 {req.services.phone}</div>}
+                        {req.services?.email && <div>✉️ {req.services.email}</div>}
+                        <div>🏪 {req.services?.business_type === 'magazin_piese' ? 'Magazin piese' : req.services?.business_type === 'dezmembrari' ? 'Dezmembrări' : req.services?.business_type === 'mixt' ? 'Mixt' : 'Service auto'}</div>
+                      </div>
                     </div>
                   </div>
 
