@@ -6,27 +6,43 @@ import { createClient } from '@/lib/supabase/client'
 const S = {
   navy:'#0a1f44',blue:'#1a56db',yellow:'#f59e0b',bg:'#f0f6ff',
   white:'#fff',text:'#111827',muted:'#6b7280',border:'#e5e7eb',
-  green:'#16a34a',greenBg:'#dcfce7',amber:'#d97706',amberBg:'#fef3c7',
+  green:'#16a34a',greenBg:'#dcfce7',purple:'#7c3aed',purpleBg:'#ede9fe',
 }
 
 const PLAN_BOOST = { elite:3, business_elite:3, pro:2, business_pro:2, starter:1, basic:1, business:1, free:0 }
+
+const FILTERS = [
+  { key:'all', label:'Toate' },
+  { key:'verified', label:'✓ Verificate' },
+  { key:'itp', label:'ITP' },
+  { key:'multibrand', label:'Multimarcă' },
+  { key:'dezmembrari', label:'Dezmembrări' },
+  { key:'magazin', label:'Piese noi' },
+]
 
 export default function SearchPage() {
   const [services, setServices] = useState([])
   const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState('')
   const [city, setCity] = useState('')
-  const [category, setCategory] = useState('')
+  const [filter, setFilter] = useState('all')
   const [page, setPage] = useState(0)
-  const PER_PAGE = 12
+  const PER_PAGE = 16
   const supabase = createClient()
 
-  useEffect(() => { load() }, [search, city, category, page])
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search)
+    const cat = params.get('category') || ''
+    if (cat === 'itp') setFilter('itp')
+    else if (cat === 'dezmembrari') setFilter('dezmembrari')
+  }, [])
+
+  useEffect(() => { load() }, [search, city, page])
 
   async function load() {
     setLoading(true)
     let q = supabase.from('services')
-      .select('id,name,city,logo_url,cover_image_url,rating_avg,rating_count,is_verified,plan,is_promoted,promoted_until,description,phone,business_type')
+      .select('id,name,city,logo_url,cover_image_url,rating_avg,rating_count,is_verified,plan,is_promoted,promoted_until,description,phone,business_type,has_itp,is_multibrand')
       .eq('is_active', true)
       .range(page * PER_PAGE, (page + 1) * PER_PAGE - 1)
 
@@ -34,16 +50,15 @@ export default function SearchPage() {
     if (city) q = q.ilike('city', `%${city}%`)
 
     const { data } = await q
-    
-    // Sort by: is_promoted first, then plan boost, then rating
+
     const sorted = (data || []).sort((a, b) => {
-      const aPromoted = a.is_promoted && (!a.promoted_until || new Date(a.promoted_until) > new Date())
-      const bPromoted = b.is_promoted && (!b.promoted_until || new Date(b.promoted_until) > new Date())
-      if (aPromoted && !bPromoted) return -1
-      if (!aPromoted && bPromoted) return 1
-      const aBoost = PLAN_BOOST[a.plan] || 0
-      const bBoost = PLAN_BOOST[b.plan] || 0
-      if (aBoost !== bBoost) return bBoost - aBoost
+      const aP = a.is_promoted && (!a.promoted_until || new Date(a.promoted_until) > new Date())
+      const bP = b.is_promoted && (!b.promoted_until || new Date(b.promoted_until) > new Date())
+      if (aP && !bP) return -1
+      if (!aP && bP) return 1
+      const aB = PLAN_BOOST[a.plan] || 0
+      const bB = PLAN_BOOST[b.plan] || 0
+      if (aB !== bB) return bB - aB
       return (b.rating_avg || 0) - (a.rating_avg || 0)
     })
 
@@ -51,84 +66,190 @@ export default function SearchPage() {
     setLoading(false)
   }
 
+  const filtered = services.filter(s => {
+    if (filter === 'verified') return s.is_verified
+    if (filter === 'itp') return s.has_itp
+    if (filter === 'multibrand') return s.is_multibrand
+    if (filter === 'dezmembrari') return s.business_type === 'dezmembrari'
+    if (filter === 'magazin') return s.business_type === 'magazin_piese'
+    return true
+  })
+
+  function planBadge(svc) {
+    const isPromoted = svc.is_promoted && (!svc.promoted_until || new Date(svc.promoted_until) > new Date())
+    if (isPromoted) return { label: '⭐ PROMOVAT', bg: S.yellow }
+    if (svc.plan === 'elite' || svc.plan === 'business_elite') return { label: '💎 Elite', bg: S.purple }
+    if (svc.plan === 'pro' || svc.plan === 'business_pro') return { label: '⭐ Pro', bg: S.yellow }
+    return null
+  }
+
+  function coverBg(svc) {
+    if (svc.plan === 'elite' || svc.plan === 'business_elite') return 'linear-gradient(135deg,#1e1b4b,#4c1d95)'
+    if (svc.plan === 'pro' || svc.plan === 'business_pro') return `linear-gradient(135deg,${S.navy},#1a56db)`
+    return `linear-gradient(135deg,${S.navy},#1a3a6b)`
+  }
+
   return (
     <div style={{minHeight:'100vh',background:S.bg,fontFamily:"'DM Sans',sans-serif"}}>
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Sora:wght@700;800&family=DM+Sans:wght@400;500;600&display=swap');
         @keyframes spin{to{transform:rotate(360deg)}}
-        .svc-card{background:#fff;border-radius:16px;border:1px solid #e5e7eb;overflow:hidden;cursor:pointer;transition:all .15s}
-        .svc-card:hover{box-shadow:0 4px 20px rgba(26,86,219,0.1);border-color:#1a56db;transform:translateY(-2px)}
-        .search-inp:focus{border-color:#1a56db!important;outline:none!important}
-        @media(max-width:768px){.search-row{flex-direction:column!important}.svc-grid{grid-template-columns:1fr!important}}
+        @keyframes fadeIn{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:translateY(0)}}
+        .sc-card{background:#fff;border-radius:12px;border:0.5px solid #e5e7eb;overflow:hidden;cursor:pointer;transition:all .15s;text-decoration:none;display:block;animation:fadeIn .2s ease}
+        .sc-card:hover{border-color:#1a56db;transform:translateY(-2px);box-shadow:0 4px 16px rgba(26,86,219,0.08)}
+        .sc-card.promoted{border-color:#f59e0b}
+        .sc-filter-btn{padding:5px 12px;border-radius:50px;border:0.5px solid #e5e7eb;background:#fff;color:#6b7280;cursor:pointer;font-size:12px;font-family:'DM Sans',sans-serif;transition:all .15s;white-space:nowrap}
+        .sc-filter-btn:hover{border-color:#1a56db;color:#1a56db}
+        .sc-filter-btn.active{background:#eaf3ff;color:#1a56db;border-color:#1a56db;font-weight:600}
+        .sc-inp{padding:9px 12px;border:0.5px solid #e5e7eb;border-radius:8px;font-size:13px;font-family:'DM Sans',sans-serif;background:#fff;color:#111827;outline:none;transition:border-color .15s}
+        .sc-inp:focus{border-color:#1a56db}
+        @media(max-width:900px){.sc-grid{grid-template-columns:repeat(2,1fr)!important}}
+        @media(max-width:560px){.sc-grid{grid-template-columns:1fr!important}.sc-filter-row{overflow-x:auto;padding-bottom:4px}}
       `}</style>
 
-      {/* Header */}
-      <div style={{background:S.white,borderBottom:`1px solid ${S.border}`,padding:'20px 16px'}}>
+      {/* Search header */}
+      <div style={{background:S.white,borderBottom:`1px solid ${S.border}`,padding:'16px'}}>
         <div style={{maxWidth:1100,margin:'0 auto'}}>
-          <h1 style={{fontFamily:"'Sora',sans-serif",fontWeight:800,fontSize:22,color:S.navy,marginBottom:14}}>Caută service-uri auto</h1>
-          <div className="search-row" style={{display:'flex',gap:10,flexWrap:'wrap'}}>
-            <input className="search-inp" value={search} onChange={e=>{setSearch(e.target.value);setPage(0)}}
-              placeholder="🔍 Nume service..."
-              style={{flex:'2 1 200px',padding:'11px 14px',border:`1.5px solid ${S.border}`,borderRadius:10,fontSize:14,fontFamily:"'DM Sans',sans-serif"}}/>
-            <input className="search-inp" value={city} onChange={e=>{setCity(e.target.value);setPage(0)}}
+          <h1 style={{fontFamily:"'Sora',sans-serif",fontWeight:800,fontSize:20,color:S.navy,marginBottom:12}}>
+            Caută service-uri auto
+          </h1>
+          <div style={{display:'flex',gap:8,flexWrap:'wrap',alignItems:'center'}}>
+            <input className="sc-inp" value={search} onChange={e=>{setSearch(e.target.value);setPage(0)}}
+              placeholder="🔍 Nume service, lucrare..."
+              style={{flex:'2 1 180px'}}/>
+            <input className="sc-inp" value={city} onChange={e=>{setCity(e.target.value);setPage(0)}}
               placeholder="📍 Oraș..."
-              style={{flex:'1 1 140px',padding:'11px 14px',border:`1.5px solid ${S.border}`,borderRadius:10,fontSize:14,fontFamily:"'DM Sans',sans-serif"}}/>
-            <button onClick={load} style={{padding:'11px 20px',background:S.blue,color:'#fff',border:'none',borderRadius:10,fontSize:14,fontWeight:700,cursor:'pointer',fontFamily:"'Sora',sans-serif"}}>
+              style={{flex:'1 1 120px'}}/>
+            <button onClick={load}
+              style={{padding:'9px 18px',background:S.blue,color:'#fff',border:'none',borderRadius:8,fontSize:13,fontWeight:700,cursor:'pointer',fontFamily:"'Sora',sans-serif",flexShrink:0}}>
               Caută
             </button>
           </div>
         </div>
       </div>
 
-      <div style={{maxWidth:1100,margin:'0 auto',padding:'20px 16px'}}>
+      <div style={{maxWidth:1100,margin:'0 auto',padding:'16px'}}>
+
+        {/* Filters + count row */}
+        <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',gap:12,marginBottom:14,flexWrap:'wrap'}}>
+          <span style={{fontSize:12,color:S.muted,flexShrink:0}}>{filtered.length} service-uri găsite</span>
+          <div className="sc-filter-row" style={{display:'flex',gap:6,flexWrap:'wrap'}}>
+            {FILTERS.map(f=>(
+              <button key={f.key} onClick={()=>setFilter(f.key)}
+                className={`sc-filter-btn${filter===f.key?' active':''}`}>
+                {f.label}
+              </button>
+            ))}
+          </div>
+        </div>
+
         {loading ? (
           <div style={{textAlign:'center',padding:60}}>
-            <div style={{width:36,height:36,border:`3px solid ${S.blue}`,borderTopColor:'transparent',borderRadius:'50%',animation:'spin 1s linear infinite',margin:'0 auto'}}/>
+            <div style={{width:32,height:32,border:`3px solid ${S.blue}`,borderTopColor:'transparent',borderRadius:'50%',animation:'spin 1s linear infinite',margin:'0 auto'}}/>
           </div>
-        ) : services.length === 0 ? (
-          <div style={{textAlign:'center',padding:80,background:S.white,borderRadius:16,border:`1px solid ${S.border}`}}>
-            <div style={{fontSize:48,marginBottom:12}}>🔍</div>
-            <div style={{fontFamily:"'Sora',sans-serif",fontWeight:700,fontSize:18,color:S.navy}}>Niciun service găsit</div>
-            <p style={{fontSize:14,color:S.muted,marginTop:8}}>Încearcă alt oraș sau termen de căutare</p>
+        ) : filtered.length === 0 ? (
+          <div style={{textAlign:'center',padding:64,background:S.white,borderRadius:16,border:`1px solid ${S.border}`}}>
+            <div style={{fontSize:40,marginBottom:10}}>🔍</div>
+            <div style={{fontFamily:"'Sora',sans-serif",fontWeight:700,fontSize:17,color:S.navy}}>Niciun service găsit</div>
+            <p style={{fontSize:13,color:S.muted,marginTop:6}}>Încearcă alt oraș sau termen de căutare</p>
           </div>
         ) : (
           <>
-            <div style={{fontSize:13,color:S.muted,marginBottom:14}}>{services.length} service-uri găsite</div>
-            <div className="svc-grid" style={{display:'grid',gridTemplateColumns:'repeat(auto-fill,minmax(300px,1fr))',gap:14}}>
-              {services.map(svc => {
+            {/* Grid 4 coloane */}
+            <div className="sc-grid" style={{display:'grid',gridTemplateColumns:'repeat(4,1fr)',gap:10}}>
+              {filtered.map(svc => {
+                const badge = planBadge(svc)
                 const isPromoted = svc.is_promoted && (!svc.promoted_until || new Date(svc.promoted_until) > new Date())
-                const boost = PLAN_BOOST[svc.plan] || 0
                 return (
-                  <a key={svc.id} href={`/service/${svc.id}`} className="svc-card" style={{textDecoration:'none',border:`1px solid ${isPromoted?S.yellow:boost>1?S.blue:S.border}`}}>
+                  <a key={svc.id} href={`/service/${svc.id}`}
+                    className={`sc-card${isPromoted?' promoted':''}`}>
+
                     {/* Cover */}
-                    <div style={{height:140,background:`linear-gradient(135deg,${S.navy},#1a3a6b)`,position:'relative',overflow:'hidden'}}>
-                      {svc.cover_image_url&&<img src={svc.cover_image_url} style={{width:'100%',height:'100%',objectFit:'cover',opacity:.7}} alt=""/>}
-                      {isPromoted&&<div style={{position:'absolute',top:8,left:8,background:S.yellow,color:'#fff',fontSize:10,fontWeight:700,padding:'3px 8px',borderRadius:50}}>⭐ PROMOVAT</div>}
-                      {boost>=2&&!isPromoted&&<div style={{position:'absolute',top:8,left:8,background:S.blue,color:'#fff',fontSize:10,fontWeight:700,padding:'3px 8px',borderRadius:50}}>{boost>=3?'💎 ELITE':'⭐ PRO'}</div>}
-                      <div style={{position:'absolute',bottom:-16,left:14,width:44,height:44,background:S.white,borderRadius:10,border:`2px solid ${S.white}`,overflow:'hidden',display:'flex',alignItems:'center',justifyContent:'center',fontSize:22}}>
-                        {svc.logo_url?<img src={svc.logo_url} style={{width:'100%',height:'100%',objectFit:'cover'}} alt=""/>:'🔧'}
+                    <div style={{height:80,background:svc.cover_image_url?'#000':coverBg(svc),position:'relative',overflow:'hidden'}}>
+                      {svc.cover_image_url && (
+                        <img src={svc.cover_image_url} style={{width:'100%',height:'100%',objectFit:'cover',opacity:.75}} alt=""/>
+                      )}
+                      {!svc.cover_image_url && (
+                        <svg style={{position:'absolute',inset:0,width:'100%',height:'100%',opacity:.06}} xmlns="http://www.w3.org/2000/svg">
+                          <defs><pattern id={`g-${svc.id}`} width="20" height="20" patternUnits="userSpaceOnUse"><path d="M 20 0 L 0 0 0 20" fill="none" stroke="white" strokeWidth="0.5"/></pattern></defs>
+                          <rect width="100%" height="100%" fill={`url(#g-${svc.id})`}/>
+                        </svg>
+                      )}
+
+                      {/* Plan badge */}
+                      {badge && (
+                        <div style={{position:'absolute',top:6,left:6,background:badge.bg,color:'#fff',fontSize:9,fontWeight:700,padding:'2px 6px',borderRadius:4,lineHeight:1.4}}>
+                          {badge.label}
+                        </div>
+                      )}
+
+                      {/* Verified badge */}
+                      {svc.is_verified && (
+                        <div style={{position:'absolute',bottom:5,right:6,fontSize:9,fontWeight:600,color:'#16a34a',background:'rgba(220,252,231,.9)',padding:'2px 5px',borderRadius:4}}>
+                          ✓ Verificat
+                        </div>
+                      )}
+
+                      {/* Logo */}
+                      <div style={{position:'absolute',bottom:-12,left:10,width:28,height:28,background:S.white,borderRadius:7,border:`2px solid ${S.white}`,overflow:'hidden',display:'flex',alignItems:'center',justifyContent:'center',fontSize:14,boxShadow:'0 1px 4px rgba(0,0,0,.12)'}}>
+                        {svc.logo_url
+                          ? <img src={svc.logo_url} style={{width:'100%',height:'100%',objectFit:'cover'}} alt=""/>
+                          : '🔧'}
                       </div>
                     </div>
-                    {/* Info */}
-                    <div style={{padding:'22px 14px 14px'}}>
-                      <div style={{display:'flex',alignItems:'flex-start',justifyContent:'space-between',marginBottom:6}}>
-                        <div style={{fontFamily:"'Sora',sans-serif",fontWeight:700,fontSize:15,color:S.navy}}>{svc.name}</div>
-                        {svc.is_verified&&<span style={{fontSize:10,background:S.greenBg,color:S.green,padding:'2px 7px',borderRadius:50,fontWeight:700,flexShrink:0}}>✓ Verificat</span>}
+
+                    {/* Body */}
+                    <div style={{padding:'16px 10px 8px'}}>
+                      <p style={{fontFamily:"'Sora',sans-serif",fontWeight:700,fontSize:12,color:S.navy,margin:'0 0 3px',whiteSpace:'nowrap',overflow:'hidden',textOverflow:'ellipsis'}}>
+                        {svc.name}
+                      </p>
+                      <p style={{fontSize:11,color:S.muted,margin:'0 0 7px',display:'flex',alignItems:'center',gap:2}}>
+                        📍 {svc.city}
+                      </p>
+                      <div style={{display:'flex',alignItems:'center',gap:2}}>
+                        {[1,2,3,4,5].map(s=>(
+                          <span key={s} style={{color:s<=Math.round(svc.rating_avg||0)?S.yellow:'#e5e7eb',fontSize:10}}>★</span>
+                        ))}
+                        <span style={{fontSize:10,color:S.muted,marginLeft:2}}>
+                          {svc.rating_avg?(svc.rating_avg).toFixed(1):''} ({svc.rating_count||0})
+                        </span>
                       </div>
-                      <div style={{fontSize:12,color:S.muted,marginBottom:8}}>📍 {svc.city}</div>
-                      <div style={{display:'flex',alignItems:'center',gap:4}}>
-                        {[1,2,3,4,5].map(s=><span key={s} style={{color:s<=Math.round(svc.rating_avg||0)?S.yellow:'#e5e7eb',fontSize:14}}>★</span>)}
-                        <span style={{fontSize:12,color:S.muted,marginLeft:4}}>({svc.rating_count||0})</span>
-                      </div>
+                    </div>
+
+                    {/* Footer */}
+                    <div style={{padding:'6px 10px',borderTop:`0.5px solid ${S.border}`,display:'flex',alignItems:'center',justifyContent:'space-between'}}>
+                      <span style={{fontSize:10,color:S.muted}}>
+                        {svc.business_type==='dezmembrari'?'Dezmembrări':svc.business_type==='magazin_piese'?'Piese noi':svc.is_multibrand?'Multimarcă':'Specializat'}
+                        {svc.has_itp?' · ITP':''}
+                      </span>
+                      <span style={{fontSize:10,fontWeight:600,color:
+                        (svc.plan==='elite'||svc.plan==='business_elite')?S.purple:
+                        (svc.plan==='pro'||svc.plan==='business_pro')?S.yellow:
+                        S.muted}}>
+                        {svc.plan==='elite'||svc.plan==='business_elite'?'Elite':
+                         svc.plan==='pro'||svc.plan==='business_pro'?'Pro':
+                         svc.plan==='starter'||svc.plan==='basic'?'Starter':'Free'}
+                      </span>
                     </div>
                   </a>
                 )
               })}
             </div>
+
             {/* Pagination */}
-            <div style={{display:'flex',justifyContent:'center',gap:8,marginTop:24}}>
-              {page>0&&<button onClick={()=>setPage(p=>p-1)} style={{padding:'8px 16px',background:S.white,border:`1px solid ${S.border}`,borderRadius:8,cursor:'pointer'}}>← Anterior</button>}
-              {services.length===PER_PAGE&&<button onClick={()=>setPage(p=>p+1)} style={{padding:'8px 16px',background:S.blue,color:'#fff',border:'none',borderRadius:8,cursor:'pointer',fontWeight:600}}>Următor →</button>}
+            <div style={{display:'flex',justifyContent:'center',gap:8,marginTop:20}}>
+              {page>0&&(
+                <button onClick={()=>setPage(p=>p-1)}
+                  style={{padding:'8px 16px',background:S.white,border:`1px solid ${S.border}`,borderRadius:8,cursor:'pointer',fontSize:13}}>
+                  ← Anterior
+                </button>
+              )}
+              {services.length===PER_PAGE&&(
+                <button onClick={()=>setPage(p=>p+1)}
+                  style={{padding:'8px 16px',background:S.blue,color:'#fff',border:'none',borderRadius:8,cursor:'pointer',fontWeight:600,fontSize:13}}>
+                  Următor →
+                </button>
+              )}
             </div>
           </>
         )}
