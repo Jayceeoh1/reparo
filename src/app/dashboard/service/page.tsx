@@ -333,7 +333,6 @@ export default function ServiceDashboard() {
   const [relistLoading, setRelistLoading] = useState(false)
   const [relistResult, setRelistResult] = useState(null)
   const [myListings, setMyListings] = useState([])
-  const [listings, setListings] = useState([])
   const [listingsLoading, setListingsLoading] = useState(false)
   const [editingListing, setEditingListing] = useState(null)
   const [promoModal, setPromoModal] = useState<any>(null)
@@ -422,13 +421,12 @@ export default function ServiceDashboard() {
       setService(svc)
       if (svc) {
         setPf(p => ({...p,name:svc.name||'',description:svc.description||'',phone:svc.phone||'',email:svc.email||'',website:svc.website||'',facebook_url:svc.facebook_url||'',address:svc.address||'',city:svc.city||'',county:svc.county||'',postal_code:svc.postal_code||'',brands_accepted:svc.brands_accepted||[],fuel_types:svc.fuel_types||[],is_authorized_rar:svc.is_authorized_rar||false,has_itp:svc.has_itp||false,warranty_months:svc.warranty_months?.toString()||'0',is_multibrand:svc.is_multibrand!==false,is_dismantling:svc.is_dismantling||false}))
-        const [reqs,apts,revs,offs,offrs,lstngs] = await Promise.all([
+        const [reqs,apts,revs,offs,offrs] = await Promise.all([
           supabase.from('quote_requests').select('*').eq('status','activa').order('created_at',{ascending:false}).limit(50),
           supabase.from('appointments').select('*').eq('service_id',svc.id).order('scheduled_date',{ascending:true}),
           supabase.from('reviews').select('*').eq('service_id',svc.id).order('created_at',{ascending:false}),
           supabase.from('offers').select('*').eq('service_id',svc.id).order('created_at',{ascending:false}),
           supabase.from('service_offerings').select('*').eq('service_id',svc.id),
-          supabase.from('listings').select('*').eq('user_id',user.id).eq('status','activ').order('created_at',{ascending:false}),
         ])
         const allReqs = reqs.data||[]
         // Show requests targeted to this service OR from same city
@@ -443,7 +441,6 @@ export default function ServiceDashboard() {
         setReviews(revs.data||[])
         setOffers(offs.data||[])
         setOfferings(offrs.error ? [] : (offrs.data||[]))
-        setListings(lstngs.data||[])
         if (offrs.error) console.warn('service_offerings table missing - run SQL fix:', offrs.error.message)
       }
       // Check existing verification request
@@ -608,8 +605,8 @@ export default function ServiceDashboard() {
       <style>{`
         @keyframes spin{to{transform:rotate(360deg)}}
         .dash-input:focus{border-color:${S.blue}!important;box-shadow:0 0 0 3px rgba(26,86,219,0.1)!important}
-        .tab-btn:hover{background:rgba(255,255,255,0.08)!important;color:#fff!important}
-        .tab-btn.active{background:rgba(26,86,219,0.25)!important;color:#fff!important}
+        .tab-btn:hover{background:#f0f6ff!important;color:#0a1f44!important}
+        .tab-btn.active{background:#eaf3ff!important;color:#1a56db!important}
         .nav-link:hover{color:${S.navy}!important}
         .card-hover:hover{border-color:${S.blueLight}!important;box-shadow:0 4px 20px rgba(26,86,219,0.1)!important}
         .apt-btn:hover{border-color:${S.blue}!important;color:${S.blue}!important}
@@ -699,31 +696,42 @@ export default function ServiceDashboard() {
 
         {/* SIDEBAR — Desktop only */}
         <aside className={`dash-sidebar${mounted && sidebarOpen?' open':''}`}
-          style={{width:220,background:'#0a1f44',display:'flex',flexDirection:'column',flexShrink:0,transition:'transform .25s',overflow:'hidden auto'}}>
+          style={{width:210,background:S.white,borderRight:`1px solid ${S.border}`,display:'flex',flexDirection:'column',flexShrink:0,transition:'transform .25s',overflow:'hidden auto'}}>
+
+          {/* Logo */}
+          <div style={{padding:'14px 16px',borderBottom:`1px solid ${S.border}`,display:'flex',alignItems:'center',gap:8}}>
+            <div style={{width:28,height:28,background:S.navy,borderRadius:7,display:'flex',alignItems:'center',justifyContent:'center',fontWeight:700,fontSize:13,color:'#fff',fontFamily:"'Sora',sans-serif",flexShrink:0}}>S</div>
+            <div>
+              <div style={{fontSize:13,fontWeight:600,color:S.navy,fontFamily:"'Sora',sans-serif",lineHeight:1.2}}>Serviceclub</div>
+              <div style={{fontSize:10,color:S.muted}}>
+                {bizType==='magazin_piese'?'Magazin piese':bizType==='dezmembrari'?'Dezmembrări':bizType==='mixt'?'Cont mixt':'Service auto'}
+              </div>
+            </div>
+          </div>
 
           {/* Service info */}
-          <div style={{padding:'20px 16px 16px',borderBottom:'1px solid rgba(255,255,255,0.08)'}}>
-            <div style={{width:44,height:44,background:'rgba(26,86,219,0.3)',border:'1.5px solid rgba(26,86,219,0.4)',borderRadius:12,display:'flex',alignItems:'center',justifyContent:'center',marginBottom:10}}>
-              <span style={{fontSize:20}}>🔧</span>
+          <div style={{padding:'10px 10px 8px',borderBottom:`1px solid ${S.border}`}}>
+            <div style={{background:S.bg,borderRadius:10,border:`1px solid ${S.border}`,padding:'8px 12px'}}>
+              <div style={{fontSize:12,fontWeight:600,color:S.navy,marginBottom:1}}>{service?.name||'Service'}</div>
+              <div style={{fontSize:11,color:S.muted,marginBottom:6}}>{service?.city||''}</div>
+              <span style={{display:'inline-flex',alignItems:'center',gap:4,padding:'2px 8px',borderRadius:50,background:S.border,fontSize:10,fontWeight:600,color:S.muted}}>
+                {service?.plan==='elite'||service?.plan==='business_elite'?'💎 Elite':
+                 service?.plan==='pro'||service?.plan==='business_pro'?'⭐ Pro':
+                 service?.plan==='starter'||service?.plan==='basic'?'🔵 Starter':'🔓 Free'}
+              </span>
             </div>
-            <div style={{fontSize:10,color:'rgba(255,255,255,0.35)',fontWeight:700,textTransform:'uppercase',letterSpacing:1,marginBottom:4}}>Service</div>
-            <div style={{fontSize:14,fontWeight:700,color:'#fff',fontFamily:"'Sora',sans-serif",marginBottom:2}}>{service?.name||'Service'}</div>
-            <div style={{fontSize:12,color:'rgba(255,255,255,0.45)',marginBottom:10}}>{service?.city||''}</div>
-            <span style={{display:'inline-flex',alignItems:'center',padding:'3px 10px',borderRadius:50,background:'rgba(245,158,11,0.15)',border:'1px solid rgba(245,158,11,0.3)',fontSize:11,fontWeight:700,color:'#f59e0b',fontFamily:"'Sora',sans-serif"}}>
-              {service?.plan==='elite'?'💎 Club Elite':service?.plan==='pro'?'⭐ Club Pro':service?.plan==='starter'||service?.plan==='basic'?'🔵 Club Starter':service?.plan==='business_elite'?'💎 Business Elite':service?.plan==='business_pro'?'⭐ Business Pro':service?.plan==='business'?'🔵 Club Business':'🔓 Free'}
-            </span>
           </div>
 
           {/* Nav */}
-          <nav style={{padding:'10px',flex:1}}>
+          <nav style={{padding:'8px',flex:1,overflowY:'auto'}}>
             {TABS.map((t,i)=>(
               t.divider ? (
                 <div key={`div-${i}`} style={{
-                  padding:'12px 12px 4px',fontSize:10,fontWeight:700,
-                  color:'rgba(255,255,255,0.28)',letterSpacing:1.2,textTransform:'uppercase',
+                  padding:'10px 8px 3px',fontSize:10,fontWeight:700,
+                  color:S.muted,letterSpacing:1,textTransform:'uppercase',
                   fontFamily:"'Sora',sans-serif",
-                  borderTop:i>0?'1px solid rgba(255,255,255,0.07)':'none',
-                  marginTop:i>0?8:0
+                  borderTop:i>0?`1px solid ${S.border}`:'none',
+                  marginTop:i>0?4:0
                 }}>
                   {t.divider}
                 </div>
@@ -732,22 +740,24 @@ export default function ServiceDashboard() {
                   onClick={()=>{setTab(t.name);setSidebarOpen(false)}}
                   className={`tab-btn${tab===t.name?' active':''}`}
                   style={{
-                    width:'100%',display:'flex',alignItems:'center',gap:10,padding:'9px 12px',
-                    borderRadius:10,marginBottom:2,cursor:'pointer',border:'none',textAlign:'left',
-                    background:tab===t.name?'rgba(26,86,219,0.25)':'transparent',
-                    color:tab===t.name?'#fff':'rgba(255,255,255,0.5)',
+                    width:'100%',display:'flex',alignItems:'center',gap:8,padding:'8px 10px',
+                    borderRadius:8,marginBottom:1,cursor:'pointer',border:'none',textAlign:'left',
+                    background:tab===t.name?'#eaf3ff':'transparent',
+                    color:tab===t.name?S.blue:S.muted,
                     fontFamily:"'DM Sans',sans-serif",fontSize:13,fontWeight:tab===t.name?600:400,
-                    borderRight:tab===t.name?`2px solid ${S.blue}`:'2px solid transparent'}}>
-                  <span style={{fontSize:15}}>{t.icon}</span>
+                    transition:'all .1s'}}>
+                  <span style={{fontSize:15,opacity:tab===t.name?1:.7}}>{t.icon}</span>
                   <span style={{flex:1,textAlign:'left'}}>{t.name}</span>
-                  {t.badge&&<span style={{background:tab===t.name?S.blue:'rgba(255,255,255,0.15)',color:'#fff',fontSize:10,fontWeight:700,padding:'1px 6px',borderRadius:50,minWidth:18,textAlign:'center'}}>{t.badge}</span>}
+                  {t.badge&&<span style={{background:tab===t.name?S.blue:S.border,color:tab===t.name?'#fff':S.muted,fontSize:9,fontWeight:700,padding:'1px 5px',borderRadius:50,minWidth:16,textAlign:'center'}}>{t.badge}</span>}
                 </button>
               )
             ))}
           </nav>
 
-          <div style={{padding:'10px',borderTop:'1px solid rgba(255,255,255,0.08)'}}>
-            <a href="/home" style={{display:'flex',alignItems:'center',gap:8,padding:'10px 12px',borderRadius:10,color:'rgba(255,255,255,0.4)',textDecoration:'none',fontSize:13,fontFamily:"'DM Sans',sans-serif"}}>🏠 Înapoi la site</a>
+          <div style={{padding:'8px',borderTop:`1px solid ${S.border}`}}>
+            <a href="/home" style={{display:'flex',alignItems:'center',gap:8,padding:'8px 10px',borderRadius:8,color:S.muted,textDecoration:'none',fontSize:13,fontFamily:"'DM Sans',sans-serif"}}>
+              🏠 <span>Înapoi la site</span>
+            </a>
           </div>
         </aside>
 
@@ -760,45 +770,51 @@ export default function ServiceDashboard() {
 
           {/* ══ ACASĂ ══ */}
           {tab==='Acasă'&&(
-            <div>
-              {/* Hero gradient card */}
-              <div style={{background:'linear-gradient(135deg,#1a56db 0%,#0a1f44 100%)',borderRadius:20,padding:'24px 28px',marginBottom:20,display:'flex',alignItems:'center',justifyContent:'space-between',position:'relative',overflow:'hidden'}}>
-                <div style={{position:'absolute',top:-40,right:-40,width:180,height:180,borderRadius:'50%',background:'rgba(255,255,255,0.04)',pointerEvents:'none'}}/>
-                <div style={{position:'absolute',bottom:-60,right:60,width:240,height:240,borderRadius:'50%',background:'rgba(255,255,255,0.03)',pointerEvents:'none'}}/>
-                <div>
-                  <div style={{fontSize:11,color:'rgba(255,255,255,0.45)',fontWeight:600,textTransform:'uppercase',letterSpacing:1.5,marginBottom:8,fontFamily:"'Sora',sans-serif"}}>
+            <div style={{display:'flex',flexDirection:'column',gap:12}}>
+
+              {/* Hero */}
+              <div style={{background:S.navy,borderRadius:16,padding:'18px 22px',display:'flex',alignItems:'center',justifyContent:'space-between',position:'relative',overflow:'hidden'}}>
+                <svg style={{position:'absolute',inset:0,width:'100%',height:'100%',opacity:.04,pointerEvents:'none'}} xmlns="http://www.w3.org/2000/svg">
+                  <defs><pattern id="dbgrid" width="20" height="20" patternUnits="userSpaceOnUse"><path d="M 20 0 L 0 0 0 20" fill="none" stroke="white" strokeWidth="0.5"/></pattern></defs>
+                  <rect width="100%" height="100%" fill="url(#dbgrid)"/>
+                </svg>
+                <div style={{position:'relative',zIndex:1}}>
+                  <div style={{fontSize:10,color:'rgba(255,255,255,.4)',fontWeight:600,textTransform:'uppercase',letterSpacing:1.2,marginBottom:6}}>
                     {new Date().toLocaleDateString('ro-RO',{weekday:'long',day:'numeric',month:'long',year:'numeric'})}
                   </div>
-                  <h1 style={{fontFamily:"'Sora',sans-serif",fontWeight:800,fontSize:22,color:'#fff',marginBottom:6}}>Bună ziua, {service?.name}! 👋</h1>
-                  <p style={{color:'rgba(255,255,255,0.55)',fontSize:13}}>
-                    {requests.length > 0 ? `Ai ${requests.length} cereri noi care te așteaptă.` : 'Profilul tău este activ și vizibil în căutări.'}
+                  <h1 style={{fontFamily:"'Sora',sans-serif",fontWeight:700,fontSize:18,color:'#fff',margin:'0 0 4px'}}>Bună ziua, {service?.name}! 👋</h1>
+                  <p style={{color:'rgba(255,255,255,.5)',fontSize:12,margin:0}}>
+                    {requests.length>0?`Ai ${requests.length} cereri noi care te așteaptă.`:'Profilul tău este activ și vizibil în căutări.'}
                   </p>
                 </div>
-                <div style={{display:'flex',gap:10,flexShrink:0}}>
+                <div style={{display:'flex',gap:8,flexShrink:0,position:'relative',zIndex:1}}>
                   <button onClick={()=>setTab('Cereri')}
-                    style={{background:'rgba(255,255,255,0.15)',color:'#fff',border:'1px solid rgba(255,255,255,0.2)',borderRadius:50,padding:'9px 18px',fontSize:13,fontWeight:600,cursor:'pointer',fontFamily:"'DM Sans',sans-serif",backdropFilter:'blur(4px)'}}>
+                    style={{padding:'7px 14px',background:'rgba(255,255,255,.1)',border:'0.5px solid rgba(255,255,255,.2)',borderRadius:20,fontSize:12,color:'#fff',cursor:'pointer',fontFamily:"'DM Sans',sans-serif"}}>
                     📋 Cereri noi
                   </button>
                   <button onClick={()=>setTab('Profil public')}
-                    style={{background:S.yellow,color:'#fff',border:'none',borderRadius:50,padding:'9px 18px',fontSize:13,fontWeight:700,cursor:'pointer',fontFamily:"'Sora',sans-serif",boxShadow:'0 4px 16px rgba(245,158,11,0.35)'}}>
-                    ✦ Promovare
+                    style={{padding:'7px 14px',background:S.yellow,border:'none',borderRadius:20,fontSize:12,fontWeight:600,color:'#fff',cursor:'pointer',fontFamily:"'Sora',sans-serif"}}>
+                    🚀 Promovare
                   </button>
                 </div>
               </div>
 
+              {/* Warning profil incomplet */}
               {(!pf.description||!pf.phone||!pf.address)&&(
-                <div style={{background:S.amberBg,border:`1px solid ${S.amber}40`,borderRadius:14,padding:16,marginBottom:20,display:'flex',alignItems:'center',gap:12}}>
-                  <span style={{fontSize:24}}>⚠️</span>
-                  <div style={{flex:1}}>
-                    <div style={{fontWeight:700,color:S.amber,fontSize:14,fontFamily:"'Sora',sans-serif",marginBottom:3}}>Profilul tău e incomplet</div>
-                    <div style={{color:S.amber,fontSize:13,opacity:.8}}>Adaugă descriere, telefon și adresă pentru a apărea în căutări.</div>
+                <div style={{background:S.amberBg,border:`0.5px solid ${S.amber}60`,borderRadius:10,padding:'10px 14px',display:'flex',alignItems:'center',gap:10}}>
+                  <span style={{fontSize:16,flexShrink:0}}>⚠️</span>
+                  <div style={{flex:1,fontSize:12,color:S.amber}}>
+                    <strong>Profilul tău e incomplet</strong> — adaugă descriere, telefon și adresă pentru a apărea în căutări.
                   </div>
-                  <button onClick={()=>setTab('Profil public')} style={{...btn('primary'),background:S.amber,boxShadow:'none',flexShrink:0}}>Completează →</button>
+                  <button onClick={()=>setTab('Profil public')}
+                    style={{padding:'6px 12px',background:S.amber,border:'none',borderRadius:20,fontSize:11,fontWeight:600,color:'#fff',cursor:'pointer',flexShrink:0,fontFamily:"'Sora',sans-serif"}}>
+                    Completează
+                  </button>
                 </div>
               )}
 
-              {/* Stats */}
-              <div className="dash-stats" style={{display:'grid',gridTemplateColumns:'repeat(4,1fr)',gap:12,marginBottom:20}}>
+              {/* Stats 4 col */}
+              <div className="dash-stats" style={{display:'grid',gridTemplateColumns:'repeat(4,1fr)',gap:10}}>
                 {[
                   {label:'Cereri noi',value:requests.length,icon:'📋',accent:S.blue,accentBg:'#eaf3ff',tab:'Cereri'},
                   {label:'Programări azi',value:appointments.filter(a=>a.scheduled_date===today).length,icon:'📅',accent:S.green,accentBg:S.greenBg,tab:'Programări'},
@@ -806,55 +822,80 @@ export default function ServiceDashboard() {
                   {label:'Rating',value:service?.rating_avg>0?service.rating_avg.toFixed(1):null,icon:'⭐',accent:S.amber,accentBg:S.amberBg,tab:'Recenzii'},
                 ].map(s=>(
                   <button key={s.label} onClick={()=>setTab(s.tab)}
-                    style={{background:S.white,borderRadius:16,padding:'16px',border:`1px solid ${S.border}`,cursor:'pointer',textAlign:'left',transition:'all .15s',boxShadow:'0 2px 8px rgba(10,31,68,0.04)'}}
-                    onMouseEnter={e=>{e.currentTarget.style.borderColor=s.accent;e.currentTarget.style.transform='translateY(-2px)';e.currentTarget.style.boxShadow=`0 4px 16px rgba(10,31,68,0.1)`}}
-                    onMouseLeave={e=>{e.currentTarget.style.borderColor=S.border;e.currentTarget.style.transform='none';e.currentTarget.style.boxShadow='0 2px 8px rgba(10,31,68,0.04)'}}>
-                    <div style={{width:36,height:36,background:s.accentBg,borderRadius:10,display:'flex',alignItems:'center',justifyContent:'center',fontSize:17,marginBottom:12}}>{s.icon}</div>
-                    <div style={{fontFamily:"'Sora',sans-serif",fontWeight:800,fontSize:26,color:s.value!==null&&s.value!==undefined?s.accent:'#d97706',marginBottom:2}}>
+                    style={{background:S.white,borderRadius:12,padding:'14px',border:`0.5px solid ${S.border}`,cursor:'pointer',textAlign:'left',transition:'all .12s'}}
+                    onMouseEnter={e=>{e.currentTarget.style.borderColor=s.accent;e.currentTarget.style.transform='translateY(-1px)'}}
+                    onMouseLeave={e=>{e.currentTarget.style.borderColor=S.border;e.currentTarget.style.transform='none'}}>
+                    <div style={{width:32,height:32,background:s.accentBg,borderRadius:8,display:'flex',alignItems:'center',justifyContent:'center',fontSize:15,marginBottom:10}}>{s.icon}</div>
+                    <div style={{fontFamily:"'Sora',sans-serif",fontWeight:700,fontSize:22,color:s.value!==null&&s.value!==undefined?s.accent:S.amber,marginBottom:2}}>
                       {s.value!==null&&s.value!==undefined?s.value:'Nou'}
                     </div>
-                    <div style={{fontSize:11,color:S.muted,textTransform:'uppercase',letterSpacing:0.5}}>{s.label}</div>
+                    <div style={{fontSize:11,color:S.muted,textTransform:'uppercase',letterSpacing:.5}}>{s.label}</div>
                   </button>
                 ))}
               </div>
 
-              {/* Cereri recente */}
-              <div style={card({marginBottom:16})}>
-                <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:14}}>
-                  <h2 style={{fontFamily:"'Sora',sans-serif",fontWeight:700,fontSize:15,color:S.navy}}>Cereri noi în {service?.city}</h2>
-                  <button onClick={()=>setTab('Cereri')} style={{...btn('ghost'),padding:'6px 12px',fontSize:12}}>Vezi toate →</button>
-                </div>
-                {requests.length===0?<div style={{textAlign:'center',padding:'20px 0',color:S.muted,fontSize:14}}>Nicio cerere activă momentan.</div>:
-                  requests.slice(0,3).map(r=>(
-                    <div key={r.id} style={{display:'flex',alignItems:'center',justifyContent:'space-between',padding:'12px',background:S.bg,borderRadius:12,marginBottom:8}}>
-                      <div>
-                        <div style={{fontWeight:600,fontSize:14,color:S.navy,marginBottom:2}}>{r.car_brand} {r.car_model} {r.car_year?`· ${r.car_year}`:''}</div>
-                        <div style={{fontSize:12,color:S.muted}}>{r.services?.join(', ')}</div>
+              {/* Cereri + Programari - 2 col */}
+              <div className="dash-grid-2" style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:10}}>
+
+                <div style={card({padding:14})}>
+                  <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:12}}>
+                    <span style={{fontSize:13,fontWeight:600,color:S.navy,fontFamily:"'Sora',sans-serif"}}>Cereri noi în {service?.city}</span>
+                    <button onClick={()=>setTab('Cereri')} style={{fontSize:11,color:S.blue,background:'none',border:'none',cursor:'pointer',padding:0}}>Vezi toate →</button>
+                  </div>
+                  {requests.length===0
+                    ?<div style={{textAlign:'center',padding:'20px 0',color:S.muted,fontSize:12}}>Nicio cerere activă momentan.</div>
+                    :requests.slice(0,3).map(r=>(
+                      <div key={r.id} style={{display:'flex',alignItems:'center',justifyContent:'space-between',padding:'9px 10px',background:S.bg,borderRadius:8,marginBottom:6}}>
+                        <div>
+                          <div style={{fontSize:12,fontWeight:600,color:S.navy,marginBottom:1}}>{r.car_brand} {r.car_model}{r.car_year?` · ${r.car_year}`:''}</div>
+                          <div style={{fontSize:11,color:S.muted}}>{r.services?.slice(0,2).join(', ')}</div>
+                        </div>
+                        <button onClick={()=>{setSelectedReq(r);setTab('Cereri')}}
+                          style={{padding:'5px 10px',background:S.blue,border:'none',borderRadius:20,fontSize:11,color:'#fff',cursor:'pointer',flexShrink:0,fontFamily:"'DM Sans',sans-serif"}}>
+                          Trimite ofertă
+                        </button>
                       </div>
-                      <button onClick={()=>{setSelectedReq(r);setTab('Cereri')}} style={{...btn('primary'),padding:'7px 14px',fontSize:12}}>Trimite ofertă</button>
-                    </div>
-                  ))
-                }
+                    ))
+                  }
+                </div>
+
+                <div style={card({padding:14})}>
+                  <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:12}}>
+                    <span style={{fontSize:13,fontWeight:600,color:S.navy,fontFamily:"'Sora',sans-serif"}}>Programări azi</span>
+                    <button onClick={()=>setTab('Programări')} style={{fontSize:11,color:S.blue,background:'none',border:'none',cursor:'pointer',padding:0}}>Calendar →</button>
+                  </div>
+                  {appointments.filter(a=>a.scheduled_date===today).length===0
+                    ?<div style={{textAlign:'center',padding:'20px 0',color:S.muted,fontSize:12}}>Nicio programare astăzi.</div>
+                    :appointments.filter(a=>a.scheduled_date===today).map(a=>(
+                      <div key={a.id} style={{display:'flex',alignItems:'center',justifyContent:'space-between',padding:'9px 10px',background:S.bg,borderRadius:8,marginBottom:6}}>
+                        <div>
+                          <div style={{fontSize:13,fontWeight:600,color:S.navy}}>{a.scheduled_time}</div>
+                          <div style={{fontSize:11,color:S.muted}}>{a.notes||'Programare'}</div>
+                        </div>
+                        <span style={pill((APT_STATUS[aptStatuses[a.id]||a.status]||APT_STATUS.in_asteptare).bg,(APT_STATUS[aptStatuses[a.id]||a.status]||APT_STATUS.in_asteptare).color,'')}>
+                          {(APT_STATUS[aptStatuses[a.id]||a.status]||APT_STATUS.in_asteptare).label}
+                        </span>
+                      </div>
+                    ))
+                  }
+                </div>
               </div>
 
-              {/* Programari azi */}
-              <div style={card()}>
-                <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:14}}>
-                  <h2 style={{fontFamily:"'Sora',sans-serif",fontWeight:700,fontSize:15,color:S.navy}}>Programări azi</h2>
-                  <button onClick={()=>setTab('Programări')} style={{...btn('ghost'),padding:'6px 12px',fontSize:12}}>Calendar →</button>
+              {/* Upgrade card */}
+              {(!service?.plan||service?.plan==='free')&&(
+                <div style={{background:S.white,border:`0.5px solid ${S.border}`,borderRadius:12,padding:'12px 16px',display:'flex',alignItems:'center',gap:12}}>
+                  <div style={{width:36,height:36,background:S.amberBg,borderRadius:8,display:'flex',alignItems:'center',justifyContent:'center',fontSize:18,flexShrink:0}}>🚀</div>
+                  <div style={{flex:1}}>
+                    <div style={{fontSize:13,fontWeight:600,color:S.navy,marginBottom:2,fontFamily:"'Sora',sans-serif"}}>Fă upgrade la Club Pro — 99 RON/lună</div>
+                    <div style={{fontSize:11,color:S.muted}}>Apari primul în căutări, oferte nelimitate, analytics avansat.</div>
+                  </div>
+                  <button onClick={()=>setTab('Setări')}
+                    style={{padding:'7px 14px',background:S.yellow,border:'none',borderRadius:20,fontSize:11,fontWeight:600,color:'#fff',cursor:'pointer',flexShrink:0,fontFamily:"'Sora',sans-serif"}}>
+                    Vezi planuri →
+                  </button>
                 </div>
-                {appointments.filter(a=>a.scheduled_date===today).length===0?<div style={{textAlign:'center',padding:'20px 0',color:S.muted,fontSize:14}}>Nicio programare astăzi.</div>:
-                  appointments.filter(a=>a.scheduled_date===today).map(a=>(
-                    <div key={a.id} style={{display:'flex',alignItems:'center',justifyContent:'space-between',padding:12,background:S.bg,borderRadius:12,marginBottom:8}}>
-                      <div>
-                        <div style={{fontWeight:600,fontSize:14,color:S.navy}}>{a.scheduled_time}</div>
-                        <div style={{fontSize:12,color:S.muted}}>{a.notes||'Programare'}</div>
-                      </div>
-                      <span style={pill((APT_STATUS[aptStatuses[a.id]||a.status]||APT_STATUS.in_asteptare).bg,(APT_STATUS[aptStatuses[a.id]||a.status]||APT_STATUS.in_asteptare).color,'')}>{(APT_STATUS[aptStatuses[a.id]||a.status]||APT_STATUS.in_asteptare).label}</span>
-                    </div>
-                  ))
-                }
-              </div>
+              )}
+
             </div>
           )}
 
