@@ -333,6 +333,7 @@ export default function ServiceDashboard() {
   const [relistLoading, setRelistLoading] = useState(false)
   const [relistResult, setRelistResult] = useState(null)
   const [myListings, setMyListings] = useState([])
+  const [listings, setListings] = useState([])
   const [listingsLoading, setListingsLoading] = useState(false)
   const [editingListing, setEditingListing] = useState(null)
   const [promoModal, setPromoModal] = useState<any>(null)
@@ -421,12 +422,13 @@ export default function ServiceDashboard() {
       setService(svc)
       if (svc) {
         setPf(p => ({...p,name:svc.name||'',description:svc.description||'',phone:svc.phone||'',email:svc.email||'',website:svc.website||'',facebook_url:svc.facebook_url||'',address:svc.address||'',city:svc.city||'',county:svc.county||'',postal_code:svc.postal_code||'',brands_accepted:svc.brands_accepted||[],fuel_types:svc.fuel_types||[],is_authorized_rar:svc.is_authorized_rar||false,has_itp:svc.has_itp||false,warranty_months:svc.warranty_months?.toString()||'0',is_multibrand:svc.is_multibrand!==false,is_dismantling:svc.is_dismantling||false}))
-        const [reqs,apts,revs,offs,offrs] = await Promise.all([
+        const [reqs,apts,revs,offs,offrs,lstngs] = await Promise.all([
           supabase.from('quote_requests').select('*').eq('status','activa').order('created_at',{ascending:false}).limit(50),
           supabase.from('appointments').select('*').eq('service_id',svc.id).order('scheduled_date',{ascending:true}),
           supabase.from('reviews').select('*').eq('service_id',svc.id).order('created_at',{ascending:false}),
           supabase.from('offers').select('*').eq('service_id',svc.id).order('created_at',{ascending:false}),
           supabase.from('service_offerings').select('*').eq('service_id',svc.id),
+          supabase.from('listings').select('*').eq('user_id',user.id).order('created_at',{ascending:false}),
         ])
         const allReqs = reqs.data||[]
         // Show requests targeted to this service OR from same city
@@ -441,6 +443,7 @@ export default function ServiceDashboard() {
         setReviews(revs.data||[])
         setOffers(offs.data||[])
         setOfferings(offrs.error ? [] : (offrs.data||[]))
+        setListings(lstngs.data||[])
         if (offrs.error) console.warn('service_offerings table missing - run SQL fix:', offrs.error.message)
       }
       // Check existing verification request
