@@ -1,8 +1,8 @@
 // @ts-nocheck
 import { NextResponse } from 'next/server'
 
-// IMPORTANT: bodyParser trebuie dezactivat pentru verificarea semnăturii Stripe
-export const config = { api: { bodyParser: false } }
+// IMPORTANT: bodyParser dezactivat — necesar pentru verificarea semnăturii Stripe
+export const runtime = 'nodejs'
 
 // Map price ID → plan name
 const PRICE_TO_PLAN: Record<string, string> = {
