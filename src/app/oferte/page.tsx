@@ -200,6 +200,7 @@ export default function OfertePage() {
   const [selectedReq, setSelectedReq] = useState(null)
   const [loading, setLoading] = useState(true)
   const [accepting, setAccepting] = useState(null)
+  const [cancelling, setCancelling] = useState(null)
   const [viewMode, setViewMode] = useState('list')
   const supabase = createClient()
 
@@ -252,6 +253,16 @@ export default function OfertePage() {
     setAccepting(null)
   }
 
+  async function cancelRequest(requestId) {
+    if (!confirm('Sigur anulezi această cerere? Service-urile nu vor mai putea trimite oferte.')) return
+    setCancelling(requestId)
+    const { error } = await supabase.from('quote_requests').update({status:'anulata'}).eq('id',requestId)
+    if (!error) {
+      setRequests(prev=>prev.map(r=>r.id===requestId?{...r,status:'anulata'}:r))
+    }
+    setCancelling(null)
+  }
+
   if (loading) return <div style={{minHeight:'60vh',display:'flex',alignItems:'center',justifyContent:'center'}}><div style={{width:36,height:36,border:`3px solid ${S.blue}`,borderTopColor:'transparent',borderRadius:'50%',animation:'spin 1s linear infinite'}}/><style>{`@keyframes spin{to{transform:rotate(360deg)}}`}</style></div>
 
   const currentOffers = selectedReq ? (offers[selectedReq]||[]) : []
@@ -296,8 +307,11 @@ export default function OfertePage() {
                     <div style={{fontFamily:"'Sora',sans-serif",fontWeight:700,fontSize:13,color:S.navy,marginBottom:3}}>{r.car_brand} {r.car_model} {r.car_year?`(${r.car_year})`:''}</div>
                     <div style={{fontSize:11,color:S.muted,marginBottom:8}}>{r.services?.slice(0,2).join(', ')}{(r.services?.length||0)>2?'...':''}</div>
                     <div style={{display:'flex',alignItems:'center',justifyContent:'space-between'}}>
-                      <span style={pill(r.status==='activa'?'#eaf3ff':r.status==='in_progres'?S.greenBg:S.bg,r.status==='activa'?S.blue:r.status==='in_progres'?S.green:S.muted)}>
-                        {r.status==='activa'?'Activă':r.status==='in_progres'?'În progres':r.status}
+                      <span style={pill(
+                        r.status==='activa'?'#eaf3ff':r.status==='in_progres'?S.greenBg:r.status==='anulata'?S.redBg:S.bg,
+                        r.status==='activa'?S.blue:r.status==='in_progres'?S.green:r.status==='anulata'?'#dc2626':S.muted
+                      )}>
+                        {r.status==='activa'?'Activă':r.status==='in_progres'?'În progres':r.status==='anulata'?'Anulată':r.status}
                       </span>
                       <span style={{fontSize:11,color:S.muted}}>{(offers[r.id]||[]).length} oferte</span>
                     </div>
@@ -322,6 +336,12 @@ export default function OfertePage() {
                             boxShadow:viewMode===m?'0 1px 4px rgba(10,31,68,0.1)':'none',transition:'all .15s'}}>{l}</button>
                       ))}
                     </div>
+                  )}
+                  {(currentReq.status==='activa'||currentReq.status==='in_progres')&&(
+                    <button onClick={()=>cancelRequest(currentReq.id)} disabled={cancelling===currentReq.id}
+                      style={{padding:'7px 14px',borderRadius:50,fontSize:12,fontWeight:600,cursor:'pointer',border:`1.5px solid ${S.redBg}`,background:S.white,color:'#dc2626',fontFamily:"'DM Sans',sans-serif",opacity:cancelling===currentReq.id?.6:1,flexShrink:0}}>
+                      {cancelling===currentReq.id?'Se anulează...':'✕ Anulează cererea'}
+                    </button>
                   )}
                 </div>
               )}
