@@ -257,9 +257,12 @@ export default function OfertePage() {
     if (!confirm('Sigur anulezi această cerere? Service-urile nu vor mai putea trimite oferte.')) return
     setCancelling(requestId)
     const { error } = await supabase.from('quote_requests').update({status:'anulata'}).eq('id',requestId)
-    if (!error) {
-      setRequests(prev=>prev.map(r=>r.id===requestId?{...r,status:'anulata'}:r))
+    if (error) {
+      alert('Nu am putut anula cererea: ' + error.message + '\n\nRulează SQL-ul din quote_requests_cancel_fix.sql în Supabase.')
+      setCancelling(null)
+      return
     }
+    setRequests(prev=>prev.map(r=>r.id===requestId?{...r,status:'anulata'}:r))
     setCancelling(null)
   }
 
