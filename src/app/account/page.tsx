@@ -284,7 +284,18 @@ export default function AccountPage() {
                     </div>
                     <div style={{display:'flex',gap:8}}>
                       {!car.is_default&&<button onClick={()=>setDefaultCar(car.id)} style={{...btn(false),flex:1,justifyContent:'center',fontSize:12,padding:'7px 10px'}}>Setează principală</button>}
-                      <button onClick={()=>{window.location.href='/home'}} style={{...btn(true),flex:1,justifyContent:'center',fontSize:12,padding:'7px 10px',background:S.yellow,boxShadow:'0 2px 8px rgba(245,158,11,0.2)'}}>Cere ofertă</button>
+                      <button onClick={()=>{
+                        const params = new URLSearchParams({
+                          quote: '1',
+                          car_brand: car.brand || '',
+                          car_model: car.model || '',
+                          car_year: car.year ? String(car.year) : '',
+                          car_fuel: car.fuel_type || '',
+                          car_km: car.current_km ? String(car.current_km) : '',
+                          car_plate: car.plate_number || '',
+                        })
+                        window.location.href = `/home?${params.toString()}`
+                      }} style={{...btn(true),flex:1,justifyContent:'center',fontSize:12,padding:'7px 10px',background:S.yellow,boxShadow:'0 2px 8px rgba(245,158,11,0.2)'}}>Cere ofertă</button>
                       <button onClick={()=>deleteCar(car.id)} style={{padding:'7px 10px',borderRadius:50,border:`1.5px solid ${S.redBg}`,background:S.white,color:'#fca5a5',cursor:'pointer',fontSize:13}}>🗑️</button>
                     </div>
                   </div>

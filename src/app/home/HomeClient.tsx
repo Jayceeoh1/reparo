@@ -74,6 +74,26 @@ export default function HomeClient() {
 
     const handler = (e: any) => { setModalOpen(true); setModalStep(0); setSubmitDone(false) }
     window.addEventListener('open-quote-modal', handler)
+
+    // Deschide modalul pre-completat dacă vii de pe /account cu o mașină selectată
+    const params = new URLSearchParams(window.location.search)
+    if (params.get('quote') === '1') {
+      setForm(f => ({
+        ...f,
+        car_brand: params.get('car_brand') || f.car_brand,
+        car_model: params.get('car_model') || f.car_model,
+        car_year: params.get('car_year') || f.car_year,
+        car_fuel: params.get('car_fuel') || f.car_fuel,
+        car_km: params.get('car_km') || f.car_km,
+        car_plate: params.get('car_plate') || f.car_plate,
+      }))
+      setModalOpen(true)
+      setModalStep(0)
+      setSubmitDone(false)
+      // Curăță URL-ul ca să nu rămână parametrii la refresh
+      window.history.replaceState({}, '', '/home')
+    }
+
     return () => window.removeEventListener('open-quote-modal', handler)
   }, [])
 
