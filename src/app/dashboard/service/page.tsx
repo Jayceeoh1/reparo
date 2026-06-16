@@ -662,6 +662,13 @@ export default function ServiceDashboard() {
           .biz-type-banner{display:flex!important}
         }
         .biz-type-banner{display:none}
+        .anunt-tools-grid{grid-template-columns:1fr!important}
+        @media(min-width:640px){.anunt-tools-grid{grid-template-columns:repeat(auto-fit,minmax(260px,1fr))!important}}
+        @media(max-width:480px){
+          .anunt-tools-grid .card,.anunt-tools-grid>div{border-radius:10px!important}
+          .listing-actions{flex-wrap:wrap!important}
+          .listing-actions button,.listing-actions a{font-size:11px!important;padding:5px 8px!important}
+        }
       `}</style>
 
       {/* TOP BAR */}
@@ -1560,7 +1567,10 @@ export default function ServiceDashboard() {
                   <div style={{fontSize:12}}>Vei fi notificat când apar cereri noi.</div>
                 </div>
                 :<>{requests.map(r=>(
-                  <button key={r.id} onClick={()=>setSelectedReq(r)} className="card-hover"
+                  <button key={r.id} onClick={()=>{
+                    setSelectedReq(r)
+                    supabase.from('request_events').insert({request_id:r.id,service_id:service?.id,event_type:'request_viewed_by_service'}).then(()=>{})
+                  }} className="card-hover"
                     style={{...card({padding:14,marginBottom:8}),width:'100%',textAlign:'left',cursor:'pointer',border:`1.5px solid ${selectedReq?.id===r.id?S.blue:S.border}`,background:selectedReq?.id===r.id?'#eaf3ff':S.white}}>
                     <div style={{display:'flex',justifyContent:'space-between',marginBottom:8}}>
                       <div>
@@ -1833,20 +1843,20 @@ export default function ServiceDashboard() {
           {/* ══ ANUNTURI ══ */}
           {tab==='Anunțuri'&&(
             <div>
-              <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:20,flexWrap:'wrap',gap:10}}>
+              <div className="dash-content-header" style={{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:16,flexWrap:'wrap',gap:10}}>
                 <div>
-                  <h1 style={{fontFamily:"'Sora',sans-serif",fontWeight:800,fontSize:22,color:S.navy,marginBottom:4}}>Anunțurile mele</h1>
-                  <p style={{color:S.muted,fontSize:13}}>Piese, accesorii sau alte produse auto pe care le vinzi.</p>
+                  <h1 style={{fontFamily:"'Sora',sans-serif",fontWeight:700,fontSize:20,color:S.navy,marginBottom:2}}>Anunțurile mele</h1>
+                  <p style={{color:S.muted,fontSize:12,margin:0}}>Piese, accesorii sau alte produse auto pe care le vinzi.</p>
                 </div>
-                <a href={canAddListing(service?.plan||'free', listings?.length||0)?'/listing/create':'#'} onClick={e=>{if(!canAddListing(service?.plan||'free',listings?.length||0)){e.preventDefault();alert(`Ai atins limita de ${planLimits.maxListings} anunțuri pentru planul tău. Upgrade pentru mai multe.`)}}} style={{display:'inline-flex',alignItems:'center',gap:8,padding:'10px 20px',background:S.yellow,color:'#fff',borderRadius:50,textDecoration:'none',fontSize:13,fontWeight:700,fontFamily:"'Sora',sans-serif",boxShadow:'0 4px 16px rgba(245,158,11,0.3)'}}>
+                <a href={canAddListing(service?.plan||'free', listings?.length||0)?'/listing/create':'#'} onClick={e=>{if(!canAddListing(service?.plan||'free',listings?.length||0)){e.preventDefault();alert(`Ai atins limita de ${planLimits.maxListings} anunțuri pentru planul tău. Upgrade pentru mai multe.`)}}} style={{display:'inline-flex',alignItems:'center',gap:6,padding:'9px 18px',background:S.yellow,color:'#fff',borderRadius:50,textDecoration:'none',fontSize:13,fontWeight:700,fontFamily:"'Sora',sans-serif"}}>
                   + Adaugă anunț
                 </a>
               </div>
 
-              <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fit,minmax(280px,1fr))',gap:14,marginBottom:20}}>
+              <div className="anunt-tools-grid" style={{display:'grid',gridTemplateColumns:'repeat(auto-fit,minmax(280px,1fr))',gap:12,marginBottom:16}}>
 
                 {/* Generator dezmembrari — COMING SOON */}
-                <div style={{position:'relative',borderRadius:16,overflow:'hidden'}}>
+                <div style={{position:'relative',borderRadius:12,overflow:'hidden'}}>
                   <div style={{filter:'blur(3px)',pointerEvents:'none',userSelect:'none',opacity:0.6}}>
                 <div style={card()}>
                   <div style={{display:'flex',alignItems:'center',gap:10,marginBottom:12}}>
@@ -2049,13 +2059,13 @@ export default function ServiceDashboard() {
               </div>
 
               <a href="/anunturile-mele"
-                style={{display:'flex',alignItems:'center',gap:16,padding:20,background:S.white,borderRadius:16,border:`1.5px solid ${S.border}`,textDecoration:'none',transition:'border-color .2s'}}
+                style={{display:'flex',alignItems:'center',gap:12,padding:'14px 16px',background:S.white,borderRadius:12,border:`1px solid ${S.border}`,textDecoration:'none',marginBottom:12}}
                 onMouseEnter={e=>e.currentTarget.style.borderColor=S.blue}
                 onMouseLeave={e=>e.currentTarget.style.borderColor=S.border}>
-                <div style={{width:52,height:52,background:'#eaf3ff',borderRadius:14,display:'flex',alignItems:'center',justifyContent:'center',fontSize:26}}>📋</div>
-                <div style={{flex:1}}>
-                  <div style={{fontFamily:"'Sora',sans-serif",fontWeight:700,fontSize:15,color:S.navy,marginBottom:4}}>Gestionează toate anunțurile</div>
-                  <div style={{fontSize:13,color:S.muted}}>Editează prețuri, activează/dezactivează, șterge.</div>
+                <div style={{width:40,height:40,background:'#eaf3ff',borderRadius:10,display:'flex',alignItems:'center',justifyContent:'center',fontSize:20,flexShrink:0}}>📋</div>
+                <div style={{flex:1,minWidth:0}}>
+                  <div style={{fontFamily:"'Sora',sans-serif",fontWeight:600,fontSize:14,color:S.navy,marginBottom:2}}>Gestionează toate anunțurile</div>
+                  <div style={{fontSize:12,color:S.muted}}>Editează prețuri, activează/dezactivează, șterge.</div>
                 </div>
                 <div style={{color:S.blue,fontSize:20,fontWeight:300}}>→</div>
               </a>
@@ -2073,23 +2083,24 @@ export default function ServiceDashboard() {
                 ):(
                   <div style={{display:'flex',flexDirection:'column',gap:8}}>
                     {myListings.map(l=>(
-                      <div key={l.id} style={{background:S.white,border:`1px solid ${l.status==='activ'?S.border:'#fca5a5'}`,borderRadius:12,padding:'12px 16px',display:'flex',alignItems:'center',gap:12,flexWrap:'wrap'}}>
-                        {/* Status indicator */}
-                        <div style={{width:8,height:8,borderRadius:'50%',background:l.status==='activ'?S.green:'#f87171',flexShrink:0}}/>
-                        {/* Info */}
-                        <div style={{flex:1,minWidth:200}}>
-                          <div style={{fontWeight:600,fontSize:14,color:S.navy,marginBottom:2}}>{l.title}</div>
-                          <div style={{display:'flex',gap:8,flexWrap:'wrap'}}>
-                            <span style={{fontSize:11,color:S.muted}}>{l.category}</span>
-                            <span style={{fontSize:11,color:S.muted}}>·</span>
-                            <span style={{fontSize:11,color:S.muted}}>{l.city}</span>
-                            <span style={{fontSize:11,color:S.muted}}>·</span>
-                            <span style={{fontSize:11,color:l.status==='activ'?S.green:'#ef4444',fontWeight:600}}>{l.status==='activ'?'Activ':'Inactiv'}</span>
-                            {l.is_promoted&&<span style={{fontSize:11,color:S.yellow,fontWeight:600}}>⭐ Promovat</span>}
+                      <div key={l.id} style={{background:S.white,border:`1px solid ${l.status==='activ'?S.border:'#fca5a5'}`,borderRadius:12,padding:'12px 14px'}}>
+                        {/* Row 1: title + status dot */}
+                        <div style={{display:'flex',alignItems:'flex-start',gap:8,marginBottom:8}}>
+                          <div style={{width:8,height:8,borderRadius:'50%',background:l.status==='activ'?S.green:'#f87171',flexShrink:0,marginTop:5}}/>
+                          <div style={{flex:1,minWidth:0}}>
+                            <div style={{fontWeight:600,fontSize:13,color:S.navy,marginBottom:4,lineHeight:1.3,wordBreak:'break-word'}}>{l.title}</div>
+                            <div style={{display:'flex',gap:6,flexWrap:'wrap',alignItems:'center'}}>
+                              <span style={{fontSize:11,color:S.muted}}>{l.category}</span>
+                              <span style={{fontSize:11,color:S.muted}}>·</span>
+                              <span style={{fontSize:11,color:S.muted}}>{l.city}</span>
+                              <span style={{fontSize:11,color:l.status==='activ'?S.green:'#ef4444',fontWeight:600}}>{l.status==='activ'?'Activ':'Inactiv'}</span>
+                              {l.is_promoted&&<span style={{fontSize:11,color:S.yellow,fontWeight:600}}>⭐ Promovat</span>}
+                            </div>
                           </div>
                         </div>
-                        {/* Pret */}
-                        <div style={{flexShrink:0}}>
+                        {/* Row 2: price + actions */}
+                        <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',flexWrap:'wrap',gap:8,paddingTop:8,borderTop:`1px solid ${S.border}`}}>
+                        <div style={{flex:1,minWidth:0}}>
                           {editingListing===l.id?(
                             <div style={{display:'flex',gap:6,alignItems:'center'}}>
                               <input type="number" defaultValue={l.price||0} id={`price-${l.id}`}
@@ -2128,6 +2139,7 @@ export default function ServiceDashboard() {
                             🗑️
                           </button>
                         </div>
+                        </div>{/* end Row 2 */}
                       </div>
                     ))}
                   </div>

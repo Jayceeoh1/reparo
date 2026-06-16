@@ -147,6 +147,12 @@ function OfferCard({ o, onAccept, accepting }) {
   const svc = o.services
   const isAccepted = o.status === 'acceptata'
   const isRefused = o.status === 'refuzata'
+  const supabase = createClient()
+
+  useEffect(() => {
+    supabase.from('request_events').insert({request_id:o.request_id,offer_id:o.id,service_id:svc?.id,event_type:'offer_viewed_by_client'}).then(()=>{})
+  }, [o.id])
+
   return (
     <div style={{...card(),border:`1.5px solid ${isAccepted?S.green:S.border}`,opacity:isRefused?.65:1}}>
       <div style={{display:'flex',alignItems:'flex-start',justifyContent:'space-between',marginBottom:14}}>
@@ -186,7 +192,7 @@ function OfferCard({ o, onAccept, accepting }) {
             style={{...btn('yellow'),flex:1,justifyContent:'center',padding:'12px',fontSize:14,opacity:accepting===o.id?.6:1}}>
             {accepting===o.id?'Se procesează...':'✅ Acceptă oferta & Programează'}
           </button>
-          {svc?.phone&&<a href={`tel:${svc.phone}`} style={{...btn(),textDecoration:'none',flexShrink:0}}>📞 Sună</a>}
+          {svc?.phone&&<a href={`tel:${svc.phone}`} onClick={()=>{supabase.from('request_events').insert({request_id:o.request_id,offer_id:o.id,service_id:svc?.id,event_type:'offer_clicked'}).then(()=>{})}} style={{...btn(),textDecoration:'none',flexShrink:0}}>📞 Sună</a>}
         </div>
       )}
       {isAccepted&&<div style={{background:S.greenBg,border:`1px solid ${S.green}30`,borderRadius:10,padding:'12px 16px',textAlign:'center',marginTop:12}}><div style={{fontFamily:"'Sora',sans-serif",fontWeight:700,color:S.green,fontSize:14}}>✅ Ai acceptat această ofertă!</div><div style={{fontSize:12,color:S.green,opacity:.8,marginTop:3}}>Programarea a fost confirmată. Service-ul te va contacta în curând.</div></div>}
@@ -202,6 +208,7 @@ export default function OfertePage() {
   const [accepting, setAccepting] = useState(null)
   const [cancelling, setCancelling] = useState(null)
   const [viewMode, setViewMode] = useState('list')
+  const [stats, setStats] = useState({})
   const supabase = createClient()
 
   useEffect(() => {
@@ -219,6 +226,12 @@ export default function OfertePage() {
           const grouped = {}
           for (const off of allOffs) { if (!grouped[off.request_id]) grouped[off.request_id]=[]; grouped[off.request_id].push(off) }
           setOffers(grouped)
+        }
+        const { data: statRows } = await supabase.from('request_stats').select('*').in('request_id', reqs.map(r=>r.id))
+        if (statRows?.length) {
+          const statMap = {}
+          for (const s of statRows) statMap[s.request_id] = s
+          setStats(statMap)
         }
       }
       setLoading(false)
@@ -330,6 +343,20 @@ export default function OfertePage() {
                     <div style={{fontSize:11,color:S.muted,marginBottom:2}}>Cerere pentru</div>
                     <div style={{fontFamily:"'Sora',sans-serif",fontWeight:700,fontSize:14,color:S.navy}}>{currentReq.car_brand} {currentReq.car_model} · {currentReq.services?.join(', ')}</div>
                   </div>
+
+                  {/* Stats tracking */}
+                  <div style={{display:'flex',gap:14,alignItems:'center'}}>
+                    <div style={{textAlign:'center'}}>
+                      <div style={{fontFamily:"'Sora',sans-serif",fontWeight:800,fontSize:16,color:S.blue}}>{stats[currentReq.id]?.services_viewed_count||0}</div>
+                      <div style={{fontSize:10,color:S.muted}}>👁️ service-uri văzut</div>
+                    </div>
+                    <div style={{width:1,height:28,background:S.border}}/>
+                    <div style={{textAlign:'center'}}>
+                      <div style={{fontFamily:"'Sora',sans-serif",fontWeight:800,fontSize:16,color:S.green}}>{currentOffers.length}</div>
+                      <div style={{fontSize:10,color:S.muted}}>💬 oferte primite</div>
+                    </div>
+                  </div>
+
                   {canCompare&&(
                     <div style={{display:'flex',gap:4,background:S.bg,borderRadius:50,padding:3}}>
                       {[['list','☰ Listă'],['compare','⚖️ Compară']].map(([m,l])=>(
