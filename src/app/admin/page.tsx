@@ -805,7 +805,7 @@ if (loading) return (
               <table style={{ width: '100%', borderCollapse: 'collapse', tableLayout: 'fixed' }}>
                 <thead>
                   <tr style={{ background: '#f8faff', borderBottom: `1px solid ${S.border}` }}>
-                    {['Utilizator', 'Rol', 'Data înregistrare', 'Status', 'Acțiuni'].map(h => (
+                    {['Utilizator', 'Rol', 'Tip business', 'Data înregistrare', 'Status', 'Acțiuni'].map(h => (
                       <th key={h} style={{ padding: '12px 16px', textAlign: 'left', fontSize: 11, fontWeight: 700, color: S.muted, textTransform: 'uppercase', letterSpacing: .5 }}>{h}</th>
                     ))}
                   </tr>
@@ -826,6 +826,23 @@ if (loading) return (
                           <option value="service">Service</option>
                           <option value="admin">Admin</option>
                         </select>
+                      </td>
+                      <td style={{ padding: '12px 16px' }}>
+                        {(() => {
+                          const userSvc = services.find(s => s.owner_id === u.id)
+                          if (!userSvc) return <span style={{ fontSize: 12, color: S.muted }}>—</span>
+                          const typeMap = {
+                            magazin_piese: { label: '📦 Magazin piese', bg: S.greenBg, color: S.green },
+                            dezmembrari: { label: '🚗 Dezmembrări', bg: S.purpleBg, color: S.purple },
+                            mixt: { label: '⚡ Mixt', bg: S.yellowBg, color: S.yellow },
+                          }
+                          const cfg = typeMap[userSvc.business_type] || { label: '🔧 Service auto', bg: '#eaf3ff', color: S.blue }
+                          return (
+                            <span style={{ fontSize: 11, fontWeight: 600, padding: '3px 10px', borderRadius: 50, background: cfg.bg, color: cfg.color, whiteSpace: 'nowrap' }}>
+                              {cfg.label}
+                            </span>
+                          )
+                        })()}
                       </td>
                       <td style={{ padding: '12px 16px', fontSize: 12, color: S.muted }}>
                         {new Date(u.created_at).toLocaleDateString('ro-RO')}
