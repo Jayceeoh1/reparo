@@ -2,6 +2,7 @@
 'use client'
 import { useEffect, useState, useRef } from 'react'
 import { createClient } from '@/lib/supabase/client'
+import { isServiceRole } from '@/lib/roles'
 
 const S = {
   navy:'#0a1f44',blue:'#1a56db',bg:'#f0f6ff',white:'#fff',
@@ -188,7 +189,7 @@ export default function MessagesPage() {
     return d.toLocaleDateString('ro-RO', { day: 'numeric', month: 'short' })
   }
 
-  const otherName = (conv) => profile?.role === 'service' ? conv.client?.full_name || 'Client' : conv.services?.name || 'Service'
+  const otherName = (conv) => isServiceRole(profile?.role) ? conv.client?.full_name || 'Client' : conv.services?.name || 'Service'
   const isOtherTyping = Object.keys(typingUsers).length > 0
 
   function renderMessage(msg) {
@@ -250,7 +251,7 @@ export default function MessagesPage() {
             <div key={conv.id} onClick={() => selectConv(conv)}
               style={{padding:'14px 16px',cursor:'pointer',background:isActive?'#eaf3ff':'transparent',borderBottom:`1px solid ${S.border}`,transition:'background .15s',display:'flex',alignItems:'center',gap:12}}>
               <div style={{width:48,height:48,background:'#eaf3ff',borderRadius:'50%',display:'flex',alignItems:'center',justifyContent:'center',fontSize:20,flexShrink:0,overflow:'hidden',position:'relative'}}>
-                {profile?.role!=='service'&&conv.services?.logo_url ? <img src={conv.services.logo_url} style={{width:'100%',height:'100%',objectFit:'cover'}} alt=""/> : profile?.role==='service'?'👤':'🔧'}
+                {!isServiceRole(profile?.role)&&conv.services?.logo_url ? <img src={conv.services.logo_url} style={{width:'100%',height:'100%',objectFit:'cover'}} alt=""/> : isServiceRole(profile?.role)?'👤':'🔧'}
                 {unread > 0 && <div style={{position:'absolute',top:-2,right:-2,width:18,height:18,background:S.blue,color:'#fff',borderRadius:'50%',display:'flex',alignItems:'center',justifyContent:'center',fontSize:10,fontWeight:800,border:'2px solid #fff'}}>{unread > 9 ? '9+' : unread}</div>}
               </div>
               <div style={{flex:1,minWidth:0}}>
@@ -278,7 +279,7 @@ export default function MessagesPage() {
           ‹
         </button>
         <div style={{width:40,height:40,background:'#eaf3ff',borderRadius:'50%',display:'flex',alignItems:'center',justifyContent:'center',fontSize:18,overflow:'hidden',flexShrink:0}}>
-          {profile?.role!=='service'&&activeConv?.services?.logo_url ? <img src={activeConv.services.logo_url} style={{width:'100%',height:'100%',objectFit:'cover'}} alt=""/> : profile?.role==='service'?'👤':'🔧'}
+          {!isServiceRole(profile?.role)&&activeConv?.services?.logo_url ? <img src={activeConv.services.logo_url} style={{width:'100%',height:'100%',objectFit:'cover'}} alt=""/> : isServiceRole(profile?.role)?'👤':'🔧'}
         </div>
         <div style={{flex:1,minWidth:0}}>
           <div style={{fontFamily:"'Sora',sans-serif",fontWeight:700,fontSize:14,color:S.navy,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{activeConv ? otherName(activeConv) : ''}</div>

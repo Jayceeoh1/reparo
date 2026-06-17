@@ -2,6 +2,7 @@
 'use client'
 import { useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
+import { isServiceRole } from '@/lib/roles'
 
 const S = {
   navy:'#0a1f44',blue:'#1a56db',blueLight:'#3b82f6',yellow:'#f59e0b',
@@ -27,7 +28,7 @@ export default function LoginPage() {
     if (!data.user) { setError('Eroare la autentificare.'); setLoading(false); return }
     const { data: profile } = await supabase.from('profiles').select('role').eq('id', data.user.id).single()
     setTimeout(() => {
-      if (profile?.role === 'service') window.location.href = '/dashboard/service'
+      if (isServiceRole(profile?.role)) window.location.href = '/dashboard/service'
       else window.location.href = '/home'
     }, 300)
   }

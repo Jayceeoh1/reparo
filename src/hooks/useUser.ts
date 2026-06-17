@@ -2,6 +2,7 @@
 'use client'
 import { useEffect, useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
+import { isServiceRole } from '@/lib/roles'
 
 export function useUser() {
   const [user, setUser] = useState(null)
@@ -30,5 +31,5 @@ export function useUser() {
     setProfile(null)
   }
 
-  return { user, profile, loading, signOut, isService: (profile as any)?.role === 'service' }
+  return { user, profile, loading, signOut, isService: isServiceRole((profile as any)?.role) }
 }

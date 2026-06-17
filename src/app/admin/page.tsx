@@ -828,6 +828,9 @@ if (loading) return (
                           style={{ fontSize: 12, padding: '4px 8px', borderRadius: 6, border: `1px solid ${S.border}`, background: S.white, color: S.navy, cursor: 'pointer' }}>
                           <option value="user">Client</option>
                           <option value="service">Service</option>
+                          <option value="magazin_piese">Magazin piese</option>
+                          <option value="dezmembrari">Dezmembrări</option>
+                          <option value="mixt">Mixt</option>
                           <option value="admin">Admin</option>
                         </select>
                       </td>
