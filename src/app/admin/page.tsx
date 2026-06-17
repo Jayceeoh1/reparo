@@ -110,7 +110,9 @@ export default function AdminPage() {
       const { data: prData } = await supabase.from('parts_requests')
         .select('id, car_brand, car_model, car_year, part_name, city, status, created_at, user_id')
         .order('created_at', { ascending: false }).limit(50)
-      setPartsRequests(prData || [])
+      // Sanitizăm — eliminăm orice valoare non-serializabilă (Symbol, function, etc.) care ar putea crăpa render-ul
+      const safe = JSON.parse(JSON.stringify(prData || []))
+      setPartsRequests(safe)
     } catch(e) { setPartsRequests([]) }
 
     // Build revenue data from payments (last 30 days)
@@ -629,20 +631,29 @@ export default function AdminPage() {
               </div>
             ) : (
               <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-                {partsRequests.map(r => (
-                  <div key={r.id} style={{ ...card(), display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 10 }}>
+                {partsRequests.map(r => {
+                  const partName = typeof r.part_name === 'string' ? r.part_name : String(r.part_name ?? '—')
+                  const carBrand = typeof r.car_brand === 'string' ? r.car_brand : String(r.car_brand ?? '')
+                  const carModel = typeof r.car_model === 'string' ? r.car_model : String(r.car_model ?? '')
+                  const carYear = r.car_year ? String(r.car_year) : ''
+                  const city = typeof r.city === 'string' ? r.city : String(r.city ?? '—')
+                  const statusRaw = typeof r.status === 'string' ? r.status : String(r.status ?? 'necunoscut')
+                  const createdAt = r.created_at ? new Date(r.created_at) : null
+                  return (
+                  <div key={String(r.id)} style={{ ...card(), display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 10 }}>
                     <div>
-                      <div style={{ fontFamily: "'Sora',sans-serif", fontWeight: 700, fontSize: 14, color: S.navy, marginBottom: 2 }}>{r.part_name}</div>
-                      <div style={{ fontSize: 12, color: S.muted }}>🚗 {r.car_brand} {r.car_model} {r.car_year ? `(${r.car_year})` : ''} · 👤 {r.profiles?.full_name || 'Utilizator'} · 📍 {r.city || '—'}</div>
+                      <div style={{ fontFamily: "'Sora',sans-serif", fontWeight: 700, fontSize: 14, color: S.navy, marginBottom: 2 }}>{partName}</div>
+                      <div style={{ fontSize: 12, color: S.muted }}>🚗 {carBrand} {carModel} {carYear ? `(${carYear})` : ''} · 📍 {city}</div>
                     </div>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                      <span style={{ background: r.status === 'activa' ? '#eaf3ff' : r.status === 'in_progres' ? S.yellowBg : S.greenBg, color: r.status === 'activa' ? S.blue : r.status === 'in_progres' ? S.yellow : S.green, fontSize: 11, fontWeight: 700, padding: '3px 10px', borderRadius: 50 }}>
-                        {r.status === 'activa' ? 'Activă' : r.status === 'in_progres' ? 'În progres' : r.status}
+                      <span style={{ background: statusRaw === 'activa' ? '#eaf3ff' : statusRaw === 'in_progres' ? S.yellowBg : S.greenBg, color: statusRaw === 'activa' ? S.blue : statusRaw === 'in_progres' ? S.yellow : S.green, fontSize: 11, fontWeight: 700, padding: '3px 10px', borderRadius: 50 }}>
+                        {statusRaw === 'activa' ? 'Activă' : statusRaw === 'in_progres' ? 'În progres' : statusRaw === 'anulata' ? 'Anulată' : statusRaw === 'finalizata' ? 'Finalizată' : statusRaw}
                       </span>
-                      <span style={{ fontSize: 11, color: S.muted }}>{new Date(r.created_at).toLocaleDateString('ro-RO')}</span>
+                      <span style={{ fontSize: 11, color: S.muted }}>{createdAt ? createdAt.toLocaleDateString('ro-RO') : '—'}</span>
                     </div>
                   </div>
-                ))}
+                  )
+                })}
               </div>
             )}
           </div>
