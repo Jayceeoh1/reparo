@@ -209,7 +209,20 @@ export default function OfertePage() {
   const [cancelling, setCancelling] = useState(null)
   const [viewMode, setViewMode] = useState('list')
   const [stats, setStats] = useState({})
+  const [showTrackingModal, setShowTrackingModal] = useState(false)
+  const [events, setEvents] = useState([])
+  const [eventsLoading, setEventsLoading] = useState(false)
   const supabase = createClient()
+
+  async function loadEvents(requestId) {
+    setEventsLoading(true)
+    const { data } = await supabase.from('request_events')
+      .select('*, services(name,logo_url,city)')
+      .eq('request_id', requestId)
+      .order('created_at', { ascending: false })
+    setEvents(data || [])
+    setEventsLoading(false)
+  }
 
   useEffect(() => {
     async function load() {
@@ -344,18 +357,10 @@ export default function OfertePage() {
                     <div style={{fontFamily:"'Sora',sans-serif",fontWeight:700,fontSize:14,color:S.navy}}>{currentReq.car_brand} {currentReq.car_model} · {currentReq.services?.join(', ')}</div>
                   </div>
 
-                  {/* Stats tracking */}
-                  <div style={{display:'flex',gap:14,alignItems:'center'}}>
-                    <div style={{textAlign:'center'}}>
-                      <div style={{fontFamily:"'Sora',sans-serif",fontWeight:800,fontSize:16,color:S.blue}}>{stats[currentReq.id]?.services_viewed_count||0}</div>
-                      <div style={{fontSize:10,color:S.muted}}>👁️ service-uri văzut</div>
-                    </div>
-                    <div style={{width:1,height:28,background:S.border}}/>
-                    <div style={{textAlign:'center'}}>
-                      <div style={{fontFamily:"'Sora',sans-serif",fontWeight:800,fontSize:16,color:S.green}}>{currentOffers.length}</div>
-                      <div style={{fontSize:10,color:S.muted}}>💬 oferte primite</div>
-                    </div>
-                  </div>
+                  <button onClick={()=>{setShowTrackingModal(true);loadEvents(currentReq.id)}}
+                    style={{display:'flex',alignItems:'center',gap:6,padding:'9px 16px',borderRadius:50,fontSize:12,fontWeight:600,cursor:'pointer',border:`1.5px solid ${S.border}`,background:S.white,color:S.navy,fontFamily:"'DM Sans',sans-serif",flexShrink:0}}>
+                    📊 Vezi detalii
+                  </button>
 
                   {canCompare&&(
                     <div style={{display:'flex',gap:4,background:S.bg,borderRadius:50,padding:3}}>
@@ -396,6 +401,76 @@ export default function OfertePage() {
           </div>
         )}
       </div>
+
+      {/* ── MODAL TRACKING ── */}
+      {showTrackingModal&&currentReq&&(
+        <div onClick={e=>{if(e.target===e.currentTarget)setShowTrackingModal(false)}}
+          style={{position:'fixed',inset:0,background:'rgba(10,31,68,0.5)',zIndex:300,display:'flex',alignItems:'center',justifyContent:'center',padding:16}}>
+          <div style={{background:S.white,borderRadius:20,maxWidth:520,width:'100%',maxHeight:'80vh',overflow:'auto',padding:0}}>
+
+            {/* Header */}
+            <div style={{padding:'20px 24px',borderBottom:`1px solid ${S.border}`,display:'flex',alignItems:'center',justifyContent:'space-between',position:'sticky',top:0,background:S.white,zIndex:1}}>
+              <div>
+                <div style={{fontFamily:"'Sora',sans-serif",fontWeight:800,fontSize:17,color:S.navy}}>📊 Detalii activitate</div>
+                <div style={{fontSize:12,color:S.muted,marginTop:2}}>{currentReq.car_brand} {currentReq.car_model} · {currentReq.services?.join(', ')}</div>
+              </div>
+              <button onClick={()=>setShowTrackingModal(false)} style={{background:'none',border:'none',cursor:'pointer',fontSize:22,color:S.muted,lineHeight:1}}>✕</button>
+            </div>
+
+            <div style={{padding:24}}>
+              {/* Stats summary */}
+              <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:10,marginBottom:20}}>
+                <div style={{background:S.bg,borderRadius:14,padding:16,textAlign:'center'}}>
+                  <div style={{fontFamily:"'Sora',sans-serif",fontWeight:800,fontSize:24,color:S.blue}}>{stats[currentReq.id]?.services_viewed_count||0}</div>
+                  <div style={{fontSize:11,color:S.muted,marginTop:2}}>👁️ Service-uri care au văzut cererea</div>
+                </div>
+                <div style={{background:S.bg,borderRadius:14,padding:16,textAlign:'center'}}>
+                  <div style={{fontFamily:"'Sora',sans-serif",fontWeight:800,fontSize:24,color:S.green}}>{currentOffers.length}</div>
+                  <div style={{fontSize:11,color:S.muted,marginTop:2}}>💬 Oferte primite</div>
+                </div>
+              </div>
+
+              {/* Timeline */}
+              <div style={{fontSize:11,fontWeight:700,color:S.muted,textTransform:'uppercase',letterSpacing:.8,marginBottom:12,fontFamily:"'Sora',sans-serif"}}>Cronologie activitate</div>
+
+              {eventsLoading ? (
+                <div style={{textAlign:'center',padding:30,color:S.muted,fontSize:13}}>Se încarcă...</div>
+              ) : events.length===0 ? (
+                <div style={{textAlign:'center',padding:30,color:S.muted,fontSize:13}}>
+                  <div style={{fontSize:32,marginBottom:8}}>🔍</div>
+                  Niciun eveniment înregistrat încă.<br/>Vei vedea aici când service-urile văd cererea ta.
+                </div>
+              ) : (
+                <div style={{display:'flex',flexDirection:'column',gap:8}}>
+                  {events.map(ev=>{
+                    const cfg = {
+                      request_viewed_by_service: {icon:'👁️',label:'a văzut cererea ta',color:S.blue,bg:'#eaf3ff'},
+                      offer_viewed_by_client: {icon:'📬',label:'oferta a fost vizualizată',color:S.purple,bg:S.purpleBg},
+                      offer_clicked: {icon:'📞',label:'ai apelat service-ul',color:S.green,bg:S.greenBg},
+                    }[ev.event_type] || {icon:'•',label:ev.event_type,color:S.muted,bg:S.bg}
+
+                    return (
+                      <div key={ev.id} style={{display:'flex',alignItems:'center',gap:10,padding:'10px 12px',background:cfg.bg,borderRadius:10}}>
+                        <div style={{width:32,height:32,background:S.white,borderRadius:8,display:'flex',alignItems:'center',justifyContent:'center',fontSize:15,flexShrink:0,overflow:'hidden'}}>
+                          {ev.services?.logo_url?<img src={ev.services.logo_url} style={{width:'100%',height:'100%',objectFit:'cover'}} alt=""/>:cfg.icon}
+                        </div>
+                        <div style={{flex:1,minWidth:0}}>
+                          <div style={{fontSize:13,fontWeight:600,color:S.navy}}>
+                            {ev.services?.name||'Service'} <span style={{fontWeight:400,color:cfg.color}}>{cfg.label}</span>
+                          </div>
+                          <div style={{fontSize:11,color:S.muted}}>
+                            {new Date(ev.created_at).toLocaleDateString('ro-RO',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'})}
+                          </div>
+                        </div>
+                      </div>
+                    )
+                  })}
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
