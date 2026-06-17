@@ -55,6 +55,18 @@ export async function POST(request: Request) {
             plan_expires_at: null, // subscription — fără expirare fixă
           }).eq('id', service_id)
 
+          // Înregistrăm plata pentru dashboard-ul de revenue admin
+          await supabase.from('payments').insert({
+            service_id,
+            amount: (session.amount_total || 0) / 100, // Stripe trimite în bani (cenți)
+            currency: session.currency || 'ron',
+            plan,
+            stripe_payment_id: session.id,
+            type: 'subscription',
+            status: 'paid',
+            period_start: new Date().toISOString(),
+          })
+
           // Notificare in-app
           if (user_id) {
             await supabase.from('notifications').insert({
@@ -124,6 +136,18 @@ export async function POST(request: Request) {
             plan_expires_at: null,
             is_active: true,
           }).eq('id', svc.id)
+
+          // Înregistrăm și reînnoirea ca payment, pentru graficul de revenue
+          await supabase.from('payments').insert({
+            service_id: svc.id,
+            amount: (invoice.amount_paid || 0) / 100,
+            currency: invoice.currency || 'ron',
+            plan: svc.plan,
+            stripe_payment_id: invoice.id,
+            type: 'renewal',
+            status: 'paid',
+            period_start: new Date().toISOString(),
+          })
 
           if (svc.owner_id) {
             await supabase.from('notifications').insert({
