@@ -273,35 +273,45 @@ export default function AdminPage() {
     setBroadcastSending(false)
   }
 
-  function statusBadge(status) {
-    const map = {
-      pending: { bg: S.yellowBg, color: S.yellow, label: '⏳ În așteptare' },
-      in_review: { bg: '#dbeafe', color: '#1d4ed8', label: '🔍 În analiză' },
-      approved: { bg: S.greenBg, color: S.green, label: '✅ Aprobat' },
-      rejected: { bg: S.redBg, color: S.red, label: '❌ Respins' },
-    }
-    const s = map[status] || map.pending
-    return (
-      <span style={{ background: s.bg, color: s.color, padding: '3px 10px', borderRadius: 50, fontSize: 11, fontWeight: 700 }}>
-        {s.label}
-      </span>
-    )
+function statusBadge(status) {
+  const map = {
+    pending: { bg: S.yellowBg, color: S.yellow, label: '⏳ În așteptare' },
+    in_review: { bg: '#dbeafe', color: '#1d4ed8', label: '🔍 În analiză' },
+    approved: { bg: S.greenBg, color: S.green, label: '✅ Aprobat' },
+    rejected: { bg: S.redBg, color: S.red, label: '❌ Respins' },
   }
 
-  function card(children, style = {}) {
-    return (
-      <div style={{ background: S.white, borderRadius: 14, border: `1px solid ${S.border}`, padding: 20, ...style }}>
-        {children}
-      </div>
-    )
-  }
+  const s = map[status] || map.pending
 
-  if (loading) return (
-    <div style={{ minHeight: '60vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-      <div style={{ width: 36, height: 36, border: `3px solid ${S.blue}`, borderTopColor: 'transparent', borderRadius: '50%', animation: 'spin 1s linear infinite' }} />
-      <style>{`@keyframes spin{to{transform:rotate(360deg)}}`}</style>
-    </div>
+  return (
+    <span
+      style={{
+        background: s.bg,
+        color: s.color,
+        padding: '3px 10px',
+        borderRadius: 50,
+        fontSize: 11,
+        fontWeight: 700,
+      }}
+    >
+      {s.label}
+    </span>
   )
+}
+
+const cardStyle = {
+  background: S.white,
+  borderRadius: 14,
+  border: `1px solid ${S.border}`,
+  padding: 20,
+}
+
+if (loading) return (
+  <div style={{ minHeight: '60vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+    <div style={{ width: 36, height: 36, border: `3px solid ${S.blue}`, borderTopColor: 'transparent', borderRadius: '50%', animation: 'spin 1s linear infinite' }} />
+    <style>{`@keyframes spin{to{transform:rotate(360deg)}}`}</style>
+  </div>
+)
 
   if (!isAdmin) return (
     <div style={{ minHeight: '60vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 12 }}>
@@ -625,7 +635,7 @@ export default function AdminPage() {
               Cereri piese ({partsRequests.length})
             </h2>
             {partsRequests.length === 0 ? (
-              <div style={{ ...card(), textAlign: 'center', padding: '40px' }}>
+              <div key={String(r.id)} style={{ ...cardStyle, display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 10 }}>
                 <div style={{ fontSize: 40, marginBottom: 8 }}>📦</div>
                 <div style={{ color: S.muted }}>Nicio cerere de piese</div>
               </div>
