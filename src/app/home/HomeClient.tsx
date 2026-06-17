@@ -267,29 +267,36 @@ export default function HomeClient() {
           ))}
         </div>
 
-        {/* Service-uri recomandate */}
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14 }}>
-          <h2 className="section-title" style={{ fontSize: 17, fontWeight: 700, color: S.navy, fontFamily: "'Sora',sans-serif", letterSpacing: -0.3 }}>Service-uri recomandate</h2>
-          <a href="/search" style={{ fontSize: 13, color: S.blue, textDecoration: 'none', fontWeight: 600 }}>Vezi toate →</a>
-        </div>
+        {/* Service-uri recomandate — secțiune highlight */}
+        <div style={{ background: 'linear-gradient(135deg,#eaf3ff 0%,#f8faff 100%)', border: `1.5px solid #d6e6ff`, borderRadius: 20, padding: '20px 20px 24px', marginBottom: 28, position: 'relative', overflow: 'hidden' }}>
+          <div style={{ position: 'absolute', top: -30, right: -30, width: 140, height: 140, borderRadius: '50%', background: 'rgba(26,86,219,0.04)', pointerEvents: 'none' }} />
 
-        {services.length === 0 ? (
-          <div style={{ background: '#fff', borderRadius: 16, border: `1px solid ${S.border}`, padding: '40px 20px', textAlign: 'center', marginBottom: 28 }}>
-            <div style={{ fontSize: 40, marginBottom: 10 }}>🔧</div>
-            <div style={{ fontSize: 15, fontWeight: 600, color: '#666', marginBottom: 6 }}>Niciun service înregistrat momentan</div>
-            <a href="/auth/register" style={{ fontSize: 13, color: S.blue, textDecoration: 'none', fontWeight: 600 }}>Înregistrează-ți service-ul gratuit →</a>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14, position: 'relative' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+              <span style={{ fontSize: 18 }}>⭐</span>
+              <h2 className="section-title" style={{ fontSize: 17, fontWeight: 700, color: S.navy, fontFamily: "'Sora',sans-serif", letterSpacing: -0.3, margin: 0 }}>Service-uri recomandate</h2>
+            </div>
+            <a href="/search" style={{ fontSize: 13, color: S.blue, textDecoration: 'none', fontWeight: 600 }}>Vezi toate →</a>
           </div>
-        ) : (
-          <div className="svc-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(300px,1fr))', gap: 14, marginBottom: 28 }}>
-            {services.map(s => (
-              <ServiceCard key={s.id}
-                name={s.name} city={s.city || ''} dist="" rating={s.rating_avg} reviews={s.rating_count}
-                desc={s.description || 'Service auto profesional'} tags={[s.is_verified ? 'Verificat' : '', s.has_itp ? 'ITP pe loc' : '', s.is_authorized_rar ? 'Autorizat RAR' : ''].filter(Boolean)}
-                logo={s.logo_url}
-                isFav={favorites.has(s.id)} onFav={() => toggleFav(s.id)} onClick={() => window.location.href = `/service/${s.id}`} />
-            ))}
-          </div>
-        )}
+
+          {services.length === 0 ? (
+            <div style={{ background: '#fff', borderRadius: 16, border: `1px solid ${S.border}`, padding: '40px 20px', textAlign: 'center' }}>
+              <div style={{ fontSize: 40, marginBottom: 10 }}>🔧</div>
+              <div style={{ fontSize: 15, fontWeight: 600, color: '#666', marginBottom: 6 }}>Niciun service înregistrat momentan</div>
+              <a href="/auth/register" style={{ fontSize: 13, color: S.blue, textDecoration: 'none', fontWeight: 600 }}>Înregistrează-ți service-ul gratuit →</a>
+            </div>
+          ) : (
+            <div className="svc-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(300px,1fr))', gap: 14 }}>
+              {services.map(s => (
+                <ServiceCard key={s.id}
+                  name={s.name} city={s.city || ''} dist="" rating={s.rating_avg} reviews={s.rating_count}
+                  desc={s.description || 'Service auto profesional'} tags={[s.is_verified ? 'Verificat' : '', s.has_itp ? 'ITP pe loc' : '', s.is_authorized_rar ? 'Autorizat RAR' : ''].filter(Boolean)}
+                  logo={s.logo_url}
+                  isFav={favorites.has(s.id)} onFav={() => toggleFav(s.id)} onClick={() => window.location.href = `/service/${s.id}`} />
+              ))}
+            </div>
+          )}
+        </div>
 
         {/* Banner ITP — fără RCA */}
         <div className="promo-row" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: 'linear-gradient(135deg,#eaf3ff,#f0f6ff)', borderRadius: 16, border: `1px solid rgba(26,86,219,0.15)`, padding: '18px 22px', marginBottom: 28 }}>
