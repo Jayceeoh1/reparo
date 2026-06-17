@@ -824,9 +824,9 @@ if (loading) return (
                         <div style={{ fontSize: 11, color: S.muted, fontFamily: 'monospace' }}>{u.id.slice(0,8)}...</div>
                       </td>
                       <td style={{ padding: '12px 16px' }}>
-                        <select value={u.role || 'client'} onChange={e => changeUserRole(u.id, e.target.value)}
+                        <select value={u.role || 'user'} onChange={e => changeUserRole(u.id, e.target.value)}
                           style={{ fontSize: 12, padding: '4px 8px', borderRadius: 6, border: `1px solid ${S.border}`, background: S.white, color: S.navy, cursor: 'pointer' }}>
-                          <option value="client">Client</option>
+                          <option value="user">Client</option>
                           <option value="service">Service</option>
                           <option value="admin">Admin</option>
                         </select>
