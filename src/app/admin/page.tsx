@@ -635,7 +635,7 @@ if (loading) return (
               Cereri piese ({partsRequests.length})
             </h2>
             {partsRequests.length === 0 ? (
-              <div key={String(r.id)} style={{ ...cardStyle, display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 10 }}>
+              <div style={{ ...cardStyle, textAlign: 'center', padding: '40px' }}>
                 <div style={{ fontSize: 40, marginBottom: 8 }}>📦</div>
                 <div style={{ color: S.muted }}>Nicio cerere de piese</div>
               </div>
@@ -650,7 +650,7 @@ if (loading) return (
                   const statusRaw = typeof r.status === 'string' ? r.status : String(r.status ?? 'necunoscut')
                   const createdAt = r.created_at ? new Date(r.created_at) : null
                   return (
-                  <div key={String(r.id)} style={{ ...card(), display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 10 }}>
+                  <div key={String(r.id)} style={{ ...cardStyle, display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 10 }}>
                     <div>
                       <div style={{ fontFamily: "'Sora',sans-serif", fontWeight: 700, fontSize: 14, color: S.navy, marginBottom: 2 }}>{partName}</div>
                       <div style={{ fontSize: 12, color: S.muted }}>🚗 {carBrand} {carModel} {carYear ? `(${carYear})` : ''} · 📍 {city}</div>
