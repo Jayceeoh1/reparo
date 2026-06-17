@@ -56,7 +56,7 @@ export default function AdminPage() {
   async function loadAll() {
     // Load each query separately with try-catch to avoid one failure crashing all
     const { data: vr } = await supabase.from('verification_requests')
-      .select('id,service_id,status,submitted_at,reviewed_at,rejection_reason,services(id,name,city,logo_url)')
+      .select('id,service_id,status,submitted_at,reviewed_at,rejection_reason,doc_cui,doc_rar,doc_foto,services(id,name,city,logo_url)')
       .order('submitted_at', { ascending: false })
     setVerRequests(vr || [])
 
@@ -495,8 +495,11 @@ export default function AdminPage() {
               </div>
             ) : (
               <div style={{ display:'flex', flexDirection:'column', gap:12 }}>
-                {newServices.map(svc => (
-                  <div key={svc.id} style={{ background:S.white, border:`1px solid ${S.border}`, borderRadius:14, padding:18, display:'flex', alignItems:'center', gap:14, flexWrap:'wrap' }}>
+                {newServices.map(svc => {
+                  const vReq = verRequests.find(v => v.service_id === svc.id)
+                  return (
+                  <div key={svc.id} style={{ background:S.white, border:`1px solid ${S.border}`, borderRadius:14, padding:18, display:'flex', flexDirection:'column', gap:14 }}>
+                    <div style={{ display:'flex', alignItems:'center', gap:14, flexWrap:'wrap' }}>
                     <div style={{ width:48, height:48, background:'#eaf3ff', borderRadius:12, display:'flex', alignItems:'center', justifyContent:'center', fontSize:22, flexShrink:0, overflow:'hidden' }}>
                       {svc.logo_url ? <img src={svc.logo_url} style={{ width:'100%', height:'100%', objectFit:'cover' }} alt=""/> : '🔧'}
                     </div>
@@ -513,6 +516,11 @@ export default function AdminPage() {
                           {new Date(svc.created_at).toLocaleDateString('ro-RO', { day:'numeric', month:'short', year:'numeric' })}
                         </span>
                         {svc.plan === 'pro' && <span style={{ fontSize:11, background:S.yellowBg, color:S.yellow, padding:'2px 8px', borderRadius:50, fontWeight:700 }}>⭐ Pro</span>}
+                        {vReq ? (
+                          <span style={{ fontSize:11, background:S.greenBg, color:S.green, padding:'2px 8px', borderRadius:50, fontWeight:700 }}>📄 Documente depuse</span>
+                        ) : (
+                          <span style={{ fontSize:11, background:S.redBg, color:'#dc2626', padding:'2px 8px', borderRadius:50, fontWeight:700 }}>⚠️ Fără documente</span>
+                        )}
                       </div>
                     </div>
                     <div style={{ display:'flex', flexDirection:'column', gap:8, flexShrink:0 }}>
@@ -526,8 +534,30 @@ export default function AdminPage() {
                         👁️ Vezi profil
                       </a>
                     </div>
+                    </div>
+
+                    {/* Documente depuse — inline preview */}
+                    {vReq && (
+                      <div style={{ borderTop:`1px solid ${S.border}`, paddingTop:14, display:'flex', flexWrap:'wrap', gap:10 }}>
+                        {[
+                          { label:'📄 CUI', url: vReq.doc_cui },
+                          { label:'🏢 RAR', url: vReq.doc_rar },
+                          { label:'🖼️ Foto sediu', url: vReq.doc_foto },
+                        ].map(doc => doc.url ? (
+                          <a key={doc.label} href={doc.url} target="_blank" rel="noreferrer"
+                            style={{ display:'flex', alignItems:'center', gap:6, padding:'6px 12px', background:S.bg, borderRadius:8, fontSize:12, color:S.blue, textDecoration:'none', fontWeight:600, border:`1px solid ${S.border}` }}>
+                            {doc.label} ↗
+                          </a>
+                        ) : (
+                          <span key={doc.label} style={{ display:'flex', alignItems:'center', gap:6, padding:'6px 12px', background:S.bg, borderRadius:8, fontSize:12, color:S.muted, border:`1px solid ${S.border}` }}>
+                            {doc.label} — lipsă
+                          </span>
+                        ))}
+                      </div>
+                    )}
                   </div>
-                ))}
+                  )
+                })}
               </div>
             )}
           </div>
