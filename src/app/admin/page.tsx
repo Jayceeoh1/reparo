@@ -212,7 +212,11 @@ export default function AdminPage() {
   }
 
   async function changeUserRole(userId, newRole) {
-    await supabase.from('profiles').update({ role: newRole }).eq('id', userId)
+    const { error } = await supabase.from('profiles').update({ role: newRole }).eq('id', userId)
+    if (error) {
+      alert('Nu am putut schimba rolul: ' + error.message + '\n\nRulează SQL-ul din profiles_admin_update_fix.sql în Supabase.')
+      return
+    }
     setUsers(prev => prev.map(u => u.id === userId ? { ...u, role: newRole } : u))
   }
 
