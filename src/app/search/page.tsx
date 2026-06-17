@@ -33,8 +33,10 @@ export default function SearchPage() {
   useEffect(() => {
     const params = new URLSearchParams(window.location.search)
     const cat = params.get('category') || ''
+    const verified = params.get('verified')
     if (cat === 'itp') setFilter('itp')
     else if (cat === 'dezmembrari') setFilter('dezmembrari')
+    else if (verified === '1') setFilter('verified')
   }, [])
 
   useEffect(() => { load() }, [search, city, page])

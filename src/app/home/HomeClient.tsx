@@ -375,15 +375,19 @@ export default function HomeClient() {
         <h2 className="section-title" style={{ fontSize: 17, fontWeight: 700, color: S.navy, fontFamily: "'Sora',sans-serif", letterSpacing: -0.3, marginBottom: 14 }}>De ce să alegi Serviceclub?</h2>
         <div className="features-grid" style={{ marginBottom: 28 }}>
           {[
-            { icon: '🎯', title: 'Oferte gratuite', desc: 'Trimite o cerere și primești oferte de la mai multe service-uri fără niciun cost.' },
-            { icon: '📅', title: 'Programare online', desc: 'Alege data și intervalul orar direct din platformă. Fără telefon.' },
-            { icon: '✅', title: 'Service-uri verificate', desc: 'Toți partenerii sunt verificați și evaluați de clienți reali.' },
-            { icon: '⭐', title: 'Recenzii reale', desc: 'Recenzii verificate de la clienți reali pentru fiecare service.' },
+            { icon: '🎯', title: 'Oferte gratuite', desc: 'Trimite o cerere și primești oferte de la mai multe service-uri fără niciun cost.', action: () => window.dispatchEvent(new CustomEvent('open-quote-modal')) },
+            { icon: '📅', title: 'Programare online', desc: 'Alege data și intervalul orar direct din platformă. Fără telefon.', href: '/search' },
+            { icon: '✅', title: 'Service-uri verificate', desc: 'Toți partenerii sunt verificați și evaluați de clienți reali.', href: '/search?verified=1' },
+            { icon: '⭐', title: 'Recenzii reale', desc: 'Recenzii verificate de la clienți reali pentru fiecare service.', href: '/search' },
           ].map(f => (
-            <div key={f.title} style={{ background: '#fff', borderRadius: 16, border: `1px solid ${S.border}`, padding: '18px 14px', boxShadow: '0 2px 8px rgba(10,31,68,0.04)' }}>
+            <div key={f.title} onClick={() => f.action ? f.action() : (window.location.href = f.href)}
+              style={{ background: '#fff', borderRadius: 16, border: `1px solid ${S.border}`, padding: '18px 14px', boxShadow: '0 2px 8px rgba(10,31,68,0.04)', cursor: 'pointer', transition: 'all .15s' }}
+              onMouseEnter={e => { e.currentTarget.style.borderColor = S.blue; e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.boxShadow = '0 6px 16px rgba(26,86,219,0.1)' }}
+              onMouseLeave={e => { e.currentTarget.style.borderColor = S.border; e.currentTarget.style.transform = 'none'; e.currentTarget.style.boxShadow = '0 2px 8px rgba(10,31,68,0.04)' }}>
               <div style={{ width: 44, height: 44, background: '#eaf3ff', borderRadius: 12, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 20, marginBottom: 10 }}>{f.icon}</div>
               <div style={{ fontFamily: "'Sora',sans-serif", fontWeight: 700, fontSize: 13, color: S.navy, marginBottom: 5 }}>{f.title}</div>
-              <div style={{ fontSize: 12, color: S.muted, lineHeight: 1.6 }}>{f.desc}</div>
+              <div style={{ fontSize: 12, color: S.muted, lineHeight: 1.6, marginBottom: 8 }}>{f.desc}</div>
+              <span style={{ fontSize: 11, color: S.blue, fontWeight: 600 }}>Vezi mai mult →</span>
             </div>
           ))}
         </div>
