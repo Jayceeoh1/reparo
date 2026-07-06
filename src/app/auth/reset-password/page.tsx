@@ -8,7 +8,7 @@ const S = {
   text:'#111827',muted:'#6b7280',border:'#e5e7eb',
   green:'#16a34a',greenBg:'#dcfce7',red:'#dc2626',amber:'#d97706',amberBg:'#fef3c7',
 }
-const inp = {width:'100%',padding:'12px 16px',border:`1.5px solid ${S.border}`,borderRadius:12,fontSize:14,color:S.text,outline:'none',fontFamily:"'DM Sans',sans-serif",background:'#fff',transition:'border-color .2s',boxSizing:'border-box'}
+const inp = {width:'100%',padding:'12px 16px',border:`1.5px solid ${S.border}`,borderRadius:12,fontSize:14,color:S.text,outline:'none',fontFamily:"'DM Sans',sans-serif",background:'#fff',transition:'border-color .2s',boxSizing:'border-box' as const}
 
 export default function ResetPasswordPage() {
   const [password, setPassword] = useState('')
@@ -17,21 +17,46 @@ export default function ResetPasswordPage() {
   const [done, setDone] = useState(false)
   const [error, setError] = useState('')
   const [strength, setStrength] = useState(0)
+  const [ready, setReady] = useState(false)
+  const [checking, setChecking] = useState(true)
   const supabase = createClient()
 
-  const [ready, setReady] = useState(false)
-
   useEffect(() => {
-    supabase.auth.onAuthStateChange(async (event, session) => {
+    // METODA 1: Supabase detectează automat hash-ul #access_token din URL
+    // și emite evenimentul PASSWORD_RECOVERY
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
       if (event === 'PASSWORD_RECOVERY') {
         setReady(true)
+        setChecking(false)
+      }
+      if (event === 'SIGNED_IN' && session) {
+        // Verifică dacă e un recovery token (tip în URL)
+        const hash = typeof window !== 'undefined' ? window.location.hash : ''
+        if (hash.includes('type=recovery') || hash.includes('type=signup')) {
+          setReady(true)
+          setChecking(false)
+        }
       }
     })
 
-    // Also check if we have a session already from the URL
+    // METODA 2: Verifică dacă există deja o sesiune activă de recovery
+    // (cazul când userul revine pe pagină)
     supabase.auth.getSession().then(({ data: { session } }) => {
-      if (session) setReady(true)
+      if (session) {
+        const hash = typeof window !== 'undefined' ? window.location.hash : ''
+        // Dacă avem sesiune și suntem pe reset-password, e valid
+        setReady(true)
+        setChecking(false)
+      } else {
+        // Nu avem sesiune, așteptăm evenimentul PASSWORD_RECOVERY
+        // Dacă după 5s tot nu vine, afișăm eroare
+        setTimeout(() => {
+          setChecking(false)
+        }, 5000)
+      }
     })
+
+    return () => subscription.unsubscribe()
   }, [])
 
   function checkStrength(p) {
@@ -50,9 +75,14 @@ export default function ResetPasswordPage() {
     if (password.length < 6) { setError('Parola trebuie să aibă minim 6 caractere.'); return }
     setLoading(true); setError('')
     const { error } = await supabase.auth.updateUser({ password })
-    if (error) { setError('Link-ul a expirat sau e invalid. Încearcă din nou.'); setLoading(false); return }
-    setDone(true); setLoading(false)
-    setTimeout(() => window.location.href = '/auth/login', 3000)
+    if (error) {
+      setError('A apărut o eroare: ' + error.message)
+      setLoading(false)
+      return
+    }
+    setDone(true)
+    setLoading(false)
+    setTimeout(() => { window.location.href = '/auth/login' }, 3000)
   }
 
   const strengthLabels = ['','Foarte slabă','Slabă','Medie','Bună','Excelentă']
@@ -60,23 +90,34 @@ export default function ResetPasswordPage() {
 
   return (
     <div style={{minHeight:'100vh',background:'linear-gradient(135deg,#eaf3ff 0%,#f8fbff 60%,#fff8ed 100%)',display:'flex',alignItems:'center',justifyContent:'center',padding:16,fontFamily:"'DM Sans',sans-serif"}}>
-
       <div style={{width:'100%',maxWidth:420}}>
         {/* Logo */}
-        <div className="fade-up" style={{textAlign:'center',marginBottom:28}}>
+        <div style={{textAlign:'center',marginBottom:28}}>
           <a href="/home" style={{textDecoration:'none',display:'inline-flex',alignItems:'center',gap:10}}>
-            <div style={{width:44,height:44,background:S.blue,borderRadius:12,display:'flex',alignItems:'center',justifyContent:'center',fontFamily:"'Sora',sans-serif",fontWeight:800,fontSize:20,color:'#fff',boxShadow:'0 4px 16px rgba(26,86,219,0.3)'}}>R</div>
-            <span style={{fontFamily:"'Sora',sans-serif",fontWeight:800,fontSize:24,color:S.navy,letterSpacing:-0.5}}>Serviceclub</span>
+            <img src="/logo-serviceclub.png" alt="Serviceclub" style={{height:40,width:'auto',objectFit:'contain'}}/>
           </a>
         </div>
 
-        <div className="fade-up" style={{background:S.white,borderRadius:20,border:`1px solid ${S.border}`,boxShadow:'0 8px 40px rgba(10,31,68,0.1)',padding:32,animationDelay:'.1s'}}>
+        <div style={{background:S.white,borderRadius:20,border:`1px solid ${S.border}`,boxShadow:'0 8px 40px rgba(10,31,68,0.1)',padding:32}}>
           {done ? (
             <div style={{textAlign:'center',padding:'10px 0'}}>
               <div style={{width:64,height:64,background:S.greenBg,borderRadius:'50%',display:'flex',alignItems:'center',justifyContent:'center',fontSize:30,margin:'0 auto 16px'}}>✅</div>
               <h2 style={{fontFamily:"'Sora',sans-serif",fontWeight:800,fontSize:20,color:S.navy,marginBottom:8}}>Parolă schimbată!</h2>
               <p style={{fontSize:14,color:S.muted,marginBottom:8}}>Parola ta a fost actualizată cu succes.</p>
               <p style={{fontSize:13,color:S.muted}}>Te redirecționăm spre login în câteva secunde...</p>
+            </div>
+          ) : !ready && !checking ? (
+            // Link invalid / expirat
+            <div style={{textAlign:'center',padding:'10px 0'}}>
+              <div style={{width:64,height:64,background:'#fee2e2',borderRadius:'50%',display:'flex',alignItems:'center',justifyContent:'center',fontSize:30,margin:'0 auto 16px'}}>⚠️</div>
+              <h2 style={{fontFamily:"'Sora',sans-serif",fontWeight:800,fontSize:20,color:S.navy,marginBottom:8}}>Link invalid sau expirat</h2>
+              <p style={{fontSize:14,color:S.muted,marginBottom:20,lineHeight:1.6}}>
+                Link-ul de resetare a expirat sau a fost deja folosit. Solicită un nou link.
+              </p>
+              <a href="/auth/forgot-password"
+                style={{display:'inline-flex',alignItems:'center',gap:6,padding:'11px 24px',borderRadius:50,fontSize:13,fontWeight:700,background:S.blue,color:'#fff',textDecoration:'none',fontFamily:"'Sora',sans-serif"}}>
+                Solicită link nou →
+              </a>
             </div>
           ) : (
             <>
@@ -86,61 +127,64 @@ export default function ResetPasswordPage() {
                 <p style={{fontSize:13,color:S.muted}}>Alege o parolă nouă și sigură pentru contul tău.</p>
               </div>
 
-              {!ready && !done && (
-            <div style={{background:S.amberBg,borderRadius:10,padding:'12px 14px',marginBottom:16,fontSize:13,color:S.amber,textAlign:'center'}}>
-              ⏳ Se verifică link-ul... dacă durează prea mult, <a href="/auth/forgot-password" style={{color:S.blue}}>solicită un nou link</a>.
-            </div>
-          )}
-          {error && (
+              {/* Loading state */}
+              {checking && !ready && (
+                <div style={{background:S.amberBg,borderRadius:10,padding:'12px 14px',marginBottom:16,fontSize:13,color:S.amber,textAlign:'center'}}>
+                  ⏳ Se verifică link-ul...
+                </div>
+              )}
+
+              {error && (
                 <div style={{background:'#fee2e2',border:'1px solid #fecaca',borderRadius:10,padding:'10px 14px',fontSize:13,color:S.red,marginBottom:16}}>⚠️ {error}</div>
               )}
 
-              <form onSubmit={handleReset}>
-                <div style={{marginBottom:14}}>
-                  <label style={{display:'block',fontSize:11,fontWeight:700,color:S.muted,textTransform:'uppercase',letterSpacing:1,marginBottom:6,fontFamily:"'Sora',sans-serif"}}>Parolă nouă</label>
-                  <input className="auth-inp" type="password" required value={password}
-                    onChange={e=>{setPassword(e.target.value);checkStrength(e.target.value)}}
-                    placeholder="minim 6 caractere" style={inp}/>
-                  {password.length > 0 && (
-                    <div style={{marginTop:8}}>
-                      <div style={{display:'flex',gap:3,marginBottom:4}}>
-                        {[1,2,3,4,5].map(i=>(
-                          <div key={i} style={{flex:1,height:3,borderRadius:2,background:i<=strength?strengthColors[strength]:'#e5e7eb',transition:'all .3s'}}/>
-                        ))}
+              {ready && (
+                <form onSubmit={handleReset}>
+                  <div style={{marginBottom:14}}>
+                    <label style={{display:'block',fontSize:11,fontWeight:700,color:S.muted,textTransform:'uppercase',letterSpacing:1,marginBottom:6,fontFamily:"'Sora',sans-serif"}}>Parolă nouă</label>
+                    <input className="auth-inp" type="password" required value={password}
+                      onChange={e=>{setPassword(e.target.value);checkStrength(e.target.value)}}
+                      placeholder="minim 6 caractere" style={inp}/>
+                    {password.length > 0 && (
+                      <div style={{marginTop:8}}>
+                        <div style={{display:'flex',gap:3,marginBottom:4}}>
+                          {[1,2,3,4,5].map(i=>(
+                            <div key={i} style={{flex:1,height:3,borderRadius:2,background:i<=strength?strengthColors[strength]:'#e5e7eb',transition:'all .3s'}}/>
+                          ))}
+                        </div>
+                        <div style={{fontSize:11,color:strengthColors[strength],fontWeight:600}}>{strengthLabels[strength]}</div>
                       </div>
-                      <div style={{fontSize:11,color:strengthColors[strength],fontWeight:600}}>{strengthLabels[strength]}</div>
-                    </div>
-                  )}
-                </div>
+                    )}
+                  </div>
 
-                <div style={{marginBottom:8}}>
-                  <label style={{display:'block',fontSize:11,fontWeight:700,color:S.muted,textTransform:'uppercase',letterSpacing:1,marginBottom:6,fontFamily:"'Sora',sans-serif"}}>Confirmă parola nouă</label>
-                  <input className="auth-inp" type="password" required value={confirm}
-                    onChange={e=>setConfirm(e.target.value)}
-                    placeholder="repetă parola" style={{...inp,borderColor:confirm&&confirm!==password?S.red:S.border}}/>
-                  {confirm && confirm !== password && (
-                    <div style={{fontSize:12,color:S.red,marginTop:4}}>⚠️ Parolele nu coincid</div>
-                  )}
-                  {confirm && confirm === password && (
-                    <div style={{fontSize:12,color:S.green,marginTop:4}}>✅ Parolele coincid</div>
-                  )}
-                </div>
+                  <div style={{marginBottom:8}}>
+                    <label style={{display:'block',fontSize:11,fontWeight:700,color:S.muted,textTransform:'uppercase',letterSpacing:1,marginBottom:6,fontFamily:"'Sora',sans-serif"}}>Confirmă parola nouă</label>
+                    <input className="auth-inp" type="password" required value={confirm}
+                      onChange={e=>setConfirm(e.target.value)}
+                      placeholder="repetă parola" style={{...inp,borderColor:confirm&&confirm!==password?S.red:S.border}}/>
+                    {confirm && confirm !== password && (
+                      <div style={{fontSize:12,color:S.red,marginTop:4}}>⚠️ Parolele nu coincid</div>
+                    )}
+                    {confirm && confirm === password && (
+                      <div style={{fontSize:12,color:S.green,marginTop:4}}>✅ Parolele coincid</div>
+                    )}
+                  </div>
 
-                {/* Sfaturi parola */}
-                <div style={{background:S.amberBg,borderRadius:10,padding:'10px 14px',marginBottom:20,marginTop:12}}>
-                  <div style={{fontSize:11,fontWeight:700,color:S.amber,marginBottom:4}}>SFATURI PAROLĂ SIGURĂ</div>
-                  {[['Minim 6 caractere',password.length>=6],['Cel puțin o cifră',/[0-9]/.test(password)],['Cel puțin o literă mare',/[A-Z]/.test(password)]].map(([tip,ok])=>(
-                    <div key={tip} style={{fontSize:12,color:ok?S.green:S.amber,display:'flex',alignItems:'center',gap:6,marginBottom:2}}>
-                      <span>{ok?'✓':'○'}</span>{tip}
-                    </div>
-                  ))}
-                </div>
+                  <div style={{background:S.amberBg,borderRadius:10,padding:'10px 14px',marginBottom:20,marginTop:12}}>
+                    <div style={{fontSize:11,fontWeight:700,color:S.amber,marginBottom:4}}>SFATURI PAROLĂ SIGURĂ</div>
+                    {[['Minim 6 caractere',password.length>=6],['Cel puțin o cifră',/[0-9]/.test(password)],['Cel puțin o literă mare',/[A-Z]/.test(password)]].map(([tip,ok])=>(
+                      <div key={String(tip)} style={{fontSize:12,color:ok?S.green:S.amber,display:'flex',alignItems:'center',gap:6,marginBottom:2}}>
+                        <span>{ok?'✓':'○'}</span>{tip}
+                      </div>
+                    ))}
+                  </div>
 
-                <button type="submit" disabled={loading||password!==confirm||password.length<6}
-                  style={{width:'100%',padding:'13px',background:loading||password!==confirm||password.length<6?'#93c5fd':S.blue,color:'#fff',border:'none',borderRadius:50,fontSize:15,fontWeight:700,cursor:loading||password!==confirm||password.length<6?'not-allowed':'pointer',fontFamily:"'Sora',sans-serif",boxShadow:'0 4px 16px rgba(26,86,219,0.25)',transition:'all .2s'}}>
-                  {loading?'Se actualizează...':'🔒 Salvează parola nouă'}
-                </button>
-              </form>
+                  <button type="submit" disabled={loading||password!==confirm||password.length<6}
+                    style={{width:'100%',padding:'13px',background:loading||password!==confirm||password.length<6?'#93c5fd':S.blue,color:'#fff',border:'none',borderRadius:50,fontSize:15,fontWeight:700,cursor:loading||password!==confirm||password.length<6?'not-allowed':'pointer',fontFamily:"'Sora',sans-serif",boxShadow:'0 4px 16px rgba(26,86,219,0.25)',transition:'all .2s'}}>
+                    {loading?'Se actualizează...':'🔒 Salvează parola nouă'}
+                  </button>
+                </form>
+              )}
             </>
           )}
         </div>

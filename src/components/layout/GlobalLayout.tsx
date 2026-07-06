@@ -144,6 +144,8 @@ export default function GlobalLayout({ children }) {
   // Toast pentru notificări noi
   const [isMounted, setIsMounted] = useState(false)
   const [toast, setToast] = useState(null)
+
+  useEffect(() => { setIsMounted(true) }, [])
   const prevCount = useRef(0)
   useEffect(() => {
     if (unreadCount > prevCount.current && prevCount.current >= 0) {
@@ -474,8 +476,8 @@ export default function GlobalLayout({ children }) {
               {href:'/home',label:'Acasă',icon:(active)=>(
                 <svg width="20" height="20" viewBox="0 0 24 24" fill={active?'#1a56db':'none'} stroke={active?'none':'#c4cdd8'} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M12 3L2 10v11h7v-6h6v6h7V10z"/></svg>
               )},
-              {href:'/favorite',label:'Favorite',icon:(active)=>(
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke={active?'#1a56db':'#c4cdd8'} strokeWidth="1.8" strokeLinecap="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+              {href:'/piese',label:'Piese',icon:(active)=>(
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke={active?'#1a56db':'#c4cdd8'} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>
               )},
               {href:'__oferta__',label:'Ofertă',icon:()=>null},
               {href:'/itp-rca',label:'RCA',icon:(active)=>(
@@ -706,8 +708,8 @@ export default function GlobalLayout({ children }) {
             {href:'/home',label:'Acasă',icon:(active)=>(
               <svg width="20" height="20" viewBox="0 0 24 24" fill={active?'#1a56db':'none'} stroke={active?'none':'#c4cdd8'} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M12 3L2 10v11h7v-6h6v6h7V10z"/></svg>
             )},
-            {href:'/favorite',label:'Favorite',icon:(active)=>(
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke={active?'#1a56db':'#c4cdd8'} strokeWidth="1.8" strokeLinecap="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+            {href:'/piese',label:'Piese',icon:(active)=>(
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke={active?'#1a56db':'#c4cdd8'} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>
             )},
             {href:'__oferta__',label:'Ofertă',icon:()=>null},
             {href:'/itp-rca',label:'RCA',icon:(active)=>(
