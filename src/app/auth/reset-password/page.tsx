@@ -20,7 +20,23 @@ export default function ResetPasswordPage() {
   const supabase = createClient()
 
   useEffect(() => {
-    // Supabase handles the session from URL hash automatically
+    // Handle session from URL hash (access_token or code)
+    const hashParams = new URLSearchParams(window.location.hash.replace('#', ''))
+    const accessToken = hashParams.get('access_token')
+    const refreshToken = hashParams.get('refresh_token')
+    
+    if (accessToken) {
+      supabase.auth.setSession({ access_token: accessToken, refresh_token: refreshToken || '' })
+    } else {
+      // Handle PKCE flow - code in URL params
+      const urlParams = new URLSearchParams(window.location.search)
+      const code = urlParams.get('code')
+      if (code) {
+        supabase.auth.exchangeCodeForSession(code).catch(() => {
+          setError('Link-ul a expirat. Solicită un nou email de resetare.')
+        })
+      }
+    }
   }, [])
 
   function checkStrength(p) {
