@@ -19,24 +19,19 @@ export default function ResetPasswordPage() {
   const [strength, setStrength] = useState(0)
   const supabase = createClient()
 
+  const [ready, setReady] = useState(false)
+
   useEffect(() => {
-    // Handle session from URL hash (access_token or code)
-    const hashParams = new URLSearchParams(window.location.hash.replace('#', ''))
-    const accessToken = hashParams.get('access_token')
-    const refreshToken = hashParams.get('refresh_token')
-    
-    if (accessToken) {
-      supabase.auth.setSession({ access_token: accessToken, refresh_token: refreshToken || '' })
-    } else {
-      // Handle PKCE flow - code in URL params
-      const urlParams = new URLSearchParams(window.location.search)
-      const code = urlParams.get('code')
-      if (code) {
-        supabase.auth.exchangeCodeForSession(code).catch(() => {
-          setError('Link-ul a expirat. Solicită un nou email de resetare.')
-        })
+    supabase.auth.onAuthStateChange(async (event, session) => {
+      if (event === 'PASSWORD_RECOVERY') {
+        setReady(true)
       }
-    }
+    })
+
+    // Also check if we have a session already from the URL
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (session) setReady(true)
+    })
   }, [])
 
   function checkStrength(p) {
@@ -91,7 +86,12 @@ export default function ResetPasswordPage() {
                 <p style={{fontSize:13,color:S.muted}}>Alege o parolă nouă și sigură pentru contul tău.</p>
               </div>
 
-              {error && (
+              {!ready && !done && (
+            <div style={{background:S.amberBg,borderRadius:10,padding:'12px 14px',marginBottom:16,fontSize:13,color:S.amber,textAlign:'center'}}>
+              ⏳ Se verifică link-ul... dacă durează prea mult, <a href="/auth/forgot-password" style={{color:S.blue}}>solicită un nou link</a>.
+            </div>
+          )}
+          {error && (
                 <div style={{background:'#fee2e2',border:'1px solid #fecaca',borderRadius:10,padding:'10px 14px',fontSize:13,color:S.red,marginBottom:16}}>⚠️ {error}</div>
               )}
 
