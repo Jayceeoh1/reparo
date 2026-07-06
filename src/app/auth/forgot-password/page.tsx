@@ -21,7 +21,7 @@ export default function ForgotPasswordPage() {
     e.preventDefault()
     setLoading(true); setError('')
     const { error } = await supabase.auth.resetPasswordForEmail(email, {
-      redirectTo: `${window.location.origin}/auth/reset-password`,
+      redirectTo: `https://serviceclub.ro/auth/callback?next=/auth/reset-password&type=recovery`,
     })
     if (error) { setError('A apărut o eroare. Verifică emailul și încearcă din nou.'); setLoading(false); return }
     setSent(true); setLoading(false)
