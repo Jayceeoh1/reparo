@@ -52,7 +52,15 @@ export async function POST(request: Request) {
             stripe_subscription_id: session.subscription,
             stripe_customer_id: session.customer,
             plan_started_at: new Date().toISOString(),
-            plan_expires_at: null, // subscription — fără expirare fixă
+            plan_expires_at: null,
+          ...((() => {
+            const BOOST_MAP = { elite:3, business_elite:3, pro:2, business_pro:2, starter:1, basic:1, business:1, free:0 }
+            const searchBoost = BOOST_MAP[plan] ?? 0
+            const isProOrElite = ['pro','elite','business_pro','business_elite'].includes(plan)
+            const promoExpiry = new Date()
+            promoExpiry.setDate(promoExpiry.getDate() + 7)
+            return { search_boost: searchBoost, ...(isProOrElite ? { is_promoted: true, promoted_until: promoExpiry.toISOString() } : {}) }
+          })()),
           }).eq('id', service_id)
 
           // Înregistrăm plata pentru dashboard-ul de revenue admin

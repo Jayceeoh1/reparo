@@ -44,8 +44,11 @@ export default function SearchPage() {
   async function load() {
     setLoading(true)
     let q = supabase.from('services')
-      .select('id,name,city,logo_url,cover_image_url,rating_avg,rating_count,is_verified,plan,is_promoted,promoted_until,description,phone,business_type,has_itp,is_multibrand')
+      .select('id,name,city,logo_url,cover_image_url,rating_avg,rating_count,is_verified,plan,is_promoted,promoted_until,description,phone,business_type,has_itp,is_multibrand,search_boost')
       .eq('is_active', true)
+      .order('is_promoted', { ascending: false })
+      .order('search_boost', { ascending: false })
+      .order('rating_avg', { ascending: false, nullsFirst: false })
       .range(page * PER_PAGE, (page + 1) * PER_PAGE - 1)
 
     if (search) q = q.ilike('name', `%${search}%`)
@@ -53,13 +56,14 @@ export default function SearchPage() {
 
     const { data } = await q
 
+    // Fallback client-side daca coloana search_boost nu exista inca in DB
     const sorted = (data || []).sort((a, b) => {
       const aP = a.is_promoted && (!a.promoted_until || new Date(a.promoted_until) > new Date())
       const bP = b.is_promoted && (!b.promoted_until || new Date(b.promoted_until) > new Date())
       if (aP && !bP) return -1
       if (!aP && bP) return 1
-      const aB = PLAN_BOOST[a.plan] || 0
-      const bB = PLAN_BOOST[b.plan] || 0
+      const aB = a.search_boost ?? (PLAN_BOOST[a.plan] || 0)
+      const bB = b.search_boost ?? (PLAN_BOOST[b.plan] || 0)
       if (aB !== bB) return bB - aB
       return (b.rating_avg || 0) - (a.rating_avg || 0)
     })
