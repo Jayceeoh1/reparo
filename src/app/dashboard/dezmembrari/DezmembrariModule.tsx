@@ -45,6 +45,171 @@ const CAR_PARTS_CATEGORIES = [
 const CONDITION_LABELS = {excelenta:'⭐ Excelentă',buna:'✅ Bună',acceptabila:'⚠️ Acceptabilă'}
 const FUEL_LABELS = {benzina:'Benzină',diesel:'Diesel',hybrid:'Hybrid',electric:'Electric',gpl:'GPL'}
 
+
+// ─── Bulk Add Parts Component ────────────────────────────────────────────────
+function BulkAddParts({ car, serviceId, onBack, onDone }) {
+  const supabase = createClient()
+  const [activeCat, setActiveCat] = useState(CAR_PARTS_CATEGORIES[0].cat)
+  // coș: { name, category, price, condition, quantity }
+  const [basket, setBasket] = useState([])
+  const [saving, setSaving] = useState(false)
+  const [saved, setSaved] = useState(0)
+
+  function togglePart(name, cat) {
+    setBasket(prev => {
+      const exists = prev.find(p => p.name === name && p.category === cat)
+      if (exists) return prev.filter(p => !(p.name === name && p.category === cat))
+      return [...prev, { name, category: cat, price: '', condition: 'buna', quantity: '1' }]
+    })
+  }
+
+  function updateBasket(name, cat, field, value) {
+    setBasket(prev => prev.map(p =>
+      p.name === name && p.category === cat ? { ...p, [field]: value } : p
+    ))
+  }
+
+  function addCustomPart() {
+    const name = prompt('Nume piesă personalizată:')
+    if (!name?.trim()) return
+    setBasket(prev => [...prev, { name: name.trim(), category: activeCat, price: '', condition: 'buna', quantity: '1' }])
+  }
+
+  async function saveAll() {
+    if (basket.length === 0) return
+    setSaving(true)
+    const rows = basket.map(p => ({
+      car_id: car.id,
+      service_id: serviceId,
+      name: p.name,
+      category: p.category,
+      price: p.price ? parseFloat(p.price) : null,
+      condition: p.condition,
+      quantity: p.quantity ? parseInt(p.quantity) : 1,
+      is_available: true,
+    }))
+    const { error } = await supabase.from('dezmembrari_parts').insert(rows)
+    setSaving(false)
+    if (!error) { setSaved(rows.length); setTimeout(onDone, 1200) }
+  }
+
+  const isInBasket = (name, cat) => basket.some(p => p.name === name && p.category === cat)
+
+  return (
+    <div style={{maxWidth:860,margin:'0 auto'}}>
+      {/* Header */}
+      <div style={{display:'flex',alignItems:'center',gap:12,marginBottom:20}}>
+        <button onClick={onBack} style={{...btn('ghost'),padding:'8px 14px'}}>← Înapoi</button>
+        <div style={{flex:1}}>
+          <h1 style={{fontFamily:"'Sora',sans-serif",fontWeight:800,fontSize:20,color:S.navy,margin:0}}>
+            Adaugă piese în bulk
+          </h1>
+          <p style={{fontSize:13,color:S.muted,margin:0}}>
+            {car.brand} {car.model} {car.year ? `(${car.year})` : ''} — bifează piesele disponibile
+          </p>
+        </div>
+        {basket.length > 0 && (
+          <button onClick={saveAll} disabled={saving}
+            style={{...btn('primary'),gap:8}}>
+            {saving ? 'Se salvează...' : saved > 0 ? `✅ Salvat ${saved} piese!` : `💾 Salvează ${basket.length} piese`}
+          </button>
+        )}
+      </div>
+
+      <div style={{display:'grid',gridTemplateColumns:'200px 1fr',gap:16,alignItems:'start'}}>
+
+        {/* Categorii sidebar */}
+        <div style={card({padding:12})}>
+          <div style={{fontSize:11,fontWeight:700,color:S.muted,textTransform:'uppercase',letterSpacing:.8,marginBottom:10}}>Categorii</div>
+          {CAR_PARTS_CATEGORIES.map(({cat})=>{
+            const catCount = basket.filter(p=>p.category===cat).length
+            return (
+              <button key={cat} onClick={()=>setActiveCat(cat)}
+                style={{display:'flex',alignItems:'center',justifyContent:'space-between',width:'100%',padding:'9px 12px',borderRadius:10,border:'none',background:activeCat===cat?'#eaf3ff':'transparent',cursor:'pointer',fontSize:12,fontWeight:activeCat===cat?700:500,color:activeCat===cat?S.blue:S.navy,textAlign:'left',marginBottom:2,transition:'all .15s'}}>
+                <span>{cat}</span>
+                {catCount > 0 && (
+                  <span style={{background:S.blue,color:'#fff',borderRadius:50,fontSize:10,fontWeight:700,padding:'1px 7px',minWidth:18,textAlign:'center'}}>
+                    {catCount}
+                  </span>
+                )}
+              </button>
+            )
+          })}
+        </div>
+
+        {/* Piese din categoria selectată */}
+        <div>
+          <div style={card({padding:16,marginBottom:12})}>
+            <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:12}}>
+              <div style={{fontFamily:"'Sora',sans-serif",fontWeight:700,fontSize:14,color:S.navy}}>{activeCat}</div>
+              <button onClick={addCustomPart}
+                style={{...btn('ghost'),padding:'5px 12px',fontSize:12}}>+ Piesă custom</button>
+            </div>
+            <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fill,minmax(160px,1fr))',gap:6}}>
+              {CAR_PARTS_CATEGORIES.find(c=>c.cat===activeCat)?.parts.map(part=>{
+                const inBasket = isInBasket(part, activeCat)
+                return (
+                  <button key={part} onClick={()=>togglePart(part, activeCat)}
+                    style={{padding:'8px 10px',borderRadius:10,border:`1.5px solid ${inBasket?S.blue:S.border}`,background:inBasket?'#eaf3ff':'#fff',cursor:'pointer',fontSize:12,fontWeight:inBasket?700:400,color:inBasket?S.blue:S.navy,textAlign:'left',transition:'all .15s',display:'flex',alignItems:'center',gap:6}}>
+                    <span style={{width:14,height:14,borderRadius:3,border:`2px solid ${inBasket?S.blue:S.border}`,background:inBasket?S.blue:'transparent',display:'inline-flex',alignItems:'center',justifyContent:'center',flexShrink:0,fontSize:9,color:'#fff'}}>
+                      {inBasket?'✓':''}
+                    </span>
+                    {part}
+                  </button>
+                )
+              })}
+            </div>
+          </div>
+
+          {/* Coș piese selectate */}
+          {basket.length > 0 && (
+            <div style={card({padding:16})}>
+              <div style={{fontFamily:"'Sora',sans-serif",fontWeight:700,fontSize:14,color:S.navy,marginBottom:12}}>
+                🛒 Piese selectate ({basket.length})
+              </div>
+              <div style={{display:'grid',gridTemplateColumns:'1fr 90px 90px 110px 32px',gap:6,marginBottom:6}}>
+                {['Piesă','Preț RON','Cant.','Stare',''].map(h=>(
+                  <div key={h} style={{fontSize:10,fontWeight:700,color:S.muted,textTransform:'uppercase',letterSpacing:.5}}>{h}</div>
+                ))}
+              </div>
+              {basket.map((p,i)=>(
+                <div key={i} style={{display:'grid',gridTemplateColumns:'1fr 90px 90px 110px 32px',gap:6,alignItems:'center',padding:'6px 0',borderTop:`1px solid ${S.border}`}}>
+                  <div>
+                    <div style={{fontSize:13,fontWeight:600,color:S.navy}}>{p.name}</div>
+                    <div style={{fontSize:11,color:S.muted}}>{p.category}</div>
+                  </div>
+                  <input type="number" min="0" placeholder="—" value={p.price}
+                    onChange={e=>updateBasket(p.name,p.category,'price',e.target.value)}
+                    style={{...inp,padding:'6px 8px',fontSize:12}}/>
+                  <input type="number" min="1" value={p.quantity}
+                    onChange={e=>updateBasket(p.name,p.category,'quantity',e.target.value)}
+                    style={{...inp,padding:'6px 8px',fontSize:12}}/>
+                  <select value={p.condition} onChange={e=>updateBasket(p.name,p.category,'condition',e.target.value)}
+                    style={{...inp,padding:'6px 8px',fontSize:12}}>
+                    <option value="excelenta">⭐ Excelentă</option>
+                    <option value="buna">✅ Bună</option>
+                    <option value="acceptabila">⚠️ Acceptabilă</option>
+                  </select>
+                  <button onClick={()=>togglePart(p.name,p.category)}
+                    style={{width:30,height:30,borderRadius:8,border:`1px solid ${S.border}`,background:'#fff',cursor:'pointer',fontSize:14,color:S.red,display:'flex',alignItems:'center',justifyContent:'center'}}>
+                    ✕
+                  </button>
+                </div>
+              ))}
+              <div style={{paddingTop:12,borderTop:`1px solid ${S.border}`,display:'flex',justifyContent:'flex-end'}}>
+                <button onClick={saveAll} disabled={saving}
+                  style={{...btn('primary'),minWidth:180}}>
+                  {saving ? 'Se salvează...' : saved > 0 ? `✅ Salvat!` : `💾 Salvează ${basket.length} piese`}
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  )
+}
+
 export default function DezmembrariModule({ serviceId }) {
   const [cars, setCars] = useState([])
   const [loading, setLoading] = useState(true)
@@ -473,95 +638,16 @@ export default function DezmembrariModule({ serviceId }) {
 
   // ── ADD PART VIEW ────────────────────────────────────────────────────────
   if (view === 'add-part' && selectedCar) return (
-    <div style={{maxWidth:600,margin:'0 auto'}}>
-      <div style={{display:'flex',alignItems:'center',gap:12,marginBottom:24}}>
-        <button onClick={()=>setView('car-detail')} style={{...btn('ghost'),padding:'8px 14px'}}>← Înapoi</button>
-        <div>
-          <h1 style={{fontFamily:"'Sora',sans-serif",fontWeight:800,fontSize:20,color:S.navy,margin:0}}>Adaugă piesă</h1>
-          <p style={{fontSize:13,color:S.muted,margin:0}}>pentru {selectedCar.brand} {selectedCar.model} {selectedCar.year?`(${selectedCar.year})`:''}</p>
-        </div>
-      </div>
-
-      <div style={card()}>
-        {/* Category selector */}
-        <label style={lbl}>Categorie piesă *</label>
-        <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fill,minmax(140px,1fr))',gap:8,marginBottom:16}}>
-          {CAR_PARTS_CATEGORIES.map(({cat})=>(
-            <button key={cat} onClick={()=>{setSelectedCategory(cat);setPartForm(p=>({...p,category:cat,name:''}))}}
-              style={{padding:'8px 10px',borderRadius:10,border:`1.5px solid ${selectedCategory===cat?S.blue:S.border}`,background:selectedCategory===cat?'#eaf3ff':'#fff',cursor:'pointer',fontSize:11,fontWeight:600,color:selectedCategory===cat?S.blue:S.navy,textAlign:'left',transition:'all .15s'}}>
-              {cat}
-            </button>
-          ))}
-        </div>
-
-        {/* Part name from category */}
-        {selectedCategory && (
-          <>
-            <label style={lbl}>Piesă *</label>
-            <div style={{display:'flex',gap:8,flexWrap:'wrap',marginBottom:16}}>
-              {CAR_PARTS_CATEGORIES.find(c=>c.cat===selectedCategory)?.parts.map(part=>(
-                <button key={part} onClick={()=>setPartForm(p=>({...p,name:part}))}
-                  style={{padding:'6px 12px',borderRadius:50,border:`1.5px solid ${partForm.name===part?S.blue:S.border}`,background:partForm.name===part?'#eaf3ff':'#fff',cursor:'pointer',fontSize:12,fontWeight:partForm.name===part?700:400,color:partForm.name===part?S.blue:S.navy,transition:'all .15s'}}>
-                  {part}
-                </button>
-              ))}
-              {/* Custom name */}
-              <input style={{...inp,width:'auto',flex:'1 1 150px'}} value={!CAR_PARTS_CATEGORIES.find(c=>c.cat===selectedCategory)?.parts.includes(partForm.name)?partForm.name:''} onChange={e=>setPartForm(p=>({...p,name:e.target.value}))} placeholder="Sau scrie manual..."/>
-            </div>
-          </>
-        )}
-
-        <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:12,marginBottom:14}}>
-          <div>
-            <label style={lbl}>Preț (RON)</label>
-            <input style={inp} type="number" min="0" value={partForm.price} onChange={e=>setPartForm(p=>({...p,price:e.target.value}))} placeholder="Ex: 250"/>
-          </div>
-          <div>
-            <label style={lbl}>Cantitate</label>
-            <input style={inp} type="number" min="1" value={partForm.quantity} onChange={e=>setPartForm(p=>({...p,quantity:e.target.value}))} placeholder="1"/>
-          </div>
-          <div style={{gridColumn:'1/-1'}}>
-            <label style={lbl}>Stare piesă</label>
-            <div style={{display:'flex',gap:8}}>
-              {Object.entries(CONDITION_LABELS).map(([k,v])=>(
-                <button key={k} onClick={()=>setPartForm(p=>({...p,condition:k}))}
-                  style={{flex:1,padding:'8px',borderRadius:10,border:`1.5px solid ${partForm.condition===k?S.blue:S.border}`,background:partForm.condition===k?'#eaf3ff':'#fff',cursor:'pointer',fontSize:12,fontWeight:partForm.condition===k?700:400,color:partForm.condition===k?S.blue:S.navy,transition:'all .15s'}}>
-                  {v}
-                </button>
-              ))}
-            </div>
-          </div>
-          <div style={{gridColumn:'1/-1'}}>
-            <label style={lbl}>Număr piesă OEM (opțional)</label>
-            <input style={inp} value={partForm.part_number} onChange={e=>setPartForm(p=>({...p,part_number:e.target.value}))} placeholder="Ex: 06A103601P"/>
-          </div>
-          <div style={{gridColumn:'1/-1'}}>
-            <label style={lbl}>Fotografii piesă</label>
-            <div style={{display:'flex',gap:8,flexWrap:'wrap'}}>
-              {partForm.images.map((img,i)=>(
-                <div key={i} style={{position:'relative',width:70,height:70,borderRadius:8,overflow:'hidden'}}>
-                  <img src={img} style={{width:'100%',height:'100%',objectFit:'cover'}} alt=""/>
-                  <button onClick={()=>setPartForm(p=>({...p,images:p.images.filter((_,idx)=>idx!==i)}))}
-                    style={{position:'absolute',top:2,right:2,width:16,height:16,borderRadius:'50%',background:'rgba(220,38,38,0.9)',border:'none',color:'#fff',cursor:'pointer',fontSize:9,display:'flex',alignItems:'center',justifyContent:'center'}}>✕</button>
-                </div>
-              ))}
-              <label style={{width:70,height:70,borderRadius:8,border:`2px dashed ${S.border}`,display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',cursor:'pointer',background:S.bg,fontSize:10,color:S.muted,gap:3}}>
-                {uploadingImg?'⏳':'📷'}<span>Foto</span>
-                <input type="file" accept="image/*" style={{display:'none'}} onChange={e=>uploadImage(e.target.files[0],'part')}/>
-              </label>
-            </div>
-          </div>
-        </div>
-
-        <div style={{display:'flex',gap:10,paddingTop:14,borderTop:`1px solid ${S.border}`}}>
-          <button onClick={()=>setView('car-detail')} style={{...btn('ghost'),flex:'0 0 auto'}}>Anulează</button>
-          <button onClick={savePart} disabled={!partForm.name||!selectedCategory||saving}
-            style={{...btn('primary'),flex:1,opacity:(!partForm.name||!selectedCategory||saving)?.6:1}}>
-            {saving?'Se salvează...':'✅ Adaugă piesa'}
-          </button>
-        </div>
-      </div>
-    </div>
+    <BulkAddParts
+      car={selectedCar}
+      serviceId={serviceId}
+      onBack={()=>setView('car-detail')}
+      onDone={async()=>{
+        const parts = await loadCarParts(selectedCar.id)
+        setSelectedCar(prev=>({...prev, dezmembrari_parts: parts}))
+        setView('car-detail')
+      }}
+    />
   )
 
   return null
