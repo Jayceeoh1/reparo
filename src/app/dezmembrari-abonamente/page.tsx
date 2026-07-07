@@ -120,7 +120,7 @@ const PLANS = {
     {
       key: "bg",
       name: "Club Business",
-      price: 199,
+      price: 299,
       popular: false,
       color: "#b45309",
       accent: "#b45309",
@@ -143,7 +143,7 @@ const PLANS = {
     {
       key: "bp",
       name: "Club Business Pro",
-      price: 399,
+      price: 499,
       popular: true,
       color: "#7c3aed",
       accent: "#7c3aed",
@@ -169,7 +169,7 @@ const PLANS = {
     {
       key: "bpl",
       name: "Club Business Elite",
-      price: 599,
+      price: 699,
       popular: false,
       color: "#0891b2",
       accent: "#0891b2",

@@ -24,6 +24,10 @@ export async function POST(request: Request) {
       elite:   { priceId: 'price_1TfO9RIvesVwLgCkrc6QaXfo', price: 19900, name: 'Club Elite' },
       // backwards compat
       basic:   { priceId: 'price_1TfNjoIvesVwLgCkFtblds9u', price: 4900, name: 'Club Starter' },
+      // Business plans — priceId-urile se creează în Stripe Dashboard
+      business:       { priceId: process.env.STRIPE_PRICE_BUSINESS       || '', price: 29900, name: 'Club Business' },
+      business_pro:   { priceId: process.env.STRIPE_PRICE_BUSINESS_PRO   || '', price: 49900, name: 'Club Business Pro' },
+      business_elite: { priceId: process.env.STRIPE_PRICE_BUSINESS_ELITE || '', price: 69900, name: 'Club Business Elite' },
     }
     const PROMOS = {
       service_top_7:  { price: 4900,  name: 'Promovare service 7 zile' },
