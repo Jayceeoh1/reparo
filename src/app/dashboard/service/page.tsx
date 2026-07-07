@@ -2485,6 +2485,62 @@ export default function ServiceDashboard() {
                   </div>
                 ))}
               </div>
+
+              {/* Abonamente Dezmembrări */}
+              <div style={{marginTop:32}}>
+                <div style={{display:'flex',alignItems:'center',gap:10,marginBottom:6}}>
+                  <div style={{width:36,height:36,background:'#fef3c7',borderRadius:10,display:'flex',alignItems:'center',justifyContent:'center',fontSize:20}}>🔩</div>
+                  <div>
+                    <div style={{fontFamily:"'Sora',sans-serif",fontWeight:800,fontSize:18,color:S.navy}}>Ești parc de dezmembrări?</div>
+                    <div style={{fontSize:13,color:S.muted}}>Abonamente dedicate cu funcții speciale pentru parcuri SH</div>
+                  </div>
+                </div>
+
+                <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fit,minmax(220px,1fr))',gap:12,marginTop:16}}>
+                  {[
+                    {
+                      label:'Club Starter',price:'49',period:'/lună',color:'#6b7280',badge:null,
+                      features:['300 anunțuri','50 relistări/săpt','100 oferte/cereri','Fără generator auto'],
+                    },
+                    {
+                      label:'Club Pro',price:'99',period:'/lună',color:S.blue,badge:'CEL MAI ALES',
+                      features:['3.000 anunțuri','1.000 relistări/săpt','1.000 oferte/cereri','Generator dezmembrări'],
+                    },
+                    {
+                      label:'Club Elite',price:'199',period:'/lună',color:'#d97706',badge:'GOLD',
+                      features:['100.000 anunțuri','5.000 relistări/săpt','Oferte nelimitate','1 mașină/cont generator','Relistare la 20 min'],
+                    },
+                  ].map(p=>(
+                    <div key={p.label} style={{...card(),border:`2px solid ${p.color}30`,position:'relative',overflow:'hidden'}}>
+                      {p.badge&&(
+                        <div style={{position:'absolute',top:0,left:0,right:0,background:p.color,color:'#fff',fontSize:10,fontWeight:700,padding:'4px 0',textAlign:'center',fontFamily:"'Sora',sans-serif",letterSpacing:1}}>
+                          ★ {p.badge}
+                        </div>
+                      )}
+                      <div style={{paddingTop:p.badge?20:0}}>
+                        <div style={{fontSize:11,fontWeight:700,color:S.muted,textTransform:'uppercase',letterSpacing:.8,marginBottom:4,fontFamily:"'Sora',sans-serif"}}>Abonament</div>
+                        <div style={{fontFamily:"'Sora',sans-serif",fontWeight:800,fontSize:16,color:p.color,marginBottom:2}}>{p.label}</div>
+                        <div style={{display:'flex',alignItems:'baseline',gap:2,marginBottom:14}}>
+                          <span style={{fontFamily:"'Sora',sans-serif",fontWeight:800,fontSize:28,color:S.navy}}>{p.price} RON</span>
+                          <span style={{fontSize:12,color:S.muted}}>{p.period}</span>
+                        </div>
+                        {p.features.map(f=>(
+                          <div key={f} style={{display:'flex',alignItems:'center',gap:6,marginBottom:5,fontSize:12,color:S.muted}}>
+                            <span style={{color:p.color,fontWeight:700,fontSize:14}}>✓</span>{f}
+                          </div>
+                        ))}
+                        <a href="/dezmembrari-abonamente" target="_blank"
+                          style={{display:'block',textAlign:'center',marginTop:16,padding:'9px',borderRadius:50,fontSize:12,fontWeight:700,textDecoration:'none',color:p.color,border:`1.5px solid ${p.color}`,fontFamily:"'Sora',sans-serif",transition:'all .15s'}}
+                          onMouseEnter={e=>{e.currentTarget.style.background=p.color;e.currentTarget.style.color='#fff'}}
+                          onMouseLeave={e=>{e.currentTarget.style.background='transparent';e.currentTarget.style.color=p.color}}>
+                          Vezi detalii →
+                        </a>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
             </div>
           )}
 
