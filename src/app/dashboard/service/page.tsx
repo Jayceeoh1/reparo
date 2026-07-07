@@ -306,6 +306,94 @@ function MapPicker({ address, city, onAddressChange }) {
   )
 }
 
+
+// ─── Dezmembrari Plans Component ─────────────────────────────────────────────
+function DezmembrariPlans() {
+  const [tip, setTip] = useState<'basic'|'business'>('basic')
+
+  const BASIC = [
+    { label:'Club Starter', price:'49', color:'#6b7280', badge:null,
+      features:['300 anunțuri','50 relistări/săpt','100 oferte/cereri','Fără generator auto','Relistare manuală'] },
+    { label:'Club Pro', price:'99', color:'#1a56db', badge:'CEL MAI ALES',
+      features:['3.000 anunțuri','1.000 relistări/săpt','1.000 oferte/cereri','Generator dezmembrări','Relistare manuală'] },
+    { label:'Club Elite', price:'199', color:'#d97706', badge:'GOLD',
+      features:['100.000 anunțuri','5.000 relistări/săpt','Oferte nelimitate','1 mașină/cont generator','Relistare la 20 min'] },
+  ]
+
+  const BUSINESS = [
+    { label:'Club Business', price:'299', color:'#b45309', badge:null,
+      features:['100.000 anunțuri','5.000 relistări/săpt','Oferte nelimitate','1 mașină/cont generator','Relistare la 20 min','Pagină firmă personalizată','Import CSV/XML'] },
+    { label:'Club Business Pro', price:'499', color:'#7c3aed', badge:'CEL MAI ALES',
+      features:['1.000.000 anunțuri','10.000 relistări/săpt','Oferte nelimitate','Generator nelimitat','Relistare la 10 min','2 anunțuri consecutive/căutare','Import CSV/XML'] },
+    { label:'Club Business Elite', price:'699', color:'#0891b2', badge:null,
+      features:['1.000.000 anunțuri','10.000 relistări/săpt','Oferte nelimitate','Generator nelimitat','Relistare la 10 min','Catalog firme prioritar','Import CSV/XML'] },
+  ]
+
+  const plans = tip === 'basic' ? BASIC : BUSINESS
+
+  return (
+    <div style={{marginTop:32}}>
+      {/* Header + toggle */}
+      <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',flexWrap:'wrap',gap:12,marginBottom:20}}>
+        <div style={{display:'flex',alignItems:'center',gap:10}}>
+          <div style={{width:36,height:36,background:'#fef3c7',borderRadius:10,display:'flex',alignItems:'center',justifyContent:'center',fontSize:20}}>🔩</div>
+          <div>
+            <div style={{fontFamily:"'Sora',sans-serif",fontWeight:800,fontSize:18,color:'#0a1f44'}}>Ești parc de dezmembrări?</div>
+            <div style={{fontSize:13,color:'#6b7280'}}>Abonamente dedicate cu funcții speciale</div>
+          </div>
+        </div>
+
+        {/* Toggle Basic / Business */}
+        <div style={{display:'flex',background:'#f0f6ff',borderRadius:50,padding:4,gap:2,border:'1px solid #e5e7eb'}}>
+          {(['basic','business'] as const).map(t=>(
+            <button key={t} onClick={()=>setTip(t)}
+              style={{padding:'7px 18px',borderRadius:50,border:'none',cursor:'pointer',fontSize:12,fontWeight:700,fontFamily:"'Sora',sans-serif",transition:'all .2s',
+                background:tip===t?'#0a1f44':'transparent',
+                color:tip===t?'#fff':'#6b7280'}}>
+              {t==='basic'?'Basic':'Business'}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {tip==='business'&&(
+        <div style={{background:'#ede9fe',borderRadius:10,padding:'8px 14px',marginBottom:16,fontSize:12,color:'#7c3aed',fontWeight:500}}>
+          ℹ️ Abonamentele Business sunt pentru persoane juridice (firme cu CUI).
+        </div>
+      )}
+
+      <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fit,minmax(220px,1fr))',gap:12}}>
+        {plans.map(p=>(
+          <div key={p.label} style={{background:'#fff',borderRadius:16,border:`2px solid ${p.color}30`,boxShadow:'0 2px 12px rgba(10,31,68,0.06)',padding:20,position:'relative',overflow:'hidden'}}>
+            {p.badge&&(
+              <div style={{position:'absolute',top:0,left:0,right:0,background:p.color,color:'#fff',fontSize:10,fontWeight:700,padding:'4px 0',textAlign:'center',fontFamily:"'Sora',sans-serif",letterSpacing:1}}>
+                ★ {p.badge}
+              </div>
+            )}
+            <div style={{paddingTop:p.badge?22:0}}>
+              <div style={{fontSize:11,fontWeight:700,color:'#6b7280',textTransform:'uppercase',letterSpacing:.8,marginBottom:4,fontFamily:"'Sora',sans-serif"}}>Abonament</div>
+              <div style={{fontFamily:"'Sora',sans-serif",fontWeight:800,fontSize:15,color:p.color,marginBottom:2}}>{p.label}</div>
+              <div style={{display:'flex',alignItems:'baseline',gap:2,marginBottom:14}}>
+                <span style={{fontFamily:"'Sora',sans-serif",fontWeight:800,fontSize:28,color:'#0a1f44'}}>{p.price} RON</span>
+                <span style={{fontSize:12,color:'#6b7280'}}>/lună</span>
+              </div>
+              {p.features.map(f=>(
+                <div key={f} style={{display:'flex',alignItems:'center',gap:6,marginBottom:5,fontSize:12,color:'#6b7280'}}>
+                  <span style={{color:p.color,fontWeight:700,fontSize:13}}>✓</span>{f}
+                </div>
+              ))}
+              <a href="/dezmembrari-abonamente" target="_blank"
+                style={{display:'block',textAlign:'center',marginTop:16,padding:'9px',borderRadius:50,fontSize:12,fontWeight:700,textDecoration:'none',color:p.color,border:`1.5px solid ${p.color}`,fontFamily:"'Sora',sans-serif"}}>
+                Vezi detalii →
+              </a>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  )
+}
+
 export default function ServiceDashboard() {
   const [tab, setTab] = useState('Acasă')
   const [user, setUser] = useState(null)
@@ -2487,59 +2575,7 @@ export default function ServiceDashboard() {
               </div>
 
               {/* Abonamente Dezmembrări */}
-              <div style={{marginTop:32}}>
-                <div style={{display:'flex',alignItems:'center',gap:10,marginBottom:6}}>
-                  <div style={{width:36,height:36,background:'#fef3c7',borderRadius:10,display:'flex',alignItems:'center',justifyContent:'center',fontSize:20}}>🔩</div>
-                  <div>
-                    <div style={{fontFamily:"'Sora',sans-serif",fontWeight:800,fontSize:18,color:S.navy}}>Ești parc de dezmembrări?</div>
-                    <div style={{fontSize:13,color:S.muted}}>Abonamente dedicate cu funcții speciale pentru parcuri SH</div>
-                  </div>
-                </div>
-
-                <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fit,minmax(220px,1fr))',gap:12,marginTop:16}}>
-                  {[
-                    {
-                      label:'Club Starter',price:'49',period:'/lună',color:'#6b7280',badge:null,
-                      features:['300 anunțuri','50 relistări/săpt','100 oferte/cereri','Fără generator auto'],
-                    },
-                    {
-                      label:'Club Pro',price:'99',period:'/lună',color:S.blue,badge:'CEL MAI ALES',
-                      features:['3.000 anunțuri','1.000 relistări/săpt','1.000 oferte/cereri','Generator dezmembrări'],
-                    },
-                    {
-                      label:'Club Elite',price:'199',period:'/lună',color:'#d97706',badge:'GOLD',
-                      features:['100.000 anunțuri','5.000 relistări/săpt','Oferte nelimitate','1 mașină/cont generator','Relistare la 20 min'],
-                    },
-                  ].map(p=>(
-                    <div key={p.label} style={{...card(),border:`2px solid ${p.color}30`,position:'relative',overflow:'hidden'}}>
-                      {p.badge&&(
-                        <div style={{position:'absolute',top:0,left:0,right:0,background:p.color,color:'#fff',fontSize:10,fontWeight:700,padding:'4px 0',textAlign:'center',fontFamily:"'Sora',sans-serif",letterSpacing:1}}>
-                          ★ {p.badge}
-                        </div>
-                      )}
-                      <div style={{paddingTop:p.badge?20:0}}>
-                        <div style={{fontSize:11,fontWeight:700,color:S.muted,textTransform:'uppercase',letterSpacing:.8,marginBottom:4,fontFamily:"'Sora',sans-serif"}}>Abonament</div>
-                        <div style={{fontFamily:"'Sora',sans-serif",fontWeight:800,fontSize:16,color:p.color,marginBottom:2}}>{p.label}</div>
-                        <div style={{display:'flex',alignItems:'baseline',gap:2,marginBottom:14}}>
-                          <span style={{fontFamily:"'Sora',sans-serif",fontWeight:800,fontSize:28,color:S.navy}}>{p.price} RON</span>
-                          <span style={{fontSize:12,color:S.muted}}>{p.period}</span>
-                        </div>
-                        {p.features.map(f=>(
-                          <div key={f} style={{display:'flex',alignItems:'center',gap:6,marginBottom:5,fontSize:12,color:S.muted}}>
-                            <span style={{color:p.color,fontWeight:700,fontSize:14}}>✓</span>{f}
-                          </div>
-                        ))}
-                        <a href="/dezmembrari-abonamente" target="_blank"
-                          style={{display:'block',textAlign:'center',marginTop:16,padding:'9px',borderRadius:50,fontSize:12,fontWeight:700,textDecoration:'none',color:p.color,border:`1.5px solid ${p.color}`,fontFamily:"'Sora',sans-serif",transition:'all .15s'}}
-                          onMouseEnter={e=>{e.currentTarget.style.background=p.color;e.currentTarget.style.color='#fff'}}
-                          onMouseLeave={e=>{e.currentTarget.style.background='transparent';e.currentTarget.style.color=p.color}}>
-                          Vezi detalii →
-                        </a>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
+              <DezmembrariPlans />
 
             </div>
           )}
