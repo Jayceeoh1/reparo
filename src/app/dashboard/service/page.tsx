@@ -2545,51 +2545,6 @@ export default function ServiceDashboard() {
                   </div>
                 </div>
 
-                {/* Banner Dezmembrari — mereu vizibil */}
-                <div style={{...card(),background:'#fef3c7',border:'1px solid rgba(217,119,6,0.2)',display:'flex',alignItems:'center',justifyContent:'space-between',gap:12,flexWrap:'wrap'}}>
-                  <div style={{display:'flex',alignItems:'center',gap:12}}>
-                    <span style={{fontSize:28}}>🔩</span>
-                    <div>
-                      <div style={{fontFamily:"'Sora',sans-serif",fontWeight:700,fontSize:13,color:'#92400e',marginBottom:2}}>Ești parc de dezmembrări?</div>
-                      <div style={{fontSize:12,color:'#b45309',lineHeight:1.5}}>Avem abonamente speciale cu funcții dedicate: generator piese, relistare automată, ofertare nelimitată.</div>
-                    </div>
-                  </div>
-                  <a href="/dezmembrari-abonamente" target="_blank"
-                    style={{display:'inline-flex',alignItems:'center',gap:6,padding:'9px 18px',background:'#d97706',color:'#fff',borderRadius:50,fontSize:12,fontWeight:700,textDecoration:'none',fontFamily:"'Sora',sans-serif",whiteSpace:'nowrap',flexShrink:0}}>
-                    Vezi abonamente →
-                  </a>
-                </div>
-
-                {/* Promovare */}
-                <div style={card()}>
-                  <h3 style={{fontFamily:"'Sora',sans-serif",fontWeight:700,fontSize:15,color:S.navy,marginBottom:12}}>🚀 Promovare service</h3>
-                  <p style={{fontSize:13,color:S.muted,marginBottom:14,lineHeight:1.6}}>Apari primul în căutări din orașul tău. Vizibilitate maximă, mai mulți clienți.</p>
-                  {service?.is_promoted&&service?.promoted_until?(
-                    <div style={{background:S.amberBg,borderRadius:10,padding:'10px 14px',marginBottom:12,border:`1px solid ${S.amber}30`}}>
-                      <div style={{fontWeight:700,fontSize:13,color:S.amber}}>⭐ Promovare activă</div>
-                      <div style={{fontSize:12,color:S.amber,opacity:.8}}>Până pe {new Date(service.promoted_until).toLocaleDateString('ro-RO')}</div>
-                    </div>
-                  ):(
-                    <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:8,marginBottom:12}}>
-                      {[{label:'7 zile',price:'49 RON',key:'service_top_7'},{label:'30 zile',price:'149 RON',key:'service_top_30'}].map(opt=>(
-                        <button key={opt.key}
-                          onClick={async()=>{
-                            const res = await fetch('/api/stripe/checkout',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({type:'promotion',promo_type:opt.key,service_id:service?.id})})
-                            const {url} = await res.json()
-                            if(url) window.location.href=url
-                          }}
-                          style={{padding:'12px',borderRadius:12,border:`1.5px solid ${S.border}`,background:S.bg,cursor:'pointer',fontFamily:"'DM Sans',sans-serif",transition:'all .15s'}}
-                          onMouseEnter={e=>{e.currentTarget.style.borderColor=S.blue;e.currentTarget.style.background='#eaf3ff'}}
-                          onMouseLeave={e=>{e.currentTarget.style.borderColor=S.border;e.currentTarget.style.background=S.bg}}>
-                          <div style={{fontWeight:700,fontSize:13,color:S.navy,marginBottom:3}}>{opt.label}</div>
-                          <div style={{fontFamily:"'Sora',sans-serif",fontWeight:800,fontSize:16,color:S.blue}}>{opt.price}</div>
-                        </button>
-                      ))}
-                    </div>
-                  )}
-                  <div style={{fontSize:11,color:S.muted}}>💡 Serviciile promovate primesc în medie 3x mai multe cereri.</div>
-                </div>
-
                 {/* Notificări */}
                 <div style={card()}>
                   <h3 style={{fontFamily:"'Sora',sans-serif",fontWeight:700,fontSize:15,color:S.navy,marginBottom:14}}>🔔 Notificări</h3>
